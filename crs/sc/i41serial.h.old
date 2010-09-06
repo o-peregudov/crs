@@ -1,0 +1,133 @@
+#ifndef CROSS_SC_I41SERIAL_H_INCLUDED
+#define CROSS_SC_I41SERIAL_H_INCLUDED 1
+//////////////////////////////////////////////////////////////////////
+//
+// i41serial.h: interface for the i41serial class.
+// (c) Oct 14, 2005 Oleg N. Peregudov
+// (c) Jun 18, 2007 Oleg N. Peregudov - uniform locks
+// (c) Nov 21, 2007 Oleg N. Peregudov - new place for cross-compiling routines
+//
+//////////////////////////////////////////////////////////////////////
+
+#include <crs/sc/rs232port.h>
+#include <list>
+
+namespace sc {
+
+//
+// class i41serial
+//
+class CROSS_EXPORT i41serial : public rs232port
+{
+public:
+      struct syncTimeOut : rs232port::errTimeout {
+            syncTimeOut ( const std::string & wh ) : rs232port::errTimeout( wh ) { }
+      };
+      
+      struct crcError : std::runtime_error {
+            crcError ( const std::string & wh ) : std::runtime_error( wh ) { }
+      };
+      
+//      struct badConnection : std::runtime_error {
+//            badConnection ( const std::string & wh ) : std::runtime_error( wh ) { }
+//      };
+      
+      struct badAddress : std::runtime_error {
+            badAddress ( const std::string & wh ) : std::runtime_error( wh ) { }
+      };
+      
+      struct badCommand : std::runtime_error {
+            badCommand ( const std::string & wh ) : std::runtime_error( wh ) { }
+      };
+      
+      struct controllerOverflow : std::runtime_error {
+            controllerOverflow ( const std::string & wh ) : std::runtime_error( wh ) { }
+      };
+      
+#pragma pack(push, 1)
+	struct eightBytePacket
+	{
+		unsigned char id,		// направление пакета и код контроллера
+				  cmd,	// код команды
+				  ext;	// расширение кода команды
+		unsigned long param;
+		unsigned char crc;
+	};
+	
+	struct comPacket
+	{
+		union {
+			eightBytePacket data;
+			unsigned char byteArray [ sizeof( eightBytePacket ) ];
+		};
+		
+		unsigned char buildCRC ( ) {
+			// подсчет контрольной суммы передаваемого пакета 
+			byteArray[ sizeof( eightBytePacket ) - 1 ] = 0;
+			for( int i = 0; i < sizeof( eightBytePacket ) - 1;
+				byteArray[ sizeof( eightBytePacket ) - 1 ] -= byteArray[ i++ ] );
+			return byteArray[ sizeof( eightBytePacket ) - 1 ];
+		}
+		
+		bool  checkIdentity ( ) const {
+			// подсчет контрольной суммы передаваемого пакета 
+			unsigned char newCRC = 0;
+			for( int i = 0; i < sizeof( eightBytePacket ) - 1;
+				newCRC -= byteArray[ i++ ] );
+			return ( newCRC == byteArray[ sizeof( eightBytePacket ) - 1 ] );
+		}
+		
+		bool  syncPacket ( ) const {
+			for( int i = 0; i < sizeof( eightBytePacket ); ++i )
+				if( byteArray[ i ] != 0x55 )
+					return false;
+			return true;
+		}
+		
+		std::string byteString () const;            
+		
+		void  setZero () {
+			memset( byteArray, 0x00, sizeof( eightBytePacket ) );
+		}
+		
+		comPacket & operator = ( const comPacket & o ) {
+			if( &o != this )
+				memcpy( byteArray, o.byteArray, sizeof( eightBytePacket ) );
+			return *this;
+		}
+	};
+#pragma pack(pop)
+	
+protected:
+	CrossClass::cEvent evntSyncWaitState,
+                  	 evntSyncPacket,
+                  	 evntIncomingPacket;
+	
+	comPacket   _incomingPacket,
+			_outgoingPacket;
+	
+	std::list<comPacket>	_inbox;
+	mutable CrossClass::LockType _inboxLock;
+	CrossClass::LockType	_comSectionLock;
+	
+	virtual size_t compileResponse ( const char * lpBuf, const size_t dwAvailable );
+	virtual void checkPacket ( const comPacket & );
+	virtual bool tracePacket ( const comPacket & );
+	
+public:
+	virtual bool synchronize ( const unsigned long dwTimeOut = 0 );
+	
+	i41serial ( const size_t inBufSize = 2048 );
+	virtual ~i41serial();
+	
+      void pop ();
+      bool peekPacket ( comPacket &);
+      void send ( const comPacket & packet ) {
+            write( reinterpret_cast<const char *>( &packet.byteArray ), sizeof( eightBytePacket ) );
+      }
+      
+      void comSection ( const comPacket & outPacket, comPacket & inPacket, const unsigned long msTimeOut = 2000 );
+};
+
+} // namespace sc
+#endif // CROSS_SC_I41SERIAL_H_INCLUDED

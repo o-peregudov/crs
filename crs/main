@@ -1,0 +1,75 @@
+//
+// Main's return codes:
+// ====================
+//        0       - Everything went OK
+//       100      - Fatal error (unexpected exception)
+//    101...199   - CommandLine::reader errors
+//    201...299   - DirList errors
+//
+int main ( int ac, char ** av )
+{
+      try
+      {
+            // proceed command line ...
+            size_t nCommandsProcessed = 0;
+            CommandLine::reader cline ( ac, av );
+            while( cline.next_command() )
+            {
+                  proceed( cline );
+                  ++nCommandsProcessed;
+            }
+            if( !nCommandsProcessed )
+                  usage();
+      }
+      catch ( CommandLine::reader::ErrOpen & e )
+      {
+            error( "Can't open script file \"" );
+            error( e.what() ); error( "\"!\n" );
+            return 101;
+      }
+      catch ( CommandLine::reader::ErrRead & e )
+      {
+            error( "Error reading script file \"" );
+            error( e.what() ); error( "\"!\n" );
+            return 102;
+      }
+      catch ( CommandLine::reader::ErrWrite & e )
+      {
+            error( "Error writting script file \"" );
+            error( e.what() ); error( "\"!\n" );
+            return 103;
+      }
+      catch ( CommandLine::reader::ErrErase & e )
+      {
+            error( "Can't erase temporary file \"" );
+            error( e.what() ); error( "\"!\n" );
+            return 104;
+      }
+#ifdef _DIRLIST_H_
+      catch ( DirList::ErrNoAccess & e )
+      {
+            error( "Read permission denied for \"" );
+            error( e.what() ); error( "\"!\n" );
+            return 201;
+      }
+      catch ( DirList::ErrNoSuchDir & e )
+      {
+            error( "Can't find directory \"" );
+            error( e.what() ); error( "\"!\n" );
+            return 202;
+      }
+      catch ( DirList::ErrRead & e )
+      {
+            error( "Can't read directory \"" );
+            error( e.what() ); error( "\"!\n" );
+            return 203;
+      }
+#endif // _DIRLIST_H_ //
+      catch ( ... )
+      {
+            error( "Fatal error!\n"
+                   "Please report it to \"op@pochta.ru\" to avoid in future!\n" );
+            return 100;
+      }
+      return 0;
+}

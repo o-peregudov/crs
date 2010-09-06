@@ -1,0 +1,17 @@
+2010-09-06
+
+	libcrs.a: successfully tested on Win32 and POSIX platforms
+	using GCC and MSVC compilers
+
+2010-04-12
+
+	rs232port: callback function for incoming async data
+
+2010-03-16
+
+	i41serial: synchronization & comSection
+
+2009-10-22
+
+	using c++0x timers from <chrono>
+
