@@ -4,6 +4,7 @@
 //
 // win32.rs232port.h: interface for the rs232port class (Win32 API).
 // (c) Sep 4, 2010 Oleg N. Peregudov
+//	Sep 9, 2010	baudrate constant selector
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -29,7 +30,7 @@ protected:
 	virtual void UpdateConnection ();
 	
 public:
-	void open ( const std::string & portName = "COM1", const size_t baudRate = CBR_115200 );
+	void open ( const std::string & portName = "COM1", const size_t baudRate = 115200 );
 	
 	virtual void close ();
 	virtual void write ( const char * lpBuf, const size_t dwToWrite );

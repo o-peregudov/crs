@@ -23,14 +23,8 @@ protected:
 	{
 		try
 		{
-			port->receive();	// returns:	true if some data was received
-						//		false on timeout
-		}
-		catch( int )
-		{
-			// the port is forced to terminate
-			std::cerr << "terminate event!" << std::endl;
-			Stop();
+			if( !port->receive() )
+				Stop();
 		}
 		catch( sc::basicRS232port::errRead & e )
 		{
@@ -40,11 +34,12 @@ protected:
 		{
 			std::cerr << "unexpected port read error" << std::endl;
 		}
+		return false;
 	}
 	
 public:
 	asyncReadThread ( sc::i41serial * p )
-		: CrossClass::cThread( false )
+		: CrossClass::cThread()
 		, port( p )
 	{
 	}
@@ -59,10 +54,9 @@ int main ( int argc, const char ** argv )
 {
 	std::cout.precision( 4 );
 	std::cout.setf( std::ios_base::fixed );
-	CrossClass::cTimer timer;
-//	std::chrono::time_point<std::chrono::high_resolution_clock> startTime;
-//	std::chrono::microseconds diffTime;
+	sc::i41serial::comPacket packet, inPacket;
 	double startTime = 0, diffTime = 0;
+	CrossClass::cTimer timer;
 	
 	int a;
 	std::cout << "pause?";
@@ -75,19 +69,13 @@ int main ( int argc, const char ** argv )
 #if defined( USE_POSIX_API )
 		std::cout << "Trying to open '/dev/ttyS1' ... ";
 		port.open( "/dev/ttyS1", B115200 );
-		std::cout << "success" << std::endl;
 #elif defined( USE_WIN32_API )
 		std::cout << "Trying to open 'COM1' ... ";
 		port.open( "COM1", CBR_115200 );
-		std::cout << "success" << std::endl;
 #endif
-		std::cout << "Starting asynchronous read thread ... ";
+		std::cout << "success" << std::endl;
 		asyncReadThread readThread ( &port );
 		readThread.Resume();
-		std::cout << "success" << std::endl;
-		
-		std::cout << "Pause: ";
-		std::cin >> a;
 		
 		if( port.synchronize() )
 			std::cout << "SYNC - ok!" << std::endl;
@@ -95,8 +83,7 @@ int main ( int argc, const char ** argv )
 			std::cout << "SYNC - failed!" << std::endl;
 		
 		port.setAsyncDataCallback( asyncPacketHandler, &port );
-		sc::i41serial::comPacket packet, inPacket;
-		for( int i = 0; ( i < 5 ) && false; ++i )
+		for( int i = 0; i < 5; ++i )
 		{
 			packet.byteArray[ 0 ] = 0x01;
 			packet.byteArray[ 1 ] = 0x05;
@@ -132,10 +119,10 @@ int main ( int argc, const char ** argv )
 					<< " ms" << std::endl;
 			CrossClass::sleep( 250 );
 		}
-		for( int i = 0; i < 10; ++i )
+		for( int i = 0; i < 2; ++i )
 		{
 			packet.byteArray[ 0 ] = 0x01;
-			packet.byteArray[ 1 ] = 0x10;
+			packet.byteArray[ 1 ] = 0x55;
 			packet.byteArray[ 2 ] = 0x00;
 			packet.byteArray[ 3 ] = 0x00;
 			packet.byteArray[ 4 ] = 0x00;
@@ -150,9 +137,8 @@ int main ( int argc, const char ** argv )
 //					<< static_cast<double>( diffTime.count() ) / 1e3
 					<< diffTime * 1e3
 					<< " ms" << std::endl;
-			for( int j = 0; j < 40; ++j, port.receive() );
-//			CrossClass::sleep( 250 );
 		}
+		port.postTerminate();
 	}
 	catch( sc::i41serial::syncTimeOut & e )
 	{

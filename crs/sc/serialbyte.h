@@ -6,7 +6,7 @@
 //			whos protocol based on packets
 // (c)Apr 25, 2010 Oleg N. Peregudov
 //	Jun 28, 2010 - c++0x mutexes, condition_variables & timers
-//	Sep 4, 2010 - our mutexes & condition variables
+//	Sep 7, 2010 - our mutexes & condition variables
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -338,8 +338,8 @@ bool serialByte<packetType>::synchronize ( const unsigned long msTimeOut )
 		msBitTimeOut = 10;
 	
 	resetWaitComSection();
-	inversePredicate pred ( &_waitSyncPacket );
 	CrossClass::_LockIt lockSyncPacket ( _mutexSyncPacket );
+	inversePredicate pred ( &_waitSyncPacket );
 	_waitSyncPacket = true;
 	for( int i = 0; i < 15; ++i )
 	{

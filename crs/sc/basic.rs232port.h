@@ -84,7 +84,7 @@ public:
 	virtual void write ( const char * lpBuf, const size_t dwToWrite ) = 0;
 	virtual bool receive ();
 	//
-	// return false when when termination is requested
+	// return false when termination is requested
 	// can throw errRead
 	//
 	virtual void postTerminate () = 0;

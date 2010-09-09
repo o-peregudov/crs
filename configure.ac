@@ -28,7 +28,7 @@ AC_FUNC_ERROR_AT_LINE
 AC_CHECK_FUNCS([clock_gettime gethostbyname inet_ntoa memmove memcpy memset modf pow select poll socket sqrt strpbrk])
 
 # Checks for typedefs, structures, and compiler characteristics.
-case "$host_os" in
+case "$build_os" in
 	cygwin*)
 		CFLAGS="$CFLAGS -D__LARGE64_FILES"
 		CXXFLAGS="$CXXFLAGS -D__LARGE64_FILES"
@@ -37,8 +37,8 @@ case "$host_os" in
 		allow_cpp0xapi=no
 		;;
 	mingw*)
-		CFLAGS="$CFLAGS -D__LARGE64_FILES -DCROSS_EXPORT="
-		CXXFLAGS="$CXXFLAGS -D__LARGE64_FILES -DCROSS_EXPORT="
+		CFLAGS="$CFLAGS -D__LARGE64_FILES -DCROSS_EXPORT= -mno-cygwin"
+		CXXFLAGS="$CXXFLAGS -D__LARGE64_FILES -DCROSS_EXPORT= -mno-cygwin"
 		allow_win32api=yes
 		allow_posixapi=no
 		allow_cpp0xapi=no
@@ -56,7 +56,7 @@ AM_CONDITIONAL([USE_CPP0XAPI], [test "$allow_cpp0xapi" = yes] )
 
 CRS_CURRENT=1
 CRS_REVISION=0
-CRS_AGE=1
+CRS_AGE=2
 
 CRS_LT_VERSION="${CRS_CURRENT}:${CRS_REVISION}:${CRS_AGE}"
 AC_SUBST(CRS_LT_VERSION)

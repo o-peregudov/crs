@@ -5,6 +5,7 @@
 // posix.rs232port.h: interface for the rs232port class (POSIX API).
 // (c) Aug 26, 2010 Oleg N. Peregudov
 //	Sep 4, 2010	- postTerminate is now synchronized with the receive thread
+//	Sep 9, 2010	baudrate constant selector
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -43,7 +44,7 @@ protected:
 	bool	checkTerminate ();
 	
 public:
-	void open ( const std::string & portName = "/dev/ttyS0", const size_t baudRate = B115200 );
+	void open ( const std::string & portName = "/dev/ttyS0", const size_t baudRate = 115200 );
 	
 	virtual void close ();
 	virtual void write ( const char * lpBuf, const size_t dwToWrite );

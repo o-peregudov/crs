@@ -68,11 +68,11 @@ int main ( int argc, const char ** argv )
 		std::cout << "Pause: ";
 		std::cin >> a;
 		
-		for( int i = 0; i < 1000; ++i )
+		for( int i = 0; i < 5000; ++i )
 		{
 			packet.setZero();
 			packet.byteArray[ 0 ] = 0x01;
-			packet.data.cmd = 0x3B;	// read accelerating voltage
+			packet.data.cmd = 0x3A;	// read accelerating voltage
 			packet.buildCRC( );
 //			std::cout	<< "Request " << i << ":\t" << packet.byteString() << std::endl;
 //			startTime = std::chrono::high_resolution_clock::now();

@@ -1,5 +1,6 @@
 // win32.rs232port.cpp: interface for the rs232port class (Win32 API).
 // (c) Sep 4, 2010 Oleg N. Peregudov
+//	Sep 9, 2010	baudrate constant selector
 #if defined( _MSC_VER )
 #	pragma warning( disable : 4251 )
 #	pragma warning( disable : 4275 )
@@ -13,6 +14,12 @@
 
 namespace sc {
 
+static const size_t baudRateConstant [] = {
+	CBR_110, CBR_300, CBR_600, CBR_1200, CBR_2400,
+	CBR_4800, CBR_9600, CBR_14400, CBR_19200, CBR_38400,
+	CBR_56000, CBR_57600, CBR_115200, CBR_128000, CBR_256000
+};
+
 win32RS232port::win32RS232port ( const size_t inBufSize )
 	: basicRS232port( inBufSize )
 	, m_hCommPort( NULL )
@@ -23,6 +30,7 @@ win32RS232port::win32RS232port ( const size_t inBufSize )
 	, m_evntTerminate( CreateEvent( NULL, TRUE, FALSE, NULL ) )
 	, m_evntTerminated( CreateEvent( NULL, TRUE, FALSE, NULL ) )
 {
+	m_Baud = CBR_115200;
 	m_DataBits = 8;
 	m_StopBits = ONESTOPBIT;
 	m_Parity = NOPARITY;
@@ -37,7 +45,7 @@ win32RS232port::~win32RS232port ()
 	CloseHandle( m_evntRead );
 }
 
-void win32RS232port::open ( const std::string & portName, const size_t baudRate )
+void win32RS232port::open ( const std::string & port, const size_t baud )
 {
 	//
 	// close previous session
@@ -45,10 +53,26 @@ void win32RS232port::open ( const std::string & portName, const size_t baudRate 
 	close();
 	
 	//
+	// Select appropriate baud rate constant
+	//
+	size_t i = 0;
+	for(; i < sizeof( baudRateConstant ) / sizeof( baudRateConstant[ 0 ] ); ++i )
+		if( baud == baudRateConstant[ i ] )
+		{
+			m_Baud = baudRateConstant[ i ];
+			break;
+		}
+	if( i == sizeof( baudRateConstant ) / sizeof( baudRateConstant[ 0 ] ) )
+	{
+		char msgText [ 64 ];
+		sprintf( msgText, "Unsupported baud rate (%ld)", baud );
+		throw basicRS232port::errOpen( msgText );
+	}
+	
+	//
 	// open communication port handle
 	//
-	m_Baud = baudRate;
-	m_cComPortName = portName;
+	m_cComPortName = port;
 	m_hCommPort = CreateFile( m_cComPortName.c_str(),
 		GENERIC_READ | GENERIC_WRITE,
 		0,

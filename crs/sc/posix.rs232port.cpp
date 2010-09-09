@@ -1,7 +1,8 @@
 //////////////////////////////////////////////////////////////////////
 //
 // posix.rs232port.h: interface for the rs232port class (POSIX API).
-// (c) Sep 3, 2010 Oleg N. Peregudov
+// (c) Sep 7, 2010 Oleg N. Peregudov
+//	Sep 9, 2010	baudrate constant selector
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -12,6 +13,22 @@
 static const char * termString = "^X";
 
 namespace sc {
+
+static const size_t baudRateConstant [] = {
+	B0, B50, B75, B110, B134, B150, B200, B300, B600,
+	B1200, B1800, B2400, B4800, B9600, B19200, B38400,
+	B57600, B115200, B128000, B230400, B256000, B460800,
+	B500000, B576000, B921600, B1000000, B1152000, B1500000,
+	B2000000, B2500000, B3000000
+};
+
+static const size_t baudRate [] = {
+	0L, 50L, 75L, 110L, 134L, 150L, 200L, 300L, 600L,
+	1200L, 1800L, 2400L, 4800L, 9600L, 19200L, 38400L,
+	57600L, 115200L, 128000L, 230400L, 256000L, 460800L,
+	500000L, 576000L, 921600L, 1000000L, 1152000L, 1500000L,
+	2000000L, 2500000L, 3000000L
+};
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -27,9 +44,11 @@ posixRS232port::posixRS232port( const size_t inBufSize )
 	, condTerminate( )
 	, flagTerminate( false )
 {
+	m_Baud = B115200;
 	m_DataBits = CS8;
 	m_StopBits = 0;
 	m_Parity = NOPARITY;
+	ipcPipeEnd[ 0 ] = ipcPipeEnd[ 1 ] = -1;
 }
 
 posixRS232port::~posixRS232port()
@@ -37,7 +56,7 @@ posixRS232port::~posixRS232port()
 	close();
 }
 
-void posixRS232port::open ( const std::string & portName, const size_t baudRate )
+void posixRS232port::open ( const std::string & port, const size_t baud )
 {
 	//
 	// Close previous session
@@ -45,10 +64,26 @@ void posixRS232port::open ( const std::string & portName, const size_t baudRate 
 	close();
 	
 	//
+	// Select appropriate baud rate constant
+	//
+	size_t i = 0;
+	for(; i < sizeof( baudRate ) / sizeof( baudRate[ 0 ] ); ++i )
+		if( baud == baudRate[ i ] )
+		{
+			m_Baud = baudRateConstant[ i ];
+			break;
+		}
+	if( i == sizeof( baudRate ) / sizeof( baudRate[ 0 ] ) )
+	{
+		char msgText [ 64 ];
+		sprintf( msgText, "Unsupported baud rate (%ld)", baud );
+		throw basicRS232port::errOpen( msgText );
+	}
+	
+	//
 	// Open communication port handle
 	//
-	m_Baud = baudRate;
-	m_cComPortName = portName;
+	m_cComPortName = port;
 	m_hCommPort = ::open( m_cComPortName.c_str(), O_RDWR | O_NOCTTY | O_NDELAY );
 	if( m_hCommPort == -1 )
 	{

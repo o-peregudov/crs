@@ -14644,7 +14644,7 @@ done
 
 
 # Checks for typedefs, structures, and compiler characteristics.
-case "$host_os" in
+case "$build_os" in
 	cygwin*)
 		CFLAGS="$CFLAGS -D__LARGE64_FILES"
 		CXXFLAGS="$CXXFLAGS -D__LARGE64_FILES"
@@ -14653,8 +14653,8 @@ case "$host_os" in
 		allow_cpp0xapi=no
 		;;
 	mingw*)
-		CFLAGS="$CFLAGS -D__LARGE64_FILES -DCROSS_EXPORT="
-		CXXFLAGS="$CXXFLAGS -D__LARGE64_FILES -DCROSS_EXPORT="
+		CFLAGS="$CFLAGS -D__LARGE64_FILES -DCROSS_EXPORT= -mno-cygwin"
+		CXXFLAGS="$CXXFLAGS -D__LARGE64_FILES -DCROSS_EXPORT= -mno-cygwin"
 		allow_win32api=yes
 		allow_posixapi=no
 		allow_cpp0xapi=no
@@ -14693,7 +14693,7 @@ fi
 
 CRS_CURRENT=1
 CRS_REVISION=0
-CRS_AGE=1
+CRS_AGE=2
 
 CRS_LT_VERSION="${CRS_CURRENT}:${CRS_REVISION}:${CRS_AGE}"
 
