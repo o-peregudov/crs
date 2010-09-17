@@ -56,10 +56,10 @@ int main ( int argc, const char ** argv )
 		
 #if defined( USE_POSIX_API )
 		std::cout << "Trying to open '/dev/ttyS1' ... ";
-		port.open( "/dev/ttyS1", B115200 );
+		port.open( "/dev/ttyS1", 115200 );
 #elif defined( USE_WIN32_API )
 		std::cout << "Trying to open 'COM2' ... ";
-		port.open( "COM2", CBR_115200 );
+		port.open( "COM2", 115200 );
 #endif
 		std::cout << "success" << std::endl;
 		asyncReadThread readThread ( &port );
@@ -68,14 +68,18 @@ int main ( int argc, const char ** argv )
 		std::cout << "Pause: ";
 		std::cin >> a;
 		
-		for( int i = 0; i < 5000; ++i )
+		bool sw = true;
+		
+		for( long i = 0; i < 5000000L; ++i )
 		{
 			packet.setZero();
 			packet.byteArray[ 0 ] = 0x01;
-			packet.data.cmd = 0x3A;	// read accelerating voltage
+			if( sw )
+				packet.data.cmd = 0x3A;	// read collector current
+			else
+				packet.data.cmd = 0x3E;	// read accelerating voltage
+			sw = !sw;
 			packet.buildCRC( );
-//			std::cout	<< "Request " << i << ":\t" << packet.byteString() << std::endl;
-//			startTime = std::chrono::high_resolution_clock::now();
 			startTime = timer();
 			try
 			{
@@ -98,16 +102,13 @@ int main ( int argc, const char ** argv )
 			{
 				throw;
 			}
-//			diffTime = std::chrono::high_resolution_clock::now().time_since_epoch() - startTime.time_since_epoch();
 			diffTime = timer() - startTime;
 			std::cerr
-//				<< '\t' << diffTime.count()
+				<< i
 				<< '\t' << diffTime
-				<< '\t' << *reinterpret_cast<float *>( inPacket.byteArray + 3 )
-				<< "\t\t" << *reinterpret_cast<float *>( inPacket.byteArray + 7 )
+//				<< '\t' << *reinterpret_cast<float *>( inPacket.byteArray + 3 )
+//				<< "\t\t" << *reinterpret_cast<float *>( inPacket.byteArray + 7 )
 				<< '\r' << std::flush;
-//			std::cout	<< "Reply " << i << ":\t" << inPacket.byteString()
-//					<< ", " << diffTime << " ms" << std::endl;
 		}
 		port.postTerminate();
 	}

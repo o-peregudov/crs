@@ -39,7 +39,7 @@ const char SLAP_L [] = "[";
 const char SLAP_R [] = "]";
 const char REM [] = ";";
 const char EQU [] = "=";
-const char EOL [] = "\r\n";
+const char EOL [] = "\n";
 
 using namespace std;
 using namespace CrossClass;
@@ -253,7 +253,7 @@ void	Hub::read ( basic_istream<char> & is )
 	if( last )
 		throw msgEOF( "Hub::read" );
 	
-	_LockIt lock ( _mutex );
+	_LockIt lock ( _mutex ); 
 	_modified = false;
 }
 

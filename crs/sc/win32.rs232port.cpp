@@ -1,6 +1,7 @@
 // win32.rs232port.cpp: interface for the rs232port class (Win32 API).
 // (c) Sep 4, 2010 Oleg N. Peregudov
-//	Sep 9, 2010	baudrate constant selector
+//	Sep 9, 2010		baudrate constant selector
+//	Sep 10, 2010	reset termination event on sequential open
 #if defined( _MSC_VER )
 #	pragma warning( disable : 4251 )
 #	pragma warning( disable : 4275 )
@@ -68,6 +69,12 @@ void win32RS232port::open ( const std::string & port, const size_t baud )
 		sprintf( msgText, "Unsupported baud rate (%ld)", baud );
 		throw basicRS232port::errOpen( msgText );
 	}
+	
+	//
+	// reset termination events
+	//
+	ResetEvent( m_evntTerminate );
+	ResetEvent( m_evntTerminated );
 	
 	//
 	// open communication port handle
@@ -188,7 +195,7 @@ void win32RS232port::close()
 	if( m_bConnected )
 	{
 		//
-		// Cancel pending write requiest
+		// Cancel pending write request
 		//
 		SetEvent( m_evntTerminate );
 		
