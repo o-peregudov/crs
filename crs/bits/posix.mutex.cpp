@@ -4,7 +4,7 @@
 
 #include <crs/bits/posix.mutex.h>
 #include <cstdio>
-#include <errno.h>
+#include <cerrno>
 
 namespace CrossClass {
 

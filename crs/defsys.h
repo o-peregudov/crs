@@ -40,5 +40,12 @@
 #	define USE_POSIX_API 1
 #endif
 
+#if defined( __GNUG__ ) || defined( __GNUC__ )
+typedef long long		long64;
+#elif defined( _MSC_VER )
+typedef __int64		long64;
+#endif
+#define LONG64_TYPE	1
+
 #endif // CROSS_DEFSYS_H_INCLUDED
 

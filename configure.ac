@@ -25,7 +25,7 @@ AC_TYPE_SIZE_T
 
 # Checks for library functions.
 AC_FUNC_ERROR_AT_LINE
-AC_CHECK_FUNCS([clock_gettime gethostbyname inet_ntoa memmove memcpy memset modf pow select poll socket sqrt strpbrk])
+AC_CHECK_FUNCS([clock_gettime gethostbyname inet_ntoa memmove memcpy memset modf pow select poll socket sqrt strpbrk strerror])
 
 # Checks for typedefs, structures, and compiler characteristics.
 case "$build_os" in
@@ -56,7 +56,7 @@ AM_CONDITIONAL([USE_CPP0XAPI], [test "$allow_cpp0xapi" = yes] )
 
 CRS_CURRENT=1
 CRS_REVISION=0
-CRS_AGE=2
+CRS_AGE=4
 
 CRS_LT_VERSION="${CRS_CURRENT}:${CRS_REVISION}:${CRS_AGE}"
 AC_SUBST(CRS_LT_VERSION)

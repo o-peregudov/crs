@@ -1,6 +1,8 @@
 // (c) Nov 29, 2007 Oleg N. Peregudov
-// Aug 23, 2010 - Win32 mutex envelope
-// Sep 9, 2010 - compartibility with std::mutex from C++0x standard
+// Aug 23, 2010 - Envelope for the Win32 mutex
+//	09/09/2010	compartibility with std::mutex from C++0x standard
+//	09/18/2010	uniform error handling
+//
 #if defined( _MSC_VER )
 #	pragma warning( disable : 4251 )
 #	pragma warning( disable : 4275 )
@@ -16,12 +18,25 @@ namespace CrossClass {
 //
 
 cWin32Mutex::cWin32Mutex ()
-	: _mutex( CreateMutex( NULL, FALSE, NULL ) )
-{ }
+	: _mutex( NULL )
+{
+	_mutex = CreateMutex( NULL, FALSE, NULL );
+	if( _mutex == NULL )
+	{
+		char msgText [ 64 ];
+		sprintf( msgText, "cWin32Mutex::cWin32Mutex (%d)", GetLastError() );
+		throw std::runtime_error( msgText );
+	}
+}
 
 cWin32Mutex::~cWin32Mutex ()
 {
-	CloseHandle( _mutex );
+	if( CloseHandle( _mutex ) == 0 )
+	{
+		char msgText [ 64 ];
+		sprintf( msgText, "cWin32Mutex::~cWin32Mutex (%d)", GetLastError() );
+		throw std::runtime_error( msgText );
+	}
 }
 
 void cWin32Mutex::lock ()
@@ -37,7 +52,7 @@ void cWin32Mutex::lock ()
 	case	WAIT_FAILED:
 		{
 			char msgText [ 64 ];
-			sprintf( msgText, "mutex wait failed with code 0x%X", GetLastError() );
+			sprintf( msgText, "cWin32Mutex::lock (%d)", GetLastError() );
 			throw std::runtime_error( msgText );
 		}
 	}
@@ -56,7 +71,7 @@ bool cWin32Mutex::try_lock ()
 	case	WAIT_FAILED:
 		{
 			char msgText [ 64 ];
-			sprintf( msgText, "mutex wait failed with code 0x%X", GetLastError() );
+			sprintf( msgText, "cWin32Mutex::try_lock (%d)", GetLastError() );
 			throw std::runtime_error( msgText );
 		}
 	
@@ -68,7 +83,12 @@ bool cWin32Mutex::try_lock ()
 
 void cWin32Mutex::unlock ()
 {
-	ReleaseMutex( _mutex );
+	if( ReleaseMutex( _mutex ) == 0 )
+	{
+		char msgText [ 64 ];
+		sprintf( msgText, "cWin32Mutex::unlock (%d)", GetLastError() );
+		throw std::runtime_error( msgText );
+	}
 }
 
 } // namespace CrossClass

@@ -36,17 +36,19 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 @USE_WIN32API_TRUE@am__append_1 = bits/win32.timer.cpp bits/win32.mutex.cpp bits/win32.thread.cpp \
-@USE_WIN32API_TRUE@	bits/win32.netpoint.cpp bits/win32.cond.cpp sc/win32.rs232port.cpp
+@USE_WIN32API_TRUE@	bits/win32.netpoint.cpp bits/win32.cond.cpp sc/win32.rs232port.cpp \
+@USE_WIN32API_TRUE@	bits/win32.semaphore.cpp
 
 @USE_WIN32API_TRUE@am__append_2 = bits/win32.timer.h bits/win32.mutex.h bits/win32.thread.h \
-@USE_WIN32API_TRUE@	bits/win32.netpoint.h bits/win32.cond.h
+@USE_WIN32API_TRUE@	bits/win32.netpoint.h bits/win32.cond.h bits/win32.semaphore.h
 
 @USE_WIN32API_TRUE@am__append_3 = sc/win32.rs232port.h
 @USE_POSIXAPI_TRUE@am__append_4 = bits/posix.timer.cpp bits/posix.mutex.cpp bits/posix.thread.cpp \
-@USE_POSIXAPI_TRUE@	bits/posix.netpoint.cpp bits/posix.cond.cpp sc/posix.rs232port.cpp
+@USE_POSIXAPI_TRUE@	bits/posix.netpoint.cpp bits/posix.cond.cpp sc/posix.rs232port.cpp \
+@USE_POSIXAPI_TRUE@	bits/posix.semaphore.cpp
 
 @USE_POSIXAPI_TRUE@am__append_5 = bits/posix.timer.h bits/posix.mutex.h bits/posix.thread.h \
-@USE_POSIXAPI_TRUE@	bits/posix.netpoint.h bits/posix.cond.h
+@USE_POSIXAPI_TRUE@	bits/posix.netpoint.h bits/posix.cond.h bits/posix.semaphore.h
 
 @USE_POSIXAPI_TRUE@am__append_6 = sc/posix.rs232port.h
 @USE_CPP0XAPI_TRUE@am__append_7 = bits/c++0x.timer.cpp
@@ -104,22 +106,25 @@ am__libcrs_a_SOURCES_DIST = CRCStuff.c cmdLine.cpp parsing.cpp \
 	sc/basic.rs232port.cpp bits/win32.timer.cpp \
 	bits/win32.mutex.cpp bits/win32.thread.cpp \
 	bits/win32.netpoint.cpp bits/win32.cond.cpp \
-	sc/win32.rs232port.cpp bits/posix.timer.cpp \
-	bits/posix.mutex.cpp bits/posix.thread.cpp \
-	bits/posix.netpoint.cpp bits/posix.cond.cpp \
-	sc/posix.rs232port.cpp bits/c++0x.timer.cpp
+	sc/win32.rs232port.cpp bits/win32.semaphore.cpp \
+	bits/posix.timer.cpp bits/posix.mutex.cpp \
+	bits/posix.thread.cpp bits/posix.netpoint.cpp \
+	bits/posix.cond.cpp sc/posix.rs232port.cpp \
+	bits/posix.semaphore.cpp bits/c++0x.timer.cpp
 @USE_WIN32API_TRUE@am__objects_1 = win32.timer.$(OBJEXT) \
 @USE_WIN32API_TRUE@	win32.mutex.$(OBJEXT) \
 @USE_WIN32API_TRUE@	win32.thread.$(OBJEXT) \
 @USE_WIN32API_TRUE@	win32.netpoint.$(OBJEXT) \
 @USE_WIN32API_TRUE@	win32.cond.$(OBJEXT) \
-@USE_WIN32API_TRUE@	win32.rs232port.$(OBJEXT)
+@USE_WIN32API_TRUE@	win32.rs232port.$(OBJEXT) \
+@USE_WIN32API_TRUE@	win32.semaphore.$(OBJEXT)
 @USE_POSIXAPI_TRUE@am__objects_2 = posix.timer.$(OBJEXT) \
 @USE_POSIXAPI_TRUE@	posix.mutex.$(OBJEXT) \
 @USE_POSIXAPI_TRUE@	posix.thread.$(OBJEXT) \
 @USE_POSIXAPI_TRUE@	posix.netpoint.$(OBJEXT) \
 @USE_POSIXAPI_TRUE@	posix.cond.$(OBJEXT) \
-@USE_POSIXAPI_TRUE@	posix.rs232port.$(OBJEXT)
+@USE_POSIXAPI_TRUE@	posix.rs232port.$(OBJEXT) \
+@USE_POSIXAPI_TRUE@	posix.semaphore.$(OBJEXT)
 @USE_CPP0XAPI_TRUE@am__objects_3 = c++0x.timer.$(OBJEXT)
 am_libcrs_a_OBJECTS = CRCStuff.$(OBJEXT) cmdLine.$(OBJEXT) \
 	parsing.$(OBJEXT) security.$(OBJEXT) timer.$(OBJEXT) \
@@ -155,8 +160,9 @@ DIST_SOURCES = $(am__libcrs_a_SOURCES_DIST)
 am__pkginclude_bits_HEADERS_DIST = bits/basic.netpoint.h \
 	bits/hostsocket.hpp bits/win32.timer.h bits/win32.mutex.h \
 	bits/win32.thread.h bits/win32.netpoint.h bits/win32.cond.h \
-	bits/posix.timer.h bits/posix.mutex.h bits/posix.thread.h \
-	bits/posix.netpoint.h bits/posix.cond.h bits/c++0x.timer.h
+	bits/win32.semaphore.h bits/posix.timer.h bits/posix.mutex.h \
+	bits/posix.thread.h bits/posix.netpoint.h bits/posix.cond.h \
+	bits/posix.semaphore.h bits/c++0x.timer.h
 am__pkginclude_sc_HEADERS_DIST = sc/basic.rs232port.h sc/rs232port.h \
 	sc/serialbyte.h sc/i41serial.h sc/twelvebyte.h \
 	sc/win32.rs232port.h sc/posix.rs232port.h
@@ -297,7 +303,7 @@ libcrs_a_SOURCES = CRCStuff.c cmdLine.cpp parsing.cpp security.cpp \
 pkginclude_HEADERS = cmdLine.h mutex.h handle.h parsing.h security.h \
 	thread.h timer.h socket.h netpoint.h simplenetpoint.h main myexcept.h \
 	regions.h mtsqueue.h charprintbuf.h CRCStuff.h libexport.h defsys.h \
-	condition_variable.h
+	condition_variable.h semaphore.hpp callback.h
 
 pkginclude_bitsdir = $(pkgincludedir)/bits
 pkginclude_bits_HEADERS = bits/basic.netpoint.h bits/hostsocket.hpp \
@@ -401,6 +407,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/posix.mutex.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/posix.netpoint.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/posix.rs232port.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/posix.semaphore.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/posix.thread.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/posix.timer.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/security.Po@am__quote@
@@ -411,6 +418,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win32.mutex.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win32.netpoint.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win32.rs232port.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win32.semaphore.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win32.thread.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win32.timer.Po@am__quote@
 
@@ -638,6 +646,20 @@ win32.rs232port.obj: sc/win32.rs232port.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o win32.rs232port.obj `if test -f 'sc/win32.rs232port.cpp'; then $(CYGPATH_W) 'sc/win32.rs232port.cpp'; else $(CYGPATH_W) '$(srcdir)/sc/win32.rs232port.cpp'; fi`
 
+win32.semaphore.o: bits/win32.semaphore.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT win32.semaphore.o -MD -MP -MF $(DEPDIR)/win32.semaphore.Tpo -c -o win32.semaphore.o `test -f 'bits/win32.semaphore.cpp' || echo '$(srcdir)/'`bits/win32.semaphore.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/win32.semaphore.Tpo $(DEPDIR)/win32.semaphore.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='bits/win32.semaphore.cpp' object='win32.semaphore.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o win32.semaphore.o `test -f 'bits/win32.semaphore.cpp' || echo '$(srcdir)/'`bits/win32.semaphore.cpp
+
+win32.semaphore.obj: bits/win32.semaphore.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT win32.semaphore.obj -MD -MP -MF $(DEPDIR)/win32.semaphore.Tpo -c -o win32.semaphore.obj `if test -f 'bits/win32.semaphore.cpp'; then $(CYGPATH_W) 'bits/win32.semaphore.cpp'; else $(CYGPATH_W) '$(srcdir)/bits/win32.semaphore.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/win32.semaphore.Tpo $(DEPDIR)/win32.semaphore.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='bits/win32.semaphore.cpp' object='win32.semaphore.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o win32.semaphore.obj `if test -f 'bits/win32.semaphore.cpp'; then $(CYGPATH_W) 'bits/win32.semaphore.cpp'; else $(CYGPATH_W) '$(srcdir)/bits/win32.semaphore.cpp'; fi`
+
 posix.timer.o: bits/posix.timer.cpp
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT posix.timer.o -MD -MP -MF $(DEPDIR)/posix.timer.Tpo -c -o posix.timer.o `test -f 'bits/posix.timer.cpp' || echo '$(srcdir)/'`bits/posix.timer.cpp
 @am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/posix.timer.Tpo $(DEPDIR)/posix.timer.Po
@@ -721,6 +743,20 @@ posix.rs232port.obj: sc/posix.rs232port.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='sc/posix.rs232port.cpp' object='posix.rs232port.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o posix.rs232port.obj `if test -f 'sc/posix.rs232port.cpp'; then $(CYGPATH_W) 'sc/posix.rs232port.cpp'; else $(CYGPATH_W) '$(srcdir)/sc/posix.rs232port.cpp'; fi`
+
+posix.semaphore.o: bits/posix.semaphore.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT posix.semaphore.o -MD -MP -MF $(DEPDIR)/posix.semaphore.Tpo -c -o posix.semaphore.o `test -f 'bits/posix.semaphore.cpp' || echo '$(srcdir)/'`bits/posix.semaphore.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/posix.semaphore.Tpo $(DEPDIR)/posix.semaphore.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='bits/posix.semaphore.cpp' object='posix.semaphore.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o posix.semaphore.o `test -f 'bits/posix.semaphore.cpp' || echo '$(srcdir)/'`bits/posix.semaphore.cpp
+
+posix.semaphore.obj: bits/posix.semaphore.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT posix.semaphore.obj -MD -MP -MF $(DEPDIR)/posix.semaphore.Tpo -c -o posix.semaphore.obj `if test -f 'bits/posix.semaphore.cpp'; then $(CYGPATH_W) 'bits/posix.semaphore.cpp'; else $(CYGPATH_W) '$(srcdir)/bits/posix.semaphore.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/posix.semaphore.Tpo $(DEPDIR)/posix.semaphore.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='bits/posix.semaphore.cpp' object='posix.semaphore.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o posix.semaphore.obj `if test -f 'bits/posix.semaphore.cpp'; then $(CYGPATH_W) 'bits/posix.semaphore.cpp'; else $(CYGPATH_W) '$(srcdir)/bits/posix.semaphore.cpp'; fi`
 
 c++0x.timer.o: bits/c++0x.timer.cpp
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT c++0x.timer.o -MD -MP -MF $(DEPDIR)/c++0x.timer.Tpo -c -o c++0x.timer.o `test -f 'bits/c++0x.timer.cpp' || echo '$(srcdir)/'`bits/c++0x.timer.cpp

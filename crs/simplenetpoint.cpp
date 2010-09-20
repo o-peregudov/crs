@@ -1,4 +1,5 @@
 // (c) Mar 3, 2009 Oleg N. Peregudov
+//	09/19/2010	default callback function
 #if defined( _MSC_VER )
 #	pragma warning( disable : 4251 )
 #	pragma warning( disable : 4275 )
@@ -55,7 +56,7 @@ message & message::operator = ( const message & msg )
 server::server ()
 	: CrossClass::netPoint( )
 	
-	, _inboxLock( )
+	, _inboxMutex( )
 	, _inbox( )
 	, _inMessage( 0 )
 	, _inContents( false )
@@ -66,7 +67,7 @@ server::server ()
 	, _callBackData( 0 )
 	, _callBackLock( )
 	
-	, _outboxLock( )
+	, _outboxMutex( )
 	, _outbox( )
 	, _outContents( true )
 	, _outNextByte( 0 )
@@ -77,7 +78,7 @@ server::server ()
 server::server ( CrossClass::cSocket & sckt )
 	: CrossClass::netPoint( sckt )
 	
-	, _inboxLock( )
+	, _inboxMutex( )
 	, _inbox( )
 	, _inMessage( 0 )
 	, _inContents( false )
@@ -88,7 +89,7 @@ server::server ( CrossClass::cSocket & sckt )
 	, _callBackData( 0 )
 	, _callBackLock( )
 	
-	, _outboxLock( )
+	, _outboxMutex( )
 	, _outbox( )
 	, _outContents( true )
 	, _outNextByte( 0 )
@@ -102,13 +103,13 @@ server::~server ()
 
 void server::sendMessage ( const message & msg )
 {
-	CrossClass::_LockIt exclusive_access ( _outboxLock );
+	CrossClass::_LockIt exclusive_access ( _outboxMutex );
 	_outbox.push_back( msg );
 }
 
 bool server::recvMessage ( message & msg )
 {
-	CrossClass::_LockIt exclusive_access ( _inboxLock );
+	CrossClass::_LockIt exclusive_access ( _inboxMutex );
 	if( _inbox.empty() )
 		return false;
 	else
@@ -126,7 +127,7 @@ void server::transmit ()
 		if( _outContents )
 		{
 			// start transmission of new packet
-			CrossClass::_LockIt exclusive_access ( _outboxLock );
+			CrossClass::_LockIt exclusive_access ( _outboxMutex );
 			if( _outbox.empty() )
 				return;	// there is nothing to transmit!
 			
@@ -137,7 +138,7 @@ void server::transmit ()
 		else
 		{
 			// continue packet's transmission
-			CrossClass::_LockIt exclusive_access ( _outboxLock );
+			CrossClass::_LockIt exclusive_access ( _outboxMutex );
 			_outContents = true;
 			_outNextByte = _outbox.front().contents;
 			_outBytesRest = _outbox.front().size;
@@ -159,7 +160,7 @@ void server::transmit ()
 	{
 		// transmission of packet is done
 		// so we can remove packet from the outbox queue
-		CrossClass::_LockIt exclusive_access ( _outboxLock );
+		CrossClass::_LockIt exclusive_access ( _outboxMutex );
 		_outbox.pop_front();
 	}
 }
@@ -191,7 +192,7 @@ void server::receive ()
 				_inNextByte = reinterpret_cast<char *>( &_inMessage.size );
 				_inBytesRest = sizeof( _inMessage.size );
 				{
-					CrossClass::_LockIt exclusive_access ( _inboxLock );
+					CrossClass::_LockIt exclusive_access ( _inboxMutex );
 					_inbox.push_back( _inMessage );
 				}
 				{

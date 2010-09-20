@@ -281,6 +281,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\crs\bits\win32.semaphore.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\crs\bits\win32.thread.cpp"
 					>
 				</File>
@@ -319,6 +323,10 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath="..\crs\callback.h"
+				>
+			</File>
 			<File
 				RelativePath="..\crs\charprintbuf.h"
 				>
@@ -373,6 +381,10 @@
 			</File>
 			<File
 				RelativePath="..\crs\security.h"
+				>
+			</File>
+			<File
+				RelativePath="..\crs\semaphore.hpp"
 				>
 			</File>
 			<File
@@ -432,6 +444,10 @@
 				</File>
 				<File
 					RelativePath="..\crs\bits\win32.netpoint.h"
+					>
+				</File>
+				<File
+					RelativePath="..\crs\bits\win32.semaphore.h"
 					>
 				</File>
 				<File

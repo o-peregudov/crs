@@ -1,8 +1,10 @@
 #ifndef CROSS_SIMPLENETPOINT_H_INCLUDED
 #define CROSS_SIMPLENETPOINT_H_INCLUDED 1
 // (c) Aug 29, 2010 Oleg N. Peregudov
+//	09/19/2010	default callback function
 
 #include <crs/netpoint.h>
+#include <crs/callback.h>
 #include <cstring>
 #include <deque>
 
@@ -22,15 +24,12 @@ struct CROSS_EXPORT message
 	message & operator = ( const message & );
 };
 
-#if !defined( ASYNCDATACALLBACKFUNCTION )
-typedef void ( * asyncDataCallBackFunction ) ( void * pData );
-#define ASYNCDATACALLBACKFUNCTION 1
-#endif
+typedef callBackFunction asyncDataCallBackFunction;
 
 class CROSS_EXPORT server : public CrossClass::netPoint
 {
 protected:
-	CrossClass::LockType	_inboxLock;
+	CrossClass::LockType	_inboxMutex;
 	std::deque<message>	_inbox;
 	message			_inMessage;
 	bool				_inContents;
@@ -41,7 +40,7 @@ protected:
 	void *			_callBackData;
 	CrossClass::LockType	_callBackLock;
 	
-	CrossClass::LockType	_outboxLock;
+	CrossClass::LockType	_outboxMutex;
 	std::deque<message>	_outbox;
 	bool				_outContents;
 	char *			_outNextByte;

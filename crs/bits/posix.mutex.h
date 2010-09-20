@@ -6,9 +6,7 @@
 
 #include <crs/libexport.h>
 #include <stdexcept>
-#include <cstdlib>
 #include <pthread.h>
-#include <errno.h>
 
 namespace CrossClass
 {

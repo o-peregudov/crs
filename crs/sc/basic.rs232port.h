@@ -4,19 +4,18 @@
 //
 // basic.rs232port.h: bits of the implementation of the rs232port class.
 // (c) Aug 31, 2010 Oleg N. Peregudov
+//	09/19/2010	default callback function
 //
 //////////////////////////////////////////////////////////////////////
 
 #include <crs/security.h>
+#include <crs/callback.h>
 #include <string>
 #include <cstring>
 
 namespace sc {
 
-#if !defined( ASYNCDATACALLBACKFUNCTION )
-typedef void ( * asyncDataCallBackFunction ) ( void * pData );
-#define ASYNCDATACALLBACKFUNCTION 1
-#endif
+typedef callBackFunction asyncDataCallBackFunction;
 
 //
 // class basicRS232port (generic interface class)
