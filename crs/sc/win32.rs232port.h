@@ -4,7 +4,8 @@
 //
 // win32.rs232port.h: interface for the rs232port class (Win32 API).
 // (c) Sep 4, 2010 Oleg N. Peregudov
-//	Sep 9, 2010	baudrate constant selector
+//	09/09/2010	baudrate constant selector
+//	09/20/2010	non-blocking postTerminate
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -35,7 +36,7 @@ public:
 	virtual void close ();
 	virtual void write ( const char * lpBuf, const size_t dwToWrite );
 	virtual bool receive ();
-	virtual void postTerminate ();
+	virtual void postTerminate ( const bool doWaitTerminate = true );
 	
 	win32RS232port ( const size_t inBufSize = 2048 );
 	virtual ~win32RS232port();
@@ -43,4 +44,3 @@ public:
 
 } // namespace sc
 #endif // CROSS_SC_WIN32RS232PORT_H_INCLUDED
-

@@ -15,7 +15,7 @@
 //
 
 #include <crs/security.h>
-#include <crs/condition_variable.h>
+#include <crs/condition_variable.hpp>
 #include <sched.h>
 
 namespace CrossClass

@@ -14,7 +14,7 @@ libcrs_a_SOURCES = CRCStuff.c cmdLine.cpp parsing.cpp security.cpp timer.cpp \
 pkginclude_HEADERS = cmdLine.h mutex.h handle.h parsing.h security.h \
 	thread.h timer.h socket.h netpoint.h simplenetpoint.h main myexcept.h \
 	regions.h mtsqueue.h charprintbuf.h CRCStuff.h libexport.h defsys.h \
-	condition_variable.h semaphore.hpp callback.h
+	condition_variable.hpp semaphore.hpp callback.h
 
 pkginclude_bitsdir = $(pkgincludedir)/bits
 pkginclude_bits_HEADERS = bits/basic.netpoint.h bits/hostsocket.hpp
@@ -50,4 +50,3 @@ if USE_CPP0XAPI
 libcrs_a_SOURCES += bits/c++0x.timer.cpp
 pkginclude_bits_HEADERS += bits/c++0x.timer.h
 endif
-

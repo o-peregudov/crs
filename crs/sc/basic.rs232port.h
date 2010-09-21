@@ -5,6 +5,7 @@
 // basic.rs232port.h: bits of the implementation of the rs232port class.
 // (c) Aug 31, 2010 Oleg N. Peregudov
 //	09/19/2010	default callback function
+//	09/20/2010	non-blocking postTerminate
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -86,7 +87,7 @@ public:
 	// return false when termination is requested
 	// can throw errRead
 	//
-	virtual void postTerminate () = 0;
+	virtual void postTerminate ( const bool doWaitTerminate = true ) = 0;
 	
 	void setAsyncDataCallback ( asyncDataCallBackFunction func, void * pData );
 	std::string getString ();

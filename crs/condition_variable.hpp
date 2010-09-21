@@ -1,5 +1,5 @@
-#ifndef CROSS_CONDITION_VARIABLE_H_INCLUDED
-#define CROSS_CONDITION_VARIABLE_H_INCLUDED 1
+#ifndef CROSS_CONDITION_VARIABLE_HPP_INCLUDED
+#define CROSS_CONDITION_VARIABLE_HPP_INCLUDED 1
 // (c) Aug 30, 2010 Oleg N. Peregudov
 
 #include <crs/libexport.h>
@@ -37,5 +37,4 @@ namespace CrossClass
 	typedef cPosixConditionVariable	cConditionVariable;
 #endif
 } // namespace CrossClass
-#endif // CROSS_CONDITION_VARIABLE_H_INCLUDED
-
+#endif // CROSS_CONDITION_VARIABLE_HPP_INCLUDED

@@ -1,7 +1,8 @@
 // win32.rs232port.cpp: interface for the rs232port class (Win32 API).
 // (c) Sep 4, 2010 Oleg N. Peregudov
-//	Sep 9, 2010		baudrate constant selector
-//	Sep 10, 2010	reset termination event on sequential open
+//	09/09/2010	baudrate constant selector
+//	09/10/2010	reset termination event on sequential open
+//	09/20/2010	non-blocking postTerminate
 #if defined( _MSC_VER )
 #	pragma warning( disable : 4251 )
 #	pragma warning( disable : 4275 )
@@ -376,10 +377,11 @@ bool win32RS232port::receive ()
 	return true;
 }
 
-void win32RS232port::postTerminate ()
+void win32RS232port::postTerminate ( const bool doWaitTerminate )
 {
 	SetEvent( m_evntTerminate );
-	WaitForSingleObject( m_evntTerminated, INFINITE );
+	if( doWaitTerminate )
+		WaitForSingleObject( m_evntTerminated, INFINITE );
 }
 
 } // namespace sc

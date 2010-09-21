@@ -4,6 +4,7 @@
 // (c) Sep 7, 2010 Oleg N. Peregudov
 //	09/09/2010	baudrate constant selector
 //	09/16/2010	some non standard baudrate constant fixed
+//	09/20/2010	non-blocking postTerminate
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -11,7 +12,7 @@
 #include <cstdio>
 #include <cerrno>
 
-static const char * termString = "^X";
+static const char * termString = "^C";
 
 namespace sc {
 
@@ -180,19 +181,19 @@ void posixRS232port::UpdateConnection()
 	//
 	// choosing raw input & output
 	//
-	options.c_lflag &= ~( ICANON | ECHO | ECHOE | ISIG );
+	options.c_lflag &= ~( ICANON | ECHO | ISIG | IEXTEN );
 	options.c_oflag &= ~OPOST;
 	
 	//
 	// read timeouts
 	//
 	options.c_cc[ VMIN ] = 0;	// the minimum number of characters to read
-	options.c_cc[ VTIME ] = 15;	// the time to wait for the first character read
+	options.c_cc[ VTIME ] = 0;	// the time to wait for the first character read
 	
 	//
 	// setting software flow control
 	//
-	options.c_iflag &= ~( IXON | IXOFF | IXANY );	// disable software flow control
+	options.c_iflag &= ~( IXON | IXOFF | IXANY | ICRNL | INLCR );
 	
 	//
 	// set new port options
@@ -394,7 +395,7 @@ bool posixRS232port::receive ()
 	return true;
 }
 
-void posixRS232port::postTerminate ()
+void posixRS232port::postTerminate ( const bool doWaitTerminate )
 {
 	long	nBytesWritten = 0;
 	size_t nBytes2Write = strlen( termString ),
@@ -415,10 +416,13 @@ void posixRS232port::postTerminate ()
 		}
 	}
 	
-	CrossClass::_LockIt lockTerminate ( mutexTerminate );
-	while( !flagTerminate )
-		condTerminate.wait( lockTerminate );
-	flagTerminate = false;
+	if( doWaitTerminate )
+	{
+		CrossClass::_LockIt lockTerminate ( mutexTerminate );
+		while( !flagTerminate )
+			condTerminate.wait( lockTerminate );
+		flagTerminate = false;
+	}
 }
 
 } // namespace sc

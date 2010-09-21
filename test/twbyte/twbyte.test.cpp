@@ -70,7 +70,7 @@ int main ( int argc, const char ** argv )
 		
 		bool sw = true;
 		
-		for( long i = 0; i < 5000000L; ++i )
+		for( long i = 0; i < 5000L; ++i )
 		{
 			packet.setZero();
 			packet.byteArray[ 0 ] = 0x01;
@@ -122,4 +122,3 @@ int main ( int argc, const char ** argv )
 	}
 	return 0;
 }
-

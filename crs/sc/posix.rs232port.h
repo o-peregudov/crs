@@ -4,13 +4,14 @@
 //
 // posix.rs232port.h: interface for the rs232port class (POSIX API).
 // (c) Aug 26, 2010 Oleg N. Peregudov
-//	Sep 4, 2010	- postTerminate is now synchronized with the receive thread
-//	Sep 9, 2010	baudrate constant selector
+//	09/04/2010	postTerminate is now synchronized with the receive thread
+//	09/09/2010	baudrate constant selector
+//	09/20/2010	non-blocking postTerminate
 //
 //////////////////////////////////////////////////////////////////////
 
 #include <crs/sc/basic.rs232port.h>
-#include <crs/condition_variable.h>
+#include <crs/condition_variable.hpp>
 #include <crs/socket.h>
 #include <termios.h>
 
@@ -48,7 +49,7 @@ public:
 	
 	virtual void close ();
 	virtual void write ( const char * lpBuf, const size_t dwToWrite );
-	virtual void postTerminate ();
+	virtual void postTerminate ( const bool doWaitTerminate = true );
 	
 	virtual bool receive ();
 	// returns false when termination is requested

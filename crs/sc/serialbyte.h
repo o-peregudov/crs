@@ -10,7 +10,7 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#include <crs/condition_variable.h>
+#include <crs/condition_variable.hpp>
 #include <crs/sc/rs232port.h>
 #include <sstream>
 #include <iomanip>
