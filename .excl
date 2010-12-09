@@ -1,0 +1,5 @@
+- cygwin/*
+- linux/*
+- mingw32/*
+- win32/release/*
+- win32/debug/*

@@ -54,9 +54,21 @@ AM_CONDITIONAL([USE_WIN32API], [test "$allow_win32api" = yes] )
 AM_CONDITIONAL([USE_POSIXAPI], [test "$allow_posixapi" = yes] )
 AM_CONDITIONAL([USE_CPP0XAPI], [test "$allow_cpp0xapi" = yes] )
 
-CRS_CURRENT=1
-CRS_REVISION=0
-CRS_AGE=5
+#  Here are a set of rules to help you update your library version information:
+# 1. Start with version information of ‘0:0:0’ for each libtool library.
+# 2. Update the version information only immediately before a public release of your soft-
+#    ware. More frequent updates are unnecessary, and only guarantee that the current
+#    interface number gets larger faster.
+# 3. If the library source code has changed at all since the last update, then increment
+#    revision (‘c :r :a ’ becomes ‘c :r + 1:a ’).
+# 4. If any interfaces have been added, removed, or changed since the last update, increment
+#    current, and set revision to 0.
+# 5. If any interfaces have been added since the last public release, then increment age.
+# 6. If any interfaces have been removed since the last public release, then set age to 0.
+
+CRS_CURRENT=0
+CRS_REVISION=7
+CRS_AGE=1
 
 CRS_LT_VERSION="${CRS_CURRENT}:${CRS_REVISION}:${CRS_AGE}"
 AC_SUBST(CRS_LT_VERSION)
@@ -65,6 +77,6 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_FILES([
  Makefile
  crs/Makefile
- crs/ude/Makefile
 ])
 AC_OUTPUT
+

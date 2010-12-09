@@ -2,9 +2,11 @@
 #define CROSS_SIMPLENETPOINT_H_INCLUDED 1
 // (c) Aug 29, 2010 Oleg N. Peregudov
 //	09/19/2010	default callback function
+//	11/30/2010	updated netPoint interface
 
 #include <crs/netpoint.h>
 #include <crs/callback.h>
+#include <crs/security.h>
 #include <cstring>
 #include <deque>
 
@@ -49,7 +51,7 @@ protected:
 	virtual void transmit ();
 	virtual void receive ();
 	
-	virtual CrossClass::cHandle<CrossClass::basicNetPoint> handleNewConnection ( CrossClass::cSocket &, const CrossClass::cSockAddr & );
+	virtual CrossClass::basicNetPoint * handleNewConnection ( CrossClass::cSocket &, const CrossClass::cSockAddr & );
 	server ( CrossClass::cSocket & );
 	
 public:
@@ -64,4 +66,3 @@ public:
 
 } // namespace SimpleNetPoint
 #endif // CROSS_SIMPLENETPOINT_H_INCLUDED
-

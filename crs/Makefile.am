@@ -6,8 +6,9 @@ libcrs_a_SOURCES = CRCStuff.c cmdLine.cpp parsing.cpp security.cpp timer.cpp \
 	oio/FileVar.cpp oio/iniFile.cpp \
 	math/interpolation.cpp math/peakCenter.cpp math/stddev.c \
 	bits/basic.netpoint.cpp simplenetpoint.cpp \
-	sc/basic.rs232port.cpp
-#	sc/rs232port.cpp
+	sc/basic.rs232port.cpp \
+	ude/basics.cpp ude/netpoint.cpp ude/server.cpp ude/client.cpp \
+	msdc/data_classes.cpp msdc/pools.cpp msdc/ring_pool.cpp msdc/composite_core.cpp
 
 #libcrs_a_LDFLAGS = -version-info $(CRS_LT_VERSION)
 
@@ -27,6 +28,12 @@ pkginclude_oio_HEADERS = oio/FileVar.h oio/iniFile.h
 
 pkginclude_mathdir = $(pkgincludedir)/math
 pkginclude_math_HEADERS = math/interpolation.h math/peakCenter.h math/stddev.h math/unimath.h math/unimath.cc
+
+pkginclude_udedir = $(pkgincludedir)/ude
+pkginclude_ude_HEADERS = ude/packets.h ude/basics.h ude/netpoint.h ude/client.h ude/server.h
+
+pkginclude_msdcdir = $(pkgincludedir)/msdc
+pkginclude_msdc_HEADERS = msdc/data_classes.h msdc/pools.h msdc/ring_pool.h msdc/composite_core.h
 
 if USE_WIN32API
 libcrs_a_SOURCES += bits/win32.timer.cpp bits/win32.mutex.cpp bits/win32.thread.cpp \
@@ -50,3 +57,4 @@ if USE_CPP0XAPI
 libcrs_a_SOURCES += bits/c++0x.timer.cpp
 pkginclude_bits_HEADERS += bits/c++0x.timer.h
 endif
+

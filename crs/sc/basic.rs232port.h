@@ -6,6 +6,7 @@
 // (c) Aug 31, 2010 Oleg N. Peregudov
 //	09/19/2010	default callback function
 //	09/20/2010	non-blocking postTerminate
+//	09/22/2010	errPoll exception
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -42,6 +43,10 @@ public:
 	
 	struct errRead : std::runtime_error {
 		errRead ( const std::string & wh ) : std::runtime_error( wh ) { }
+	};
+	
+	struct errPoll : std::runtime_error {
+		errPoll ( const std::string & wh ) : std::runtime_error( wh ) { }
 	};
 	
 	struct errTimeout : std::runtime_error {
@@ -98,4 +103,3 @@ public:
 
 } // namespace sc
 #endif // CROSS_SC_BASICRS232PORT_H_INCLUDED
-

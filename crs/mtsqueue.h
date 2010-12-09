@@ -18,8 +18,9 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
-//	Nov 21, 2007 - new place for cross-compiling routines
-//	Jan 16, 2009 - push is now returns nothing (void)
+//	11/21/2007 - new place for cross-compiling routines
+//	01/16/2009 - push is now returns nothing (void)
+//	12/01/2010 - standard mutexes and locks
 //
 
 #include <deque>
@@ -40,50 +41,50 @@ public:
       typedef typename container_type::size_type       size_type;
       
 protected:
-	mutable CrossClass::LockType _central_lock;
+	mutable CrossClass::LockType _mutex;
       container_type _container;
       size_type _cursor;
       
 public:
       cMTSQueue ()
-      	: _central_lock()
+      	: _mutex()
       	, _container( )
       	, _cursor( 0 )
       { }
       
       bool empty () const
 	{
-		CrossClass::_LockIt exclusive_access ( _central_lock, true );
+		CrossClass::_LockIt lock ( _mutex );
             return _cursor == _container.size();
       }
       
       size_type size () const
 	{
-		CrossClass::_LockIt exclusive_access ( _central_lock, true );
+		CrossClass::_LockIt lock ( _mutex );
             return ( _container.size() - _cursor );
       }
       
       value_type & front ()
 	{
-		CrossClass::_LockIt exclusive_access ( _central_lock, true );
+		CrossClass::_LockIt lock ( _mutex );
             return _container[ _cursor ];
       }
       
       value_type & back ()
 	{
-		CrossClass::_LockIt exclusive_access ( _central_lock, true );
+		CrossClass::_LockIt lock ( _mutex );
             return _container.back();
       }
       
       const value_type & front () const	
 	{
-		CrossClass::_LockIt exclusive_access ( _central_lock, true );
+		CrossClass::_LockIt lock ( _mutex );
             return _container[ _cursor ];
       }
       
       const value_type & back () const
 	{
-		CrossClass::_LockIt exclusive_access ( _central_lock, true );
+		CrossClass::_LockIt lock ( _mutex );
             return _container.back();
       }
       
@@ -91,14 +92,14 @@ public:
 	{
 		if( !empty() )
 		{
-			CrossClass::_LockIt exclusive_access ( _central_lock, true );
+			CrossClass::_LockIt lock ( _mutex );
                   ++_cursor;
 		}
       }
 	
 	void  push ( const value_type & x )
 	{
-		CrossClass::_LockIt exclusive_access ( _central_lock, true );
+		CrossClass::_LockIt lock ( _mutex );
 		_container.push_back( x );
 		if( _cursor )
 		{

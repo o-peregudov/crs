@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1251"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
+	Version="8,00"
 	Name="cross"
 	ProjectGUID="{DCB91340-649A-429C-B36A-E500A708E276}"
 	RootNamespace="cross"
@@ -137,7 +137,7 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="..\"
-				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;__MULTITHREAD__;COMPILING_CROSS_DLL"
+				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;__MULTITHREAD__;COMPILING_CROSS_DLL;_CRT_SECURE_NO_DEPRECATE"
 				RuntimeLibrary="2"
 				DisableLanguageExtensions="false"
 				UsePrecompiledHeader="0"
@@ -317,6 +317,46 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="ude"
+				>
+				<File
+					RelativePath="..\crs\ude\basics.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\crs\ude\client.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\crs\ude\netpoint.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\crs\ude\server.cpp"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="msdc"
+				>
+				<File
+					RelativePath="..\crs\msdc\composite_core.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\crs\msdc\data_classes.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\crs\msdc\pools.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\crs\msdc\ring_pool.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -336,7 +376,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\crs\condition_variable.h"
+				RelativePath="..\crs\condition_variable.hpp"
 				>
 			</File>
 			<File
@@ -496,6 +536,50 @@
 				</File>
 				<File
 					RelativePath="..\crs\sc\win32.rs232port.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="ude"
+				>
+				<File
+					RelativePath="..\crs\ude\basics.h"
+					>
+				</File>
+				<File
+					RelativePath="..\crs\ude\client.h"
+					>
+				</File>
+				<File
+					RelativePath="..\crs\ude\netpoint.h"
+					>
+				</File>
+				<File
+					RelativePath="..\crs\ude\packets.h"
+					>
+				</File>
+				<File
+					RelativePath="..\crs\ude\server.h"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="msdc"
+				>
+				<File
+					RelativePath="..\crs\msdc\composite_core.h"
+					>
+				</File>
+				<File
+					RelativePath="..\crs\msdc\data_classes.h"
+					>
+				</File>
+				<File
+					RelativePath="..\crs\msdc\pools.h"
+					>
+				</File>
+				<File
+					RelativePath="..\crs\msdc\ring_pool.h"
 					>
 				</File>
 			</Filter>

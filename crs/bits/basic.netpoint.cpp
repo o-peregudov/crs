@@ -1,13 +1,21 @@
 // (c) Jan 31, 2009 Oleg N. Peregudov
-// Apr 23, 2009 - Win/Posix defines
-// Aug 24, 2010 - new server termination algorithm
+// 04/23/2009 - Win/Posix defines
+// 08/24/2010 - new server termination algorithm
+// 11/30/2010 - new name for termination method
+//              new implementation
+// 12/05/2010 - stored socket address
+//              extended error info
 #if defined( _MSC_VER )
 #	pragma warning( disable : 4251 )
 #	pragma warning( disable : 4275 )
 #endif
+
 #include <crs/bits/basic.netpoint.h>
 #include <algorithm>
-#include <sstream>
+#include <cstdio>
+#include <cerrno>
+
+#define EMSGLENGTH	256
 
 namespace CrossClass {
 
@@ -15,262 +23,100 @@ namespace CrossClass {
 // members of class netPoint
 //
 basicNetPoint::basicNetPoint ()
-	: readset( )
-	, writeset( )
-	, exceptset( )
-	, highsock( 0 )
-	, clientList( )
-	, selectTimeOut( )
-	, _socket( AF_INET, SOCK_STREAM, 0 )
+	: _socket( AF_INET, SOCK_STREAM, 0 )
+	, _sockAddress( )
+	, _clientList( 0 )
+	, _nClients( 0 )
+	, _nClientsAllocated( 0 )
 {
 	if( _socket == -1 )
 		throw socket_allocation_error( "basicNetPoint::basicNetPoint" );
 }
 
 basicNetPoint::basicNetPoint ( cSocket & clientSocket )
-	: readset( )
-	, writeset( )
-	, exceptset( )
-	, highsock( 0 )
-	, clientList( )
-	, selectTimeOut( )
-	, _socket( clientSocket )
+	: _socket( clientSocket )
+	, _sockAddress( )
+	, _clientList( 0 )
+	, _nClients( 0 )
+	, _nClientsAllocated( 0 )
 {
 }
 
 basicNetPoint::~basicNetPoint ()
 {
+	disconnectAll();
 }
 
-void basicNetPoint::buildSelectList ()
+void basicNetPoint::addClient ( basicNetPoint * newClient )
 {
-	FD_ZERO( &readset );
-	FD_ZERO( &writeset );
-	FD_ZERO( &exceptset );
-	
-	highsock = _socket;
-	FD_SET( _socket, &readset );
-	FD_SET( _socket, &exceptset );
-	
-	size_t nClients = clientList.size();
-	for( size_t i = 0; i < nClients; ++i )
+	++_nClients;
+	if( _nClientsAllocated < _nClients )
 	{
-		while( nClients && ( clientList[ i ].get() == 0 ) )
-		{
-			clientList[ i ] = clientList[ nClients - 1 ];
-			clientList[ nClients - 1 ].bind( 0 );
-			--nClients;
-		}
-		
-		if( nClients == 0 )
-			break;
-		
-		if( clientList[ i ]->getSocket() > 0 )
-		{
-			FD_SET( clientList[ i ]->getSocket(), &readset );
-			FD_SET( clientList[ i ]->getSocket(), &writeset );
-			FD_SET( clientList[ i ]->getSocket(), &exceptset );
-			if( highsock < clientList[ i ]->getSocket() )
-				highsock = clientList[ i ]->getSocket();
-		}
+		basicNetPoint* * newClients = new basicNetPoint* [ _nClients ];
+		memcpy( newClients, _clientList, _nClientsAllocated * sizeof( basicNetPoint* ) );
+		std::swap( _clientList, newClients );
+		_nClientsAllocated = _nClients;
+		delete [] newClients;
 	}
-	if( nClients < clientList.size() )
-		clientList.resize( nClients );
+	_clientList[ _nClients - 1 ] = newClient;
 }
 
-bool basicNetPoint::doServerJob ( const bool idleState )
+void basicNetPoint::removeClient ( const size_t nClient )
 {
-	return false;
-}
-
-void basicNetPoint::bindSocket ( const cSockAddr & sa )
-{
-	setNonBlock();
-	
-	if( bind( _socket, sa, sizeof( sa ) ) == -1 )
+	if( handleDisconnect( _clientList[ nClient ] ) )
 	{
-		std::basic_ostringstream<char> errMsg;
-		errMsg << "bind (" << errno << ')';
-		throw socket_bind_error( errMsg.str() );
-	}
-	
-	if( listen( _socket, 16 ) == -1 )
-	{
-		std::basic_ostringstream<char> errMsg;
-		errMsg << "listen (" << errno << ')';
-		throw socket_listen_error( errMsg.str() );
+		delete _clientList[ nClient ];
+		_clientList[ nClient ] = 0;
 	}
 }
 
-void basicNetPoint::client_handler::operator () ( cHandle<basicNetPoint> & client )
+void basicNetPoint::clientReceive ( const size_t nClient )
 {
-	bool clientChanged = false;
-	try
-	{
-		if( FD_ISSET( client->getSocket(), &(base->readset) ) )
-		{
-			clientChanged = true;
-			client->receive();
-		}
-		
-		if( FD_ISSET( client->getSocket(), &(base->writeset) ) )
-		{
-			clientChanged = true;
-			client->transmit();
-		}
-		
-		if( FD_ISSET( client->getSocket(), &(base->exceptset) ) )
-		{
-			clientChanged = true;
-			client->except();
-		}
-		
-		if( clientChanged && base->doHandleClient( *(client.get()) ) )
-			if( base->handleDisconnect( *(client.get()) ) )
-				client.bind( 0 );
-		
-		return;
-	}
-	catch( basicNetPoint::end_of_file )
-	{
-		client->logGracefulDisconnect();
-	}
-	catch( std::runtime_error & e )
-	{
-		client->logRuntimeError( e.what() );
-	}
-	catch( ... )
-	{
-		client->logUnhandledError();
-	}
-	
-	if( base->handleDisconnect( *(client.get()) ) )
-		client.bind( 0 );
+	_clientList[ nClient ]->receive();
 }
 
-void basicNetPoint::startServer ( const cSockAddr & sa )
+void basicNetPoint::clientTransmit ( const size_t nClient )
 {
-	bindSocket( sa );
-	timeval * pSelectTimeOut = onStartServer();
-	bool	clientChanged = false,
-		idleState = false;
-	while( true )
-	{
-		if( preCheckTerminate() )
-			return;
-		idleState = false;
-		buildSelectList();
-		switch( select( highsock+1, &readset, &writeset, &exceptset, pSelectTimeOut ) )
-		{
-		case	-1:	// failed to select
-			{
-				int selectError = errno;
-				if( selectError == EBADF )
-					continue;
-				
-				std::basic_ostringstream<char> errMsg;
-				errMsg << "select (" << selectError << ')';
-				throw socket_select_error( errMsg.str() );
-			}
-		
-		case	0:	// timeout
-			idleState = true;
-			break;
-		
-		default:	// something was selected
-			if( FD_ISSET( _socket, &readset ) )			// new connection ?
-			{
-				cSocket newPeer;
-				cSockAddr newPeerAddr;
-				if( _socket.accept( newPeer, newPeerAddr ) )
-					clientList.push_back( handleNewConnection( newPeer, newPeerAddr ) );
-			}
-			if( postCheckTerminate() )
-				return;
-			std::for_each( clientList.begin(), clientList.end(), client_handler( this ) );
-			/*{
-				client_handler handler ( this );
-				
-				#pragma omp parallel for
-				for( int i = 0; i < clientList.size(); ++i )
-					handler( clientList[ i ] );
-			}*/
-		}
-		
-		if( doServerJob( idleState ) )
-			break;
-	}
+	_clientList[ nClient ]->transmit();
 }
 
-void basicNetPoint::startServer ( const unsigned short int portNo )
+void basicNetPoint::disconnectAll ()
 {
-	cSockAddr addrAny ( portNo );
-	startServer( addrAny );
-}
-
-void basicNetPoint::clientConnect ( const cSockAddr & sa )
-{
-	if( connect( _socket, sa, sizeof( sa ) ) == -1 )
+	if( _clientList )
 	{
-		std::basic_ostringstream<char> errMsg;
-		errMsg << "connect (" << errno << ')';
-		throw socket_connect_error( errMsg.str() );
+		for( int i = 0; i < _nClients; ++i )
+			delete _clientList[ i ];
+		
+		delete [] _clientList;
+		
+		_nClients = _nClientsAllocated = 0;
+		_clientList = 0;
 	}
-	else
-		setNonBlock();
 }
 
 void basicNetPoint::setNonBlock ()
 {
 }
 
-cHandle<basicNetPoint> basicNetPoint::handleNewConnection ( cSocket & s, const cSockAddr & sa )
+void basicNetPoint::bindSocket ( const cSockAddr & sa )
 {
-	return 0;	// new basicNetPoint( s );
-}
-
-cSocket & basicNetPoint::getSocket ()
-{
-	return _socket;
-}
+	setNonBlock();
 	
-bool basicNetPoint::doHandleClient ( basicNetPoint & )
-{
-	return false;
-}
-
-void basicNetPoint::clientSendRecv ()
-{
-	FD_ZERO( &readset );
-	FD_ZERO( &writeset );
-	FD_ZERO( &exceptset );
+	_sockAddress = sa;
 	
-	highsock = _socket;
-	FD_SET( _socket, &readset );
-	FD_SET( _socket, &writeset );
-	FD_SET( _socket, &exceptset );
-	
-	selectTimeOut.milliseconds( 5 );
-	if( select( highsock+1, &readset, &writeset, &exceptset, &selectTimeOut ) == -1 )
+	if( bind( _socket, sa, sizeof( sa ) ) == -1 )
 	{
-		std::basic_ostringstream<char> errMsg;
-		errMsg << "select (" << errno << ')';
-		throw socket_select_error( errMsg.str() );
+		char msgText [ EMSGLENGTH ];
+		sprintf( msgText, "%s (%d)", strerror( errno ), errno );
+		throw socket_bind_error( msgText );
 	}
 	
-	if( FD_ISSET( _socket, &readset ) )
-		receive();
-	
-	if( FD_ISSET( _socket, &writeset ) )
-		transmit();
-	
-	if( FD_ISSET( _socket, &exceptset ) )
-		except();
-}
-
-bool basicNetPoint::handleDisconnect ( basicNetPoint & )
-{
-	return true;
+	if( listen( _socket, 16 ) == -1 )
+	{
+		char msgText [ EMSGLENGTH ];
+		sprintf( msgText, "%s (%d)", strerror( errno ), errno );
+		throw socket_listen_error( msgText );
+	}
 }
 
 void basicNetPoint::transmit ()
@@ -281,39 +127,65 @@ void basicNetPoint::receive ()
 {
 }
 
-void basicNetPoint::except ()
+basicNetPoint * basicNetPoint::handleNewConnection ( cSocket & s, const cSockAddr & sa )
+{
+	return 0;		// new basicNetPoint( s );
+}
+
+size_t basicNetPoint::enumerateDescriptors ()
+{
+	return _nClients;
+}
+
+void basicNetPoint::buildSelectList ()
 {
 }
 
-timeval * basicNetPoint::onStartServer ()
+bool basicNetPoint::handleDisconnect ( basicNetPoint * )
 {
-	return 0;
+	return true;
 }
 
-bool basicNetPoint::preCheckTerminate ()
+bool basicNetPoint::checkTerminate ()
 {
-	return false;
+	return true;	// yes, we have to stop!
 }
 
-bool basicNetPoint::postCheckTerminate ()
+void basicNetPoint::startServer ( const unsigned short int portNo )
 {
-	return false;
+	cSockAddr addrAny ( portNo );
+	bindSocket( addrAny );
 }
 
-void basicNetPoint::logGracefulDisconnect ()
+void basicNetPoint::clientConnect ( const cSockAddr & sa )
 {
+	if( connect( _socket, sa, sizeof( sa ) ) == -1 )
+	{
+		char msgText [ EMSGLENGTH ];
+		sprintf( msgText, "%s (%d)", strerror( errno ), errno );
+		throw socket_connect_error( msgText );
+	}
+	else
+		setNonBlock();
 }
 
-void basicNetPoint::logRuntimeError ( const std::string & msg )
+void basicNetPoint::postTerminate ()
 {
 }
-
-void basicNetPoint::logUnhandledError ()
+	
+bool basicNetPoint::clientSendRecv ()
 {
+	return true;
 }
 
-void basicNetPoint::terminateServer ()
+bool basicNetPoint::serverSendRecv ()
 {
+	return true;
+}
+
+cSocket & basicNetPoint::getSocket ()
+{
+	return _socket;
 }
 
 } // namespace CrossClass

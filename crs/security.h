@@ -18,17 +18,17 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
-//	Nov 21, 2007 - new place for cross-compiling routines
-//	Dec 5, 2007 - DLL
-//	Aug 30, 2010 - cLocker compartibility with std::unique_lock from C++0x standard
+//	11/21/2007 - new place for cross-compiling routines
+//	12/05/2007 - DLL
+//	08/30/2010 - cLocker compartibility with std::unique_lock from C++0x standard
+//	12/01/2010 - translation for some comments
 //
 
 //
-// Здесь собраны маленькие классы, которые в общем случае призваны
-// обеспечивать запрос ресурсов инициализацией. Т.е. в конструкторе
-// такого класса выполняется блокирование ресурса, в деструкторе -
-// освобождение. Такой механизм обеспечивает высокую безопасность
-// работы с критическими ресурсами (файлами, различными замками и т.д.)
+// Here small classes dedicated for realizing resource requests via
+// initialization are collected. Resource blocking/allocation is performed in
+// constructor of such class and release of the resource is performed in
+// destructor.
 //
 
 #include <iostream>
@@ -39,7 +39,7 @@ namespace CrossClass {
 
 //
 // class cSaveStreamExceptions
-// устанавливает новый режим отслеживания исключений для потока
+// sets new exception tracking state for IO stream
 //
 class CROSS_EXPORT cSaveStreamExceptions
 {
@@ -52,7 +52,7 @@ public:
 
 //
 // class cSaveIStreamPosition
-// сохраняет положение указателя считывания для потока
+// saves stream read position
 //
 class CROSS_EXPORT cSaveIStreamPosition
 {
@@ -70,7 +70,7 @@ public:
 
 //
 // class cSaveOStreamPosition
-// сохраняет положение указателя записи для потока
+// saves stream write position
 //
 class CROSS_EXPORT cSaveOStreamPosition
 {
@@ -95,11 +95,11 @@ public:
 #endif
 
 //
-// class cLocker
+// class cLocker - lock template
 //
-template <typename LockType> class cLocker
+template <typename MutexType> class cLocker
 {
-	LockType & theLock;
+	MutexType & theLock;
 	bool fAcquired;
 	
 	// not allowed!
@@ -107,20 +107,20 @@ template <typename LockType> class cLocker
 	cLocker & operator = ( const cLocker & );
 	
 public:
-	cLocker ( LockType & m )
+	cLocker ( MutexType & m )
 		: theLock( m )
 		, fAcquired( false )
 	{
 		lock();
 	}
 	
-	cLocker ( LockType & m, defer_lock_t )
+	cLocker ( MutexType & m, defer_lock_t )
 		: theLock( m )
 		, fAcquired( false )
 	{
 	}
 	
-	cLocker ( LockType & m, try_to_lock_t )
+	cLocker ( MutexType & m, try_to_lock_t )
 		: theLock( m )
 		, fAcquired( false )
 	{
@@ -152,7 +152,7 @@ public:
 		}
 	}
 	
-	LockType * mutex () const
+	MutexType * mutex () const
 	{
 		return &theLock;
 	}

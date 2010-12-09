@@ -60,4 +60,3 @@ public:
 
 } // namespace sc
 #endif // CROSS_SC_POSIXRS232PORT_H_INCLUDED
-

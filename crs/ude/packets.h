@@ -6,29 +6,15 @@
 // Copyright (c) Feb 13, 2003 Oleg N. Peregudov
 // Support: op@pochta.ru
 //
-// May 29, 2006 Oleg N. Peregudov
-//        - support for __int64 data type
-//
-// Sep 4, 2006 Oleg N. Peregudov
-//        - wrappers
-//
-// Oct 19, 2006 Oleg N. Peregudov
-//        - IFPACKET filter macro
-//
-// Feb 6, 2007 Oleg N. Peregudov
-//        - packet's sender id & header checksum
-//
-// Jun 12, 2007 Oleg N. Peregudov
-//        - new data types
-//
-// Jan 21, 2008 Oleg N. Peregudov
-//        - included in cross library
-//
-// Feb 12, 2008 Oleg N. Peregudov
-//        - id for fast processing packet
-//
-// Apr 5, 2008 Oleg N. Peregudov
-//        - rename UDE_SENDER_IDENTIFICATION macro
+// 05/29/2006 - support for __int64 data type
+// 09/04/2006 - wrappers
+// 10/19/2006 - IFPACKET filter macro
+// 02/06/2007 - packet's sender id & header checksum
+// 06/12/2007 - new data types
+// 01/21/2008 - included in cross library
+// 02/12/2008 - id for fast processing packet
+// 04/05/2008 - rename UDE_SENDER_IDENTIFICATION macro
+// 12/03/2010 - packet number field
 //
 
 #include <cstring>
@@ -263,4 +249,3 @@ public:
 	 && ( (packet).word( 0 ) == (cmd) ) )
 
 #endif // CROSS_UDE_PACKETS_H
-

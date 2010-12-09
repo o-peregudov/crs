@@ -56,7 +56,8 @@ host_triplet = @host@
 subdir = crs
 DIST_COMMON = $(am__pkginclude_bits_HEADERS_DIST) \
 	$(am__pkginclude_sc_HEADERS_DIST) $(pkginclude_HEADERS) \
-	$(pkginclude_math_HEADERS) $(pkginclude_oio_HEADERS) \
+	$(pkginclude_math_HEADERS) $(pkginclude_msdc_HEADERS) \
+	$(pkginclude_oio_HEADERS) $(pkginclude_ude_HEADERS) \
 	$(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
@@ -93,8 +94,10 @@ am__base_list = \
 am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(pkgincludedir)" \
 	"$(DESTDIR)$(pkginclude_bitsdir)" \
 	"$(DESTDIR)$(pkginclude_mathdir)" \
+	"$(DESTDIR)$(pkginclude_msdcdir)" \
 	"$(DESTDIR)$(pkginclude_oiodir)" \
-	"$(DESTDIR)$(pkginclude_scdir)"
+	"$(DESTDIR)$(pkginclude_scdir)" \
+	"$(DESTDIR)$(pkginclude_udedir)"
 LIBRARIES = $(lib_LIBRARIES)
 ARFLAGS = cru
 libcrs_a_AR = $(AR) $(ARFLAGS)
@@ -103,14 +106,17 @@ am__libcrs_a_SOURCES_DIST = CRCStuff.c cmdLine.cpp parsing.cpp \
 	security.cpp timer.cpp oio/FileVar.cpp oio/iniFile.cpp \
 	math/interpolation.cpp math/peakCenter.cpp math/stddev.c \
 	bits/basic.netpoint.cpp simplenetpoint.cpp \
-	sc/basic.rs232port.cpp bits/win32.timer.cpp \
-	bits/win32.mutex.cpp bits/win32.thread.cpp \
-	bits/win32.netpoint.cpp bits/win32.cond.cpp \
-	sc/win32.rs232port.cpp bits/win32.semaphore.cpp \
-	bits/posix.timer.cpp bits/posix.mutex.cpp \
-	bits/posix.thread.cpp bits/posix.netpoint.cpp \
-	bits/posix.cond.cpp sc/posix.rs232port.cpp \
-	bits/posix.semaphore.cpp bits/c++0x.timer.cpp
+	sc/basic.rs232port.cpp ude/basics.cpp ude/netpoint.cpp \
+	ude/server.cpp ude/client.cpp msdc/data_classes.cpp \
+	msdc/pools.cpp msdc/ring_pool.cpp msdc/composite_core.cpp \
+	bits/win32.timer.cpp bits/win32.mutex.cpp \
+	bits/win32.thread.cpp bits/win32.netpoint.cpp \
+	bits/win32.cond.cpp sc/win32.rs232port.cpp \
+	bits/win32.semaphore.cpp bits/posix.timer.cpp \
+	bits/posix.mutex.cpp bits/posix.thread.cpp \
+	bits/posix.netpoint.cpp bits/posix.cond.cpp \
+	sc/posix.rs232port.cpp bits/posix.semaphore.cpp \
+	bits/c++0x.timer.cpp
 @USE_WIN32API_TRUE@am__objects_1 = win32.timer.$(OBJEXT) \
 @USE_WIN32API_TRUE@	win32.mutex.$(OBJEXT) \
 @USE_WIN32API_TRUE@	win32.thread.$(OBJEXT) \
@@ -131,7 +137,10 @@ am_libcrs_a_OBJECTS = CRCStuff.$(OBJEXT) cmdLine.$(OBJEXT) \
 	FileVar.$(OBJEXT) iniFile.$(OBJEXT) interpolation.$(OBJEXT) \
 	peakCenter.$(OBJEXT) stddev.$(OBJEXT) basic.netpoint.$(OBJEXT) \
 	simplenetpoint.$(OBJEXT) basic.rs232port.$(OBJEXT) \
-	$(am__objects_1) $(am__objects_2) $(am__objects_3)
+	basics.$(OBJEXT) netpoint.$(OBJEXT) server.$(OBJEXT) \
+	client.$(OBJEXT) data_classes.$(OBJEXT) pools.$(OBJEXT) \
+	ring_pool.$(OBJEXT) composite_core.$(OBJEXT) $(am__objects_1) \
+	$(am__objects_2) $(am__objects_3)
 libcrs_a_OBJECTS = $(am_libcrs_a_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -167,8 +176,9 @@ am__pkginclude_sc_HEADERS_DIST = sc/basic.rs232port.h sc/rs232port.h \
 	sc/serialbyte.h sc/i41serial.h sc/twelvebyte.h \
 	sc/win32.rs232port.h sc/posix.rs232port.h
 HEADERS = $(pkginclude_HEADERS) $(pkginclude_bits_HEADERS) \
-	$(pkginclude_math_HEADERS) $(pkginclude_oio_HEADERS) \
-	$(pkginclude_sc_HEADERS)
+	$(pkginclude_math_HEADERS) $(pkginclude_msdc_HEADERS) \
+	$(pkginclude_oio_HEADERS) $(pkginclude_sc_HEADERS) \
+	$(pkginclude_ude_HEADERS)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -295,9 +305,10 @@ libcrs_a_SOURCES = CRCStuff.c cmdLine.cpp parsing.cpp security.cpp \
 	timer.cpp oio/FileVar.cpp oio/iniFile.cpp \
 	math/interpolation.cpp math/peakCenter.cpp math/stddev.c \
 	bits/basic.netpoint.cpp simplenetpoint.cpp \
-	sc/basic.rs232port.cpp $(am__append_1) $(am__append_4) \
-	$(am__append_7)
-#	sc/rs232port.cpp
+	sc/basic.rs232port.cpp ude/basics.cpp ude/netpoint.cpp \
+	ude/server.cpp ude/client.cpp msdc/data_classes.cpp \
+	msdc/pools.cpp msdc/ring_pool.cpp msdc/composite_core.cpp \
+	$(am__append_1) $(am__append_4) $(am__append_7)
 
 #libcrs_a_LDFLAGS = -version-info $(CRS_LT_VERSION)
 pkginclude_HEADERS = cmdLine.h mutex.h handle.h parsing.h security.h \
@@ -316,6 +327,10 @@ pkginclude_oiodir = $(pkgincludedir)/oio
 pkginclude_oio_HEADERS = oio/FileVar.h oio/iniFile.h
 pkginclude_mathdir = $(pkgincludedir)/math
 pkginclude_math_HEADERS = math/interpolation.h math/peakCenter.h math/stddev.h math/unimath.h math/unimath.cc
+pkginclude_udedir = $(pkgincludedir)/ude
+pkginclude_ude_HEADERS = ude/packets.h ude/basics.h ude/netpoint.h ude/client.h ude/server.h
+pkginclude_msdcdir = $(pkgincludedir)/msdc
+pkginclude_msdc_HEADERS = msdc/data_classes.h msdc/pools.h msdc/ring_pool.h msdc/composite_core.h
 all: all-am
 
 .SUFFIXES:
@@ -397,12 +412,18 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FileVar.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/basic.netpoint.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/basic.rs232port.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/basics.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/c++0x.timer.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/client.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cmdLine.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/composite_core.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/data_classes.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/iniFile.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/interpolation.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/netpoint.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parsing.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/peakCenter.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/pools.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/posix.cond.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/posix.mutex.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/posix.netpoint.Po@am__quote@
@@ -410,7 +431,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/posix.semaphore.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/posix.thread.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/posix.timer.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ring_pool.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/security.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/server.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/simplenetpoint.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stddev.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/timer.Po@am__quote@
@@ -561,6 +584,118 @@ basic.rs232port.obj: sc/basic.rs232port.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='sc/basic.rs232port.cpp' object='basic.rs232port.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o basic.rs232port.obj `if test -f 'sc/basic.rs232port.cpp'; then $(CYGPATH_W) 'sc/basic.rs232port.cpp'; else $(CYGPATH_W) '$(srcdir)/sc/basic.rs232port.cpp'; fi`
+
+basics.o: ude/basics.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT basics.o -MD -MP -MF $(DEPDIR)/basics.Tpo -c -o basics.o `test -f 'ude/basics.cpp' || echo '$(srcdir)/'`ude/basics.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/basics.Tpo $(DEPDIR)/basics.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='ude/basics.cpp' object='basics.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o basics.o `test -f 'ude/basics.cpp' || echo '$(srcdir)/'`ude/basics.cpp
+
+basics.obj: ude/basics.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT basics.obj -MD -MP -MF $(DEPDIR)/basics.Tpo -c -o basics.obj `if test -f 'ude/basics.cpp'; then $(CYGPATH_W) 'ude/basics.cpp'; else $(CYGPATH_W) '$(srcdir)/ude/basics.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/basics.Tpo $(DEPDIR)/basics.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='ude/basics.cpp' object='basics.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o basics.obj `if test -f 'ude/basics.cpp'; then $(CYGPATH_W) 'ude/basics.cpp'; else $(CYGPATH_W) '$(srcdir)/ude/basics.cpp'; fi`
+
+netpoint.o: ude/netpoint.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT netpoint.o -MD -MP -MF $(DEPDIR)/netpoint.Tpo -c -o netpoint.o `test -f 'ude/netpoint.cpp' || echo '$(srcdir)/'`ude/netpoint.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/netpoint.Tpo $(DEPDIR)/netpoint.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='ude/netpoint.cpp' object='netpoint.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o netpoint.o `test -f 'ude/netpoint.cpp' || echo '$(srcdir)/'`ude/netpoint.cpp
+
+netpoint.obj: ude/netpoint.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT netpoint.obj -MD -MP -MF $(DEPDIR)/netpoint.Tpo -c -o netpoint.obj `if test -f 'ude/netpoint.cpp'; then $(CYGPATH_W) 'ude/netpoint.cpp'; else $(CYGPATH_W) '$(srcdir)/ude/netpoint.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/netpoint.Tpo $(DEPDIR)/netpoint.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='ude/netpoint.cpp' object='netpoint.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o netpoint.obj `if test -f 'ude/netpoint.cpp'; then $(CYGPATH_W) 'ude/netpoint.cpp'; else $(CYGPATH_W) '$(srcdir)/ude/netpoint.cpp'; fi`
+
+server.o: ude/server.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT server.o -MD -MP -MF $(DEPDIR)/server.Tpo -c -o server.o `test -f 'ude/server.cpp' || echo '$(srcdir)/'`ude/server.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/server.Tpo $(DEPDIR)/server.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='ude/server.cpp' object='server.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o server.o `test -f 'ude/server.cpp' || echo '$(srcdir)/'`ude/server.cpp
+
+server.obj: ude/server.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT server.obj -MD -MP -MF $(DEPDIR)/server.Tpo -c -o server.obj `if test -f 'ude/server.cpp'; then $(CYGPATH_W) 'ude/server.cpp'; else $(CYGPATH_W) '$(srcdir)/ude/server.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/server.Tpo $(DEPDIR)/server.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='ude/server.cpp' object='server.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o server.obj `if test -f 'ude/server.cpp'; then $(CYGPATH_W) 'ude/server.cpp'; else $(CYGPATH_W) '$(srcdir)/ude/server.cpp'; fi`
+
+client.o: ude/client.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT client.o -MD -MP -MF $(DEPDIR)/client.Tpo -c -o client.o `test -f 'ude/client.cpp' || echo '$(srcdir)/'`ude/client.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/client.Tpo $(DEPDIR)/client.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='ude/client.cpp' object='client.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o client.o `test -f 'ude/client.cpp' || echo '$(srcdir)/'`ude/client.cpp
+
+client.obj: ude/client.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT client.obj -MD -MP -MF $(DEPDIR)/client.Tpo -c -o client.obj `if test -f 'ude/client.cpp'; then $(CYGPATH_W) 'ude/client.cpp'; else $(CYGPATH_W) '$(srcdir)/ude/client.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/client.Tpo $(DEPDIR)/client.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='ude/client.cpp' object='client.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o client.obj `if test -f 'ude/client.cpp'; then $(CYGPATH_W) 'ude/client.cpp'; else $(CYGPATH_W) '$(srcdir)/ude/client.cpp'; fi`
+
+data_classes.o: msdc/data_classes.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT data_classes.o -MD -MP -MF $(DEPDIR)/data_classes.Tpo -c -o data_classes.o `test -f 'msdc/data_classes.cpp' || echo '$(srcdir)/'`msdc/data_classes.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/data_classes.Tpo $(DEPDIR)/data_classes.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='msdc/data_classes.cpp' object='data_classes.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o data_classes.o `test -f 'msdc/data_classes.cpp' || echo '$(srcdir)/'`msdc/data_classes.cpp
+
+data_classes.obj: msdc/data_classes.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT data_classes.obj -MD -MP -MF $(DEPDIR)/data_classes.Tpo -c -o data_classes.obj `if test -f 'msdc/data_classes.cpp'; then $(CYGPATH_W) 'msdc/data_classes.cpp'; else $(CYGPATH_W) '$(srcdir)/msdc/data_classes.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/data_classes.Tpo $(DEPDIR)/data_classes.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='msdc/data_classes.cpp' object='data_classes.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o data_classes.obj `if test -f 'msdc/data_classes.cpp'; then $(CYGPATH_W) 'msdc/data_classes.cpp'; else $(CYGPATH_W) '$(srcdir)/msdc/data_classes.cpp'; fi`
+
+pools.o: msdc/pools.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT pools.o -MD -MP -MF $(DEPDIR)/pools.Tpo -c -o pools.o `test -f 'msdc/pools.cpp' || echo '$(srcdir)/'`msdc/pools.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/pools.Tpo $(DEPDIR)/pools.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='msdc/pools.cpp' object='pools.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o pools.o `test -f 'msdc/pools.cpp' || echo '$(srcdir)/'`msdc/pools.cpp
+
+pools.obj: msdc/pools.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT pools.obj -MD -MP -MF $(DEPDIR)/pools.Tpo -c -o pools.obj `if test -f 'msdc/pools.cpp'; then $(CYGPATH_W) 'msdc/pools.cpp'; else $(CYGPATH_W) '$(srcdir)/msdc/pools.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/pools.Tpo $(DEPDIR)/pools.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='msdc/pools.cpp' object='pools.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o pools.obj `if test -f 'msdc/pools.cpp'; then $(CYGPATH_W) 'msdc/pools.cpp'; else $(CYGPATH_W) '$(srcdir)/msdc/pools.cpp'; fi`
+
+ring_pool.o: msdc/ring_pool.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT ring_pool.o -MD -MP -MF $(DEPDIR)/ring_pool.Tpo -c -o ring_pool.o `test -f 'msdc/ring_pool.cpp' || echo '$(srcdir)/'`msdc/ring_pool.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/ring_pool.Tpo $(DEPDIR)/ring_pool.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='msdc/ring_pool.cpp' object='ring_pool.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ring_pool.o `test -f 'msdc/ring_pool.cpp' || echo '$(srcdir)/'`msdc/ring_pool.cpp
+
+ring_pool.obj: msdc/ring_pool.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT ring_pool.obj -MD -MP -MF $(DEPDIR)/ring_pool.Tpo -c -o ring_pool.obj `if test -f 'msdc/ring_pool.cpp'; then $(CYGPATH_W) 'msdc/ring_pool.cpp'; else $(CYGPATH_W) '$(srcdir)/msdc/ring_pool.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/ring_pool.Tpo $(DEPDIR)/ring_pool.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='msdc/ring_pool.cpp' object='ring_pool.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o ring_pool.obj `if test -f 'msdc/ring_pool.cpp'; then $(CYGPATH_W) 'msdc/ring_pool.cpp'; else $(CYGPATH_W) '$(srcdir)/msdc/ring_pool.cpp'; fi`
+
+composite_core.o: msdc/composite_core.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT composite_core.o -MD -MP -MF $(DEPDIR)/composite_core.Tpo -c -o composite_core.o `test -f 'msdc/composite_core.cpp' || echo '$(srcdir)/'`msdc/composite_core.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/composite_core.Tpo $(DEPDIR)/composite_core.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='msdc/composite_core.cpp' object='composite_core.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o composite_core.o `test -f 'msdc/composite_core.cpp' || echo '$(srcdir)/'`msdc/composite_core.cpp
+
+composite_core.obj: msdc/composite_core.cpp
+@am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT composite_core.obj -MD -MP -MF $(DEPDIR)/composite_core.Tpo -c -o composite_core.obj `if test -f 'msdc/composite_core.cpp'; then $(CYGPATH_W) 'msdc/composite_core.cpp'; else $(CYGPATH_W) '$(srcdir)/msdc/composite_core.cpp'; fi`
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/composite_core.Tpo $(DEPDIR)/composite_core.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='msdc/composite_core.cpp' object='composite_core.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o composite_core.obj `if test -f 'msdc/composite_core.cpp'; then $(CYGPATH_W) 'msdc/composite_core.cpp'; else $(CYGPATH_W) '$(srcdir)/msdc/composite_core.cpp'; fi`
 
 win32.timer.o: bits/win32.timer.cpp
 @am__fastdepCXX_TRUE@	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT win32.timer.o -MD -MP -MF $(DEPDIR)/win32.timer.Tpo -c -o win32.timer.o `test -f 'bits/win32.timer.cpp' || echo '$(srcdir)/'`bits/win32.timer.cpp
@@ -837,6 +972,26 @@ uninstall-pkginclude_mathHEADERS:
 	test -n "$$files" || exit 0; \
 	echo " ( cd '$(DESTDIR)$(pkginclude_mathdir)' && rm -f" $$files ")"; \
 	cd "$(DESTDIR)$(pkginclude_mathdir)" && rm -f $$files
+install-pkginclude_msdcHEADERS: $(pkginclude_msdc_HEADERS)
+	@$(NORMAL_INSTALL)
+	test -z "$(pkginclude_msdcdir)" || $(MKDIR_P) "$(DESTDIR)$(pkginclude_msdcdir)"
+	@list='$(pkginclude_msdc_HEADERS)'; test -n "$(pkginclude_msdcdir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_HEADER) $$files '$(DESTDIR)$(pkginclude_msdcdir)'"; \
+	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(pkginclude_msdcdir)" || exit $$?; \
+	done
+
+uninstall-pkginclude_msdcHEADERS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(pkginclude_msdc_HEADERS)'; test -n "$(pkginclude_msdcdir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	test -n "$$files" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(pkginclude_msdcdir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(pkginclude_msdcdir)" && rm -f $$files
 install-pkginclude_oioHEADERS: $(pkginclude_oio_HEADERS)
 	@$(NORMAL_INSTALL)
 	test -z "$(pkginclude_oiodir)" || $(MKDIR_P) "$(DESTDIR)$(pkginclude_oiodir)"
@@ -877,6 +1032,26 @@ uninstall-pkginclude_scHEADERS:
 	test -n "$$files" || exit 0; \
 	echo " ( cd '$(DESTDIR)$(pkginclude_scdir)' && rm -f" $$files ")"; \
 	cd "$(DESTDIR)$(pkginclude_scdir)" && rm -f $$files
+install-pkginclude_udeHEADERS: $(pkginclude_ude_HEADERS)
+	@$(NORMAL_INSTALL)
+	test -z "$(pkginclude_udedir)" || $(MKDIR_P) "$(DESTDIR)$(pkginclude_udedir)"
+	@list='$(pkginclude_ude_HEADERS)'; test -n "$(pkginclude_udedir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_HEADER) $$files '$(DESTDIR)$(pkginclude_udedir)'"; \
+	  $(INSTALL_HEADER) $$files "$(DESTDIR)$(pkginclude_udedir)" || exit $$?; \
+	done
+
+uninstall-pkginclude_udeHEADERS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(pkginclude_ude_HEADERS)'; test -n "$(pkginclude_udedir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	test -n "$$files" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(pkginclude_udedir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(pkginclude_udedir)" && rm -f $$files
 
 ID: $(HEADERS) $(SOURCES) $(LISP) $(TAGS_FILES)
 	list='$(SOURCES) $(HEADERS) $(LISP) $(TAGS_FILES)'; \
@@ -964,7 +1139,7 @@ check-am: all-am
 check: check-am
 all-am: Makefile $(LIBRARIES) $(HEADERS)
 installdirs:
-	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(pkgincludedir)" "$(DESTDIR)$(pkginclude_bitsdir)" "$(DESTDIR)$(pkginclude_mathdir)" "$(DESTDIR)$(pkginclude_oiodir)" "$(DESTDIR)$(pkginclude_scdir)"; do \
+	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(pkgincludedir)" "$(DESTDIR)$(pkginclude_bitsdir)" "$(DESTDIR)$(pkginclude_mathdir)" "$(DESTDIR)$(pkginclude_msdcdir)" "$(DESTDIR)$(pkginclude_oiodir)" "$(DESTDIR)$(pkginclude_scdir)" "$(DESTDIR)$(pkginclude_udedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-am
@@ -1017,7 +1192,8 @@ info-am:
 
 install-data-am: install-pkgincludeHEADERS \
 	install-pkginclude_bitsHEADERS install-pkginclude_mathHEADERS \
-	install-pkginclude_oioHEADERS install-pkginclude_scHEADERS
+	install-pkginclude_msdcHEADERS install-pkginclude_oioHEADERS \
+	install-pkginclude_scHEADERS install-pkginclude_udeHEADERS
 
 install-dvi: install-dvi-am
 
@@ -1066,7 +1242,9 @@ ps-am:
 uninstall-am: uninstall-libLIBRARIES uninstall-pkgincludeHEADERS \
 	uninstall-pkginclude_bitsHEADERS \
 	uninstall-pkginclude_mathHEADERS \
-	uninstall-pkginclude_oioHEADERS uninstall-pkginclude_scHEADERS
+	uninstall-pkginclude_msdcHEADERS \
+	uninstall-pkginclude_oioHEADERS uninstall-pkginclude_scHEADERS \
+	uninstall-pkginclude_udeHEADERS
 
 .MAKE: install-am install-strip
 
@@ -1079,8 +1257,9 @@ uninstall-am: uninstall-libLIBRARIES uninstall-pkgincludeHEADERS \
 	install-html-am install-info install-info-am \
 	install-libLIBRARIES install-man install-pdf install-pdf-am \
 	install-pkgincludeHEADERS install-pkginclude_bitsHEADERS \
-	install-pkginclude_mathHEADERS install-pkginclude_oioHEADERS \
-	install-pkginclude_scHEADERS install-ps install-ps-am \
+	install-pkginclude_mathHEADERS install-pkginclude_msdcHEADERS \
+	install-pkginclude_oioHEADERS install-pkginclude_scHEADERS \
+	install-pkginclude_udeHEADERS install-ps install-ps-am \
 	install-strip installcheck installcheck-am installdirs \
 	maintainer-clean maintainer-clean-generic mostlyclean \
 	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
@@ -1088,7 +1267,9 @@ uninstall-am: uninstall-libLIBRARIES uninstall-pkgincludeHEADERS \
 	uninstall-libLIBRARIES uninstall-pkgincludeHEADERS \
 	uninstall-pkginclude_bitsHEADERS \
 	uninstall-pkginclude_mathHEADERS \
-	uninstall-pkginclude_oioHEADERS uninstall-pkginclude_scHEADERS
+	uninstall-pkginclude_msdcHEADERS \
+	uninstall-pkginclude_oioHEADERS uninstall-pkginclude_scHEADERS \
+	uninstall-pkginclude_udeHEADERS
 
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

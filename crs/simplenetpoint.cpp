@@ -1,12 +1,13 @@
 // (c) Mar 3, 2009 Oleg N. Peregudov
 //	09/19/2010	default callback function
+//	11/30/2010	updated netPoint interface
 #if defined( _MSC_VER )
 #	pragma warning( disable : 4251 )
 #	pragma warning( disable : 4275 )
+#	pragma warning( disable : 4996 )
 #endif
 #include <crs/simplenetpoint.h>
-#include <sstream>
-#include <iomanip>
+#include <cerrno>
 
 namespace SimpleNetPoint {
 
@@ -147,11 +148,7 @@ void server::transmit ()
 	
 	long nBytesProcessed = send( _socket, _outNextByte, _outBytesRest, 0 );
 	if( nBytesProcessed == -1 )
-	{
-		std::basic_ostringstream<char> errMsg;
-		errMsg << "transmit (" << errno << ')';
-		throw write_error( errMsg.str() );
-	}
+		throw write_error( strerror( errno ) );
 	
 	_outBytesRest -= nBytesProcessed;
 	_outNextByte += nBytesProcessed;
@@ -171,11 +168,7 @@ void server::receive ()
 	switch( nBytesProcessed )
 	{
 	case	-1:	// error state
-		{
-			std::basic_ostringstream<char> errMsg;
-			errMsg << "receive (" << errno << ')';
-			throw read_error( errMsg.str() );
-		}
+		throw read_error( strerror( errno ) );
 	
 	case	0:	// end-of-file
 		throw end_of_file ( "receive: end-of-file" );
@@ -217,8 +210,7 @@ void server::receive ()
 	}
 }
 
-CrossClass::cHandle<CrossClass::basicNetPoint>
-server::handleNewConnection ( CrossClass::cSocket & sckt, const CrossClass::cSockAddr & sa )
+CrossClass::basicNetPoint * server::handleNewConnection ( CrossClass::cSocket & sckt, const CrossClass::cSockAddr & sa )
 {
 	return new server ( sckt );
 }
@@ -231,4 +223,3 @@ void	server::setAsyncDataCallback ( asyncDataCallBackFunction func, void * pData
 }
 
 } // namespace SimpleNetPoint
-

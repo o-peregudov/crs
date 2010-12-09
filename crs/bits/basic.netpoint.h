@@ -1,14 +1,13 @@
 #ifndef CROSS_BASICNETPOINT_H_INCLUDED
 #define CROSS_BASICNETPOINT_H_INCLUDED 1
 // (c) Jan 28, 2009 Oleg N. Peregudov
-// Apr 23, 2009 - Win/Posix defines
-// Aug 24, 2010 - new server termination algorithm
+// 04/23/2009 - Win/Posix defines
+// 08/24/2010 - new server termination algorithm
+// 11/30/2010 - new name for termination method
+//              new implementation
+// 12/04/2010 - stored socket address
 
 #include <crs/socket.h>
-#include <crs/handle.h>
-#include <cerrno>
-#include <memory>
-#include <vector>
 
 #define NETPOINT_EXPORTED_EXCEPTION( exception_name )			\
 	struct CROSS_EXPORT exception_name : std::runtime_error	\
@@ -22,52 +21,31 @@ namespace CrossClass {
 class CROSS_EXPORT basicNetPoint
 {
 protected:
-	struct client_handler;
-	friend struct client_handler;
-	
-	fd_set readset,
-		 writeset,
-		 exceptset;
-	cSocket::host_socket_type highsock;
-	std::vector<cHandle<basicNetPoint> > clientList;
-	cTimeVal selectTimeOut;
-	
-	struct client_handler
-	{
-		basicNetPoint * base;
-		
-		client_handler ( basicNetPoint * peer )
-			: base( peer )
-		{ }
-		
-		void operator () ( cHandle<basicNetPoint> & );
-	};
-	
-protected:
-	cSocket _socket;
+	cSocket 		_socket;
+	cSockAddr		_sockAddress;
+	basicNetPoint* *	_clientList;
+	size_t		_nClients,
+				_nClientsAllocated;
 	
 	basicNetPoint ( cSocket & );
 	
+	void addClient ( basicNetPoint * );
+	void removeClient ( const size_t );
+	void clientReceive ( const size_t );
+	void clientTransmit ( const size_t );
+	void disconnectAll ();
+	
+protected:
 	virtual void setNonBlock ();
 	
 	virtual void transmit ();
 	virtual void receive ();
-	virtual void except ();
 	
-	virtual cHandle<basicNetPoint> handleNewConnection ( cSocket &, const cSockAddr & );
-	virtual bool doServerJob ( const bool idleState );
-	virtual bool doHandleClient ( basicNetPoint & );
-	virtual bool handleDisconnect ( basicNetPoint & );
-	
-	virtual void logGracefulDisconnect ();
-	virtual void logRuntimeError ( const std::string & msg );
-	virtual void logUnhandledError ();
-	
-	virtual void bindSocket ( const cSockAddr & );
-	virtual timeval * onStartServer ();
+	virtual basicNetPoint * handleNewConnection ( cSocket &, const cSockAddr & );
+	virtual size_t enumerateDescriptors ();
 	virtual void buildSelectList ();
-	virtual bool preCheckTerminate ();
-	virtual bool postCheckTerminate ();
+	virtual bool handleDisconnect ( basicNetPoint * );
+	virtual bool checkTerminate ();
 	
 public:
 	NETPOINT_EXPORTED_EXCEPTION( socket_allocation_error );
@@ -83,16 +61,20 @@ public:
 	NETPOINT_EXPORTED_EXCEPTION( cancel_read );
 	NETPOINT_EXPORTED_EXCEPTION( cancel_write );
 	NETPOINT_EXPORTED_EXCEPTION( end_of_file );
+	NETPOINT_EXPORTED_EXCEPTION( shutdown_error );
+	NETPOINT_EXPORTED_EXCEPTION( pipe_open_error );
+	NETPOINT_EXPORTED_EXCEPTION( pipe_close_error );
 	
 	basicNetPoint ();
 	virtual ~basicNetPoint ();
 	
 	void startServer ( const unsigned short int portNo );
-	void startServer ( const cSockAddr & );
-	
-	virtual void terminateServer ();
+	virtual void bindSocket ( const cSockAddr & );
 	virtual void clientConnect ( const cSockAddr & );
-	void clientSendRecv ();
+	
+	virtual void postTerminate ();
+	virtual bool clientSendRecv ();
+	virtual bool serverSendRecv ();
 	
 	cSocket & getSocket ();
 };

@@ -5,12 +5,13 @@
 //	09/09/2010	baudrate constant selector
 //	09/16/2010	some non standard baudrate constant fixed
 //	09/20/2010	non-blocking postTerminate
+//	09/22/2010	using 'poll' instead of 'select'
 //
 //////////////////////////////////////////////////////////////////////
 
 #include <crs/sc/posix.rs232port.h>
-#include <cstdio>
 #include <cerrno>
+#include <poll.h>
 
 static const char * termString = "^C";
 
@@ -76,11 +77,7 @@ void posixRS232port::open ( const std::string & port, const size_t baud )
 			break;
 		}
 	if( i == sizeof( baudRate ) / sizeof( baudRate[ 0 ] ) )
-	{
-		char msgText [ 64 ];
-		sprintf( msgText, "Unsupported baud rate (%ld)", baud );
-		throw basicRS232port::errOpen( msgText );
-	}
+		throw basicRS232port::errOpen( "Unsupported baud rate" );
 	
 	//
 	// Open communication port handle
@@ -88,11 +85,7 @@ void posixRS232port::open ( const std::string & port, const size_t baud )
 	m_cComPortName = port;
 	m_hCommPort = ::open( m_cComPortName.c_str(), O_RDWR | O_NOCTTY | O_NDELAY );
 	if( m_hCommPort == -1 )
-	{
-		char msgText [ 64 ];
-		sprintf( msgText, "open (%d)", errno );
-		throw basicRS232port::errOpen( msgText );
-	}
+		throw basicRS232port::errOpen( strerror( errno ) );
 	
 	//
 	// Set overall connect flag
@@ -108,11 +101,7 @@ void posixRS232port::open ( const std::string & port, const size_t baud )
 	// create an interprocess communication pipe
 	//
 	if( pipe( ipcPipeEnd ) == -1 )
-	{
-		char msgText [ 64 ];
-		sprintf( msgText, "pipe (%d)", errno );
-		throw basicRS232port::errOpen( msgText );
-	}
+		throw basicRS232port::errOpen( strerror( errno ) );
 	else
 		pipeInBufPtr = pipeInBuf;
 }
@@ -125,11 +114,7 @@ void posixRS232port::UpdateConnection()
 	// get port options
 	//
 	if( tcgetattr( m_hCommPort, &options ) == -1 )
-	{
-		char msgText [ 64 ];
-		sprintf( msgText, "tcgetattr (%d)", errno );
-		throw basicRS232port::errStatus( msgText );
-	}
+		throw basicRS232port::errStatus( strerror( errno ) );
 	
 	//
 	// preserve original port options
@@ -188,7 +173,7 @@ void posixRS232port::UpdateConnection()
 	// read timeouts
 	//
 	options.c_cc[ VMIN ] = 0;	// the minimum number of characters to read
-	options.c_cc[ VTIME ] = 0;	// the time to wait for the first character read
+	options.c_cc[ VTIME ] = 10;	// the time to wait for the first character read
 	
 	//
 	// setting software flow control
@@ -199,11 +184,7 @@ void posixRS232port::UpdateConnection()
 	// set new port options
 	//
 	if( tcsetattr( m_hCommPort, TCSANOW, &options ) == -1 )
-	{
-		char msgText [ 64 ];
-		sprintf( msgText, "tcsetattr (%d)", errno );
-		throw basicRS232port::errStatus( msgText );
-	}
+		throw basicRS232port::errStatus( strerror( errno ) );
 }
 
 void posixRS232port::close()
@@ -214,17 +195,9 @@ void posixRS232port::close()
 		// close termination pipe
 		//
 		if( ::close( ipcPipeEnd[ 1 ] ) == -1 )
-		{
-			char msgText [ 64 ];
-			sprintf( msgText, "pipe#1 (%d)", errno );
-			throw basicRS232port::errClose( msgText );
-		}
+			throw basicRS232port::errClose( strerror( errno ) );
 		if( ::close( ipcPipeEnd[ 0 ] ) == -1 )
-		{
-			char msgText [ 64 ];
-			sprintf( msgText, "pipe#0 (%d)", errno );
-			throw basicRS232port::errClose( msgText );
-		}
+			throw basicRS232port::errClose( strerror( errno ) );
 		
 		//
 		// Reset overall connect flag
@@ -235,59 +208,47 @@ void posixRS232port::close()
 		// restore original port options
 		//
 		if( tcsetattr( m_hCommPort, TCSANOW, &m_portOptions ) == -1 )
-		{
-			char msgText [ 64 ];
-			sprintf( msgText, "on close: tcsetattr (%d)", errno );
-			throw basicRS232port::errStatus( msgText );
-		}
+			throw basicRS232port::errStatus( strerror( errno ) );
 		
 		//
 		// do close port
 		//
 		if( ::close( m_hCommPort ) == -1 )
-		{
-			char msgText [ 64 ];
-			sprintf( msgText, "close (%d)", errno );
-			throw basicRS232port::errClose( msgText );
-		}
+			throw basicRS232port::errClose( strerror( errno ) );
 	}
 }
 
 bool posixRS232port::wait4write ()
 {
-	fd_set readset;
-	fd_set writeset;
-	
-	int highdesc = m_hCommPort;
-	if( highdesc < ipcPipeEnd[ 0 ] )
-		highdesc = ipcPipeEnd[ 0 ];
-	
-	while( true )
+	pollfd fds [ 2 ];
+	fds[ 0 ].fd = ipcPipeEnd[ 0 ];
+	fds[ 0 ].events = POLLIN;
+	fds[ 1 ].fd = m_hCommPort;
+	fds[ 1 ].events = POLLOUT;
+	for(;;)
 	{
-		FD_ZERO( &readset );
-		FD_ZERO( &writeset );
-		FD_SET( m_hCommPort, &writeset );
-		FD_SET( ipcPipeEnd[ 0 ], &readset );
-		
-		switch( ::select( highdesc + 1, &readset, &writeset, NULL, NULL ) )
+		switch( poll( fds, sizeof( fds ) / sizeof( pollfd ), -1 ) )
 		{
-		case	-1:	// select failed
-			{
-				char msgText [ 64 ];
-				sprintf( msgText, "select (%d)", errno );
-				throw basicRS232port::errWrite( msgText );
-			}
+		case	-1:		// poll failed
+			if( errno != EINTR )	// any error except signal interrupt
+				throw basicRS232port::errPoll( strerror( errno ) );
+			break;
 		
-		case	0:	// timeout
-			return false;
+		case	0:		// poll timeout ?
+			break;
 		
 		default:
-			if( FD_ISSET( m_hCommPort, &writeset ) )
-				return true;	// we can write
-			if( FD_ISSET( ipcPipeEnd[ 0 ], &readset ) && checkTerminate() )
-				return false;	// we have to stop
+			if( fds[ 0 ].revents & POLLIN )
+			{
+				if( checkTerminate() )
+					return false;	// we have to stop
+			}
+			
+			if( fds[ 1 ].revents & POLLOUT )
+				return true;
 		}
 	}
+	return false;
 }
 
 bool	posixRS232port::checkTerminate ()
@@ -298,11 +259,7 @@ bool	posixRS232port::checkTerminate ()
 	{
 		long nBytesRead = ::read( ipcPipeEnd[ 0 ], pipeInBufPtr, nBytesRest );
 		if( nBytesRead == -1 )
-		{
-			char msgText [ 64 ];
-			sprintf( msgText, "pipe read (%d)", errno );
-			throw basicRS232port::errRead( msgText );
-		}
+			throw basicRS232port::errRead( strerror( errno ) );
 		pipeInBufPtr += nBytesRead;
 		*pipeInBufPtr = 0;
 		if( strcmp( pipeInBuf, termString ) == 0 )
@@ -322,11 +279,7 @@ void posixRS232port::write ( const char * lpBuf, const size_t dwToWrite )
 		{
 			nBytesWritten = ::write( m_hCommPort, pWriteFrom, nBytesRest );
 			if( nBytesWritten == -1 )
-			{
-				char msgText [ 64 ];
-				sprintf( msgText, "write (%d)", errno );
-				throw basicRS232port::errWrite( msgText );
-			}
+				throw basicRS232port::errWrite( strerror( errno ) );
 			pWriteFrom += nBytesWritten;
 			nBytesRest -= nBytesWritten;
 		}
@@ -336,39 +289,34 @@ void posixRS232port::write ( const char * lpBuf, const size_t dwToWrite )
 
 bool posixRS232port::receive ()
 {
-	fd_set readset;
-	
-	int highdesc = m_hCommPort;
-	if( highdesc < ipcPipeEnd[ 0 ] )
-		highdesc = ipcPipeEnd[ 0 ];
-	
-	FD_ZERO( &readset );
-	FD_SET( m_hCommPort, &readset );
-	FD_SET( ipcPipeEnd[ 0 ], &readset );
-	
-	switch( ::select( highdesc + 1, &readset, NULL, NULL, NULL ) )
+	pollfd fds [ 2 ];
+	fds[ 0 ].fd = ipcPipeEnd[ 0 ];
+	fds[ 0 ].events = POLLIN;
+	fds[ 1 ].fd = m_hCommPort;
+	fds[ 1 ].events = POLLIN;
+	switch( poll( fds, sizeof( fds ) / sizeof( pollfd ), -1 ) )
 	{
-	case	-1:	// select failed
-		if( errno != EINTR )
-		{
-			char msgText [ 64 ];
-			sprintf( msgText, "select (%d)", errno );
-			throw basicRS232port::errRead( msgText );
-		}
+	case	-1:		// poll failed
+		if( errno != EINTR )	// any error except signal interrupt
+			throw basicRS232port::errPoll( strerror( errno ) );
 		break;
 	
-	case	0:
-		break;// timeout
+	case	0:		// poll timeout ?
+		break;
 	
-	default:	// the data could be read
-		if( FD_ISSET( ipcPipeEnd[ 0 ], &readset ) && checkTerminate() )
+	default:		// something was selected
+		if( fds[ 0 ].revents & POLLIN )
 		{
-			CrossClass::_LockIt lockTerminate ( mutexTerminate );
-			flagTerminate = true;
-			condTerminate.notify_one();
-			return false;	// we have to stop
+			if( checkTerminate() )
+			{
+				CrossClass::_LockIt lockTerminate ( mutexTerminate );
+				flagTerminate = true;
+				condTerminate.notify_one();
+				return false;	// we have to stop
+			}
 		}
-		if( FD_ISSET( m_hCommPort, &readset ) )
+		
+		if( fds[ 1 ].revents & POLLIN )
 		{
 			long dwRead = ::read( m_hCommPort, _inBufPtr, _inBufSize - ( _inBufPtr - _inBuf ) );
 			if( dwRead == -1 )
@@ -380,19 +328,14 @@ bool posixRS232port::receive ()
 					break;
 				
 				default:
-					{
-						char msgText [ 64 ];
-						sprintf( msgText, "read (%d)", errno );
-						throw basicRS232port::errRead( msgText );
-					}
-					break;
+					throw basicRS232port::errRead( strerror( errno ) );
 				}
 			}
 			else if( dwRead )
 				processIncomingBytes( dwRead );
 		}
 	}
-	return true;
+	return true;	// we have to continue the loop
 }
 
 void posixRS232port::postTerminate ( const bool doWaitTerminate )
@@ -404,11 +347,7 @@ void posixRS232port::postTerminate ( const bool doWaitTerminate )
 	{
 		nBytesWritten = ::write( ipcPipeEnd[ 1 ], p, nBytesRest );
 		if( nBytesWritten == -1 )
-		{
-			char msgText [ 64 ];
-			sprintf( msgText, "write pipe (%d)", errno );
-			throw basicRS232port::errWrite( msgText );
-		}
+			throw basicRS232port::errWrite( strerror( errno ) );
 		else
 		{
 			nBytesRest -= nBytesWritten;

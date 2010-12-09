@@ -1,4 +1,4 @@
-SUBDIRS = crs crs/ude
+SUBDIRS = crs
 
 nodist_doc_DATA = README
 

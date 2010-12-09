@@ -9,16 +9,16 @@
 #	include <winsock2.h>
 struct WSAStartWrapper
 {
-      WSAStartWrapper ()
-      {
-            WSADATA wsaData;
-            WSAStartup( MAKEWORD( 2, 2 ), &wsaData );
-      }
-      
-      ~WSAStartWrapper ()
-      {
-            WSACleanup();
-      }
+	WSAStartWrapper ()
+	{
+		WSADATA wsaData;
+		WSAStartup( MAKEWORD( 2, 2 ), &wsaData );
+	}
+	
+	~WSAStartWrapper ()
+	{
+		WSACleanup();
+	}
 };
 #elif defined( USE_POSIX_API )
 #	include <unistd.h>
@@ -160,13 +160,13 @@ namespace CrossClass
 			: cHostSocketType( o )
 		{
 		}
-	
+		
 		cSocket & operator = ( cSocket & o )
 		{
 			cHostSocketType::operator = ( o );
 			return *this;
 		}
-	
+		
 		cSocket & operator = ( const host_socket_type sock )
 		{
 			cHostSocketType::operator = ( sock );
@@ -192,7 +192,7 @@ namespace CrossClass
 			newSocket = newPeer;
 			return true;
 		}
-
+	
 	};
 } // namespace CrossClass
 #endif // CROSS_SOCKET_H_INCLUDED

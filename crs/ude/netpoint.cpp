@@ -1,13 +1,32 @@
 // (c) Jan 26, 2009 Oleg N. Peregudov
+// 11/30/2010 - condition variables for thread blocking
+// 12/03/2010 - blocking and non-blocking send/receive packet members
+//              call-back function for incoming packets
+// 12/06/2010 - extended error info
 #if defined( _MSC_VER )
 #	pragma warning( disable : 4251 )
 #	pragma warning( disable : 4275 )
 #endif
 #include <crs/ude/netpoint.h>
 #include <crs/CRCStuff.h>
-#include <sstream>
+#include <cstdio>
+#include <cerrno>
+
+#define EMSGLENGTH	256
 
 namespace ude {
+
+struct inversePredicate
+{
+	bool * _flag;
+	
+	inversePredicate ( bool * flag ) : _flag( flag ) { }
+	
+	bool operator () ()
+	{
+		return !(*_flag);
+	}
+};
 
 //
 // members of class netPoint
@@ -21,6 +40,14 @@ netPoint::netPoint ()
 	, _inBytesTotal( 0 )
 	, _inNextByte( 0 )
 	, _inBufHeader( )
+	
+	, _inPacketQueueMutex( )
+	, _inPacketQueue( )
+	
+	, _inCallBackMutex( )
+	, _inCallBack( )
+	, _inCallBackData( )
+	
 	// transmit traces
 	, _outBuf( )
 	, _outStage( 0 )
@@ -28,6 +55,10 @@ netPoint::netPoint ()
 	, _outBytesTotal( 0 )
 	, _outNextByte( 0 )
 	, _outBufHeader( )
+	
+	, _outNotify( )
+	, _outMutex( )
+	, _outFlag( false )
 {
 	initMembers();
 }
@@ -41,6 +72,14 @@ netPoint::netPoint ( CrossClass::cSocket & clientSocket )
 	, _inBytesTotal( 0 )
 	, _inNextByte( 0 )
 	, _inBufHeader( )
+	
+	, _inPacketQueueMutex( )
+	, _inPacketQueue( )
+	
+	, _inCallBackMutex( )
+	, _inCallBack( )
+	, _inCallBackData( )
+	
 	// transmit traces
 	, _outBuf( )
 	, _outStage( 0 )
@@ -48,6 +87,10 @@ netPoint::netPoint ( CrossClass::cSocket & clientSocket )
 	, _outBytesTotal( 0 )
 	, _outNextByte( 0 )
 	, _outBufHeader( )
+	
+	, _outNotify( )
+	, _outMutex( )
+	, _outFlag( false )
 {
 	initMembers();
 }
@@ -67,22 +110,23 @@ void netPoint::initMembers ()
 	_outBytesTotal = sizeof( _outBufHeader.header ) + sizeof( _outBufHeader.size );
 }
 
-CrossClass::cHandle<CrossClass::netPoint> netPoint::handleNewConnection ( CrossClass::cSocket & s, const CrossClass::cSockAddr & sa )
+CrossClass::basicNetPoint * netPoint::handleNewConnection ( CrossClass::cSocket & s, const CrossClass::cSockAddr & sa )
 {
 	return new netPoint( s );
 }
 
 void netPoint::receive ()
 {
-	if( _inEventReady.WaitEvent( 0 ) )
-		return;
-	
 	long nBytesProcessed = recv( _socket, _inNextByte, _inBytesTotal - _inVirtualBytes, 0 );
 	if( nBytesProcessed == -1 )
 	{
-		std::basic_ostringstream<char> errMsg;
-		errMsg << "receive (" << errno << ')';
-		throw read_error( errMsg.str() );
+		char msgText [ EMSGLENGTH ];
+#if defined( USE_WIN32_API )
+		sprintf( msgText, "code: %d", WSAGetLastError() );
+#else
+		sprintf( msgText, "%s (%d)", strerror( errno ), errno );
+#endif
+		throw read_error( msgText );
 	}
 	else if( nBytesProcessed == 0 )
 		throw end_of_file( "receive" );
@@ -112,10 +156,11 @@ void netPoint::receive ()
 			break;
 		
 		case	1:	// contents was received
+			pushPacket();
+			inCallBack();
 			_inNextByte = reinterpret_cast<char *>( &_inBufHeader );
 			_inBytesTotal = sizeof( _inBufHeader.header ) + sizeof( _inBufHeader.size );
 			_inStage = 0;
-			_inEventReady.SetEvent();
 			break;
 		}
 	}
@@ -123,56 +168,66 @@ void netPoint::receive ()
 
 bool netPoint::recvPacket ( cTalkPacket & packet )
 {
-	if( _inEventReady.WaitEvent( 0 ) )
+	CrossClass::_LockIt inPacketQueueLock ( _inPacketQueueMutex );
+	if( _inPacketQueue.empty() )
+		return false;
+	else
 	{
-		packet = _inBuf;
-		_inEventReady.ResetEvent();
+		packet = _inPacketQueue.front();
+		_inPacketQueue.pop_front();
 		return true;
 	}
-	else
-		return false;
 }
 
 void netPoint::transmit ()
 {
-	if( _outEventReady.WaitEvent( 0 ) )
-		return;
-	
-	long nBytesProcessed = send( _socket, _outNextByte, _outBytesTotal - _outVirtualBytes, 0 );
-	if( nBytesProcessed == -1 )
+	CrossClass::_LockIt lockTransmission ( _outMutex );
+	if( _outFlag )
 	{
-		std::basic_ostringstream<char> errMsg;
-		errMsg << "transmit (" << errno << ')';
-		throw write_error( errMsg.str() );
-	}
-	
-	_outVirtualBytes += nBytesProcessed;
-	_outNextByte += nBytesProcessed;
-	
-	if( _outVirtualBytes == _outBytesTotal )
-	{
-		// jump to the next stage
-		_outVirtualBytes = 0;
-		switch( _outStage++ )
+		long nBytesProcessed = send( _socket, _outNextByte, _outBytesTotal - _outVirtualBytes, 0 );
+		if( nBytesProcessed == -1 )
 		{
-		case	0:	// sending contents
-			_outNextByte = reinterpret_cast<const char *>( _outBuf.byte() );
-			_outBytesTotal = _outBuf.byteSize();
-			break;
+			char msgText [ EMSGLENGTH ];
+#if defined( USE_WIN32_API )
+			sprintf( msgText, "code: %d", WSAGetLastError() );
+#else
+			sprintf( msgText, "%s (%d)", strerror( errno ), errno );
+#endif
+			throw write_error( msgText );
+		}
 		
-		case	1:	// transmission complete
-			_outStage = 0;
-			_outNextByte = reinterpret_cast<char *>( &_outBufHeader );
-			_outBytesTotal = sizeof( _outBufHeader.header ) + sizeof( _outBufHeader.size );
-			_outEventReady.SetEvent();
-			break;
+		_outVirtualBytes += nBytesProcessed;
+		_outNextByte += nBytesProcessed;
+		
+		if( _outVirtualBytes == _outBytesTotal )
+		{
+			// jump to the next stage
+			_outVirtualBytes = 0;
+			switch( _outStage++ )
+			{
+			case	0:	// sending contents
+				_outNextByte = reinterpret_cast<const char *>( _outBuf.byte() );
+				_outBytesTotal = _outBuf.byteSize();
+				break;
+			
+			case	1:	// transmission complete
+				_outStage = 0;
+				_outNextByte = reinterpret_cast<char *>( &_outBufHeader );
+				_outBytesTotal = sizeof( _outBufHeader.header ) + sizeof( _outBufHeader.size );
+				_outFlag = false;
+				_outNotify.notify_one();
+				break;
+			}
 		}
 	}
 }
 
 bool netPoint::sendPacket ( const cTalkPacket & packet )
 {
-	if( _outEventReady.WaitEvent( 0 ) )
+	CrossClass::_LockIt lockTransmission ( _outMutex );
+	if( _outFlag )
+		return false;
+	else
 	{
 		_outBufHeader.header = _outBuf = packet;
 		_outBufHeader.size = packet.byteSize();
@@ -183,11 +238,30 @@ bool netPoint::sendPacket ( const cTalkPacket & packet )
 			_outBufHeader.header.crc = get_crc_ccitt( crcInit, reinterpret_cast<const char *>( &_outBufHeader.header ), sizeof( _outBufHeader.header ) );
 		}
 		#endif
-		_outEventReady.ResetEvent();
+		_outFlag = true;
 		return true;
 	}
-	else
-		return false;
+}
+
+bool netPoint::sendPacket ( const cTalkPacket & packet, const unsigned long msTimeOut )
+{
+	if( sendPacket( packet ) )
+	{
+		CrossClass::_LockIt lockTransmission ( _outMutex );
+		if( msTimeOut == static_cast<unsigned long>( -1 ) )
+		{
+			_outNotify.wait( lockTransmission );
+			_outFlag = false;
+			return true;		// the packet was sent!
+		}
+		else if( _outNotify.wait_for( lockTransmission, msTimeOut, inversePredicate( &_outFlag ) ) )
+		{
+			_outFlag = false;
+			return true;		// the packet was sent!
+		}
+	}
+	return false;				// send timeout or would block
 }
 
 } // namespace ude
+
