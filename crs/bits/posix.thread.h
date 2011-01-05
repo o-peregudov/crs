@@ -80,4 +80,3 @@ namespace CrossClass
 	extern CROSS_EXPORT void sleep ( const unsigned long msDuration );
 } // namespace CrossClass
 #endif // CROSS_POSIX_THREAD_H_INCLUDED
-

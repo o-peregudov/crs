@@ -1,5 +1,11 @@
 // (c) Sep 18, 2010 Oleg N. Peregudov
 // Envelop for the POSIX semaphore
+//	01/03/2011	integer types
+//
+
+#if defined( HAVE_CONFIG_H )
+#	include "config.h"
+#endif
 
 #include <crs/bits/posix.semaphore.h>
 #include <cstring>
@@ -48,6 +54,13 @@ bool cPosixSemaphore::try_lock_for ( const unsigned long dwMilliseconds )
 {
 	timespec abstime;
 	clock_gettime( CLOCK_REALTIME, &abstime );
+	#if defined( HAVE_INT64_T )
+	typedef int64_t	long64;
+	#elif defined( HANE_LONG_LONG )
+	typedef long long	long64;
+	#elif defined( HAVE___INT64 )
+	typedef __int64	long64;
+	#endif
 	long64 nanoseconds = abstime.tv_nsec + dwMilliseconds * 1000000L;
 	abstime.tv_sec += nanoseconds / 1000000000L;	// seconds
 	abstime.tv_nsec = nanoseconds % 1000000000L;	// nanoseconds

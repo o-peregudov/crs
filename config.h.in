@@ -1,7 +1,16 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* Build type from configure */
+#undef CONFIG_BUILD_TYPE
+
+/* Host type from configure */
+#undef CONFIG_HOST_TYPE
+
 /* Define to 1 if you have the <arpa/inet.h> header file. */
 #undef HAVE_ARPA_INET_H
+
+/* char is defined in system headers */
+#undef HAVE_CHAR
 
 /* Define to 1 if you have the `clock_gettime' function. */
 #undef HAVE_CLOCK_GETTIME
@@ -12,17 +21,41 @@
 /* Define to 1 if you have the <fcntl.h> header file. */
 #undef HAVE_FCNTL_H
 
-/* Define to 1 if you have the <float.h> header file. */
-#undef HAVE_FLOAT_H
-
 /* Define to 1 if you have the `gethostbyname' function. */
 #undef HAVE_GETHOSTBYNAME
 
 /* Define to 1 if you have the `inet_ntoa' function. */
 #undef HAVE_INET_NTOA
 
+/* int is defined in system headers */
+#undef HAVE_INT
+
+/* int16_t is defined in system headers */
+#undef HAVE_INT16_T
+
+/* int32_t is defined in system headers */
+#undef HAVE_INT32_T
+
+/* int64_t is defined in system headers */
+#undef HAVE_INT64_T
+
+/* int8_t is defined in system headers */
+#undef HAVE_INT8_T
+
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
+
+/* Define to 1 if you have the `pthread' library (-lpthread). */
+#undef HAVE_LIBPTHREAD
+
+/* Define to 1 if you have the `rt' library (-lrt). */
+#undef HAVE_LIBRT
+
+/* long is defined in system headers */
+#undef HAVE_LONG
+
+/* long long is defined in system headers */
+#undef HAVE_LONG_LONG
 
 /* Define to 1 if you have the `memcpy' function. */
 #undef HAVE_MEMCPY
@@ -36,9 +69,6 @@
 /* Define to 1 if you have the `memset' function. */
 #undef HAVE_MEMSET
 
-/* Define to 1 if you have the `modf' function. */
-#undef HAVE_MODF
-
 /* Define to 1 if you have the <netdb.h> header file. */
 #undef HAVE_NETDB_H
 
@@ -48,17 +78,17 @@
 /* Define to 1 if you have the `poll' function. */
 #undef HAVE_POLL
 
-/* Define to 1 if you have the `pow' function. */
-#undef HAVE_POW
+/* Define to 1 if you have the <poll.h> header file. */
+#undef HAVE_POLL_H
 
 /* Define to 1 if you have the `select' function. */
 #undef HAVE_SELECT
 
+/* short is defined in system headers */
+#undef HAVE_SHORT
+
 /* Define to 1 if you have the `socket' function. */
 #undef HAVE_SOCKET
-
-/* Define to 1 if you have the `sqrt' function. */
-#undef HAVE_SQRT
 
 /* Define to 1 if stdbool.h conforms to C99. */
 #undef HAVE_STDBOOL_H
@@ -78,11 +108,11 @@
 /* Define to 1 if you have the <string.h> header file. */
 #undef HAVE_STRING_H
 
-/* Define to 1 if you have the `strpbrk' function. */
-#undef HAVE_STRPBRK
-
 /* Define to 1 if you have the <syslog.h> header file. */
 #undef HAVE_SYSLOG_H
+
+/* Define to 1 if you have the <sys/select.h> header file. */
+#undef HAVE_SYS_SELECT_H
 
 /* Define to 1 if you have the <sys/socket.h> header file. */
 #undef HAVE_SYS_SOCKET_H
@@ -96,11 +126,35 @@
 /* Define to 1 if you have the <termios.h> header file. */
 #undef HAVE_TERMIOS_H
 
+/* uint16_t is defined in system headers */
+#undef HAVE_UINT16_T
+
+/* uint32_t is defined in system headers */
+#undef HAVE_UINT32_T
+
+/* uint64_t is defined in system headers */
+#undef HAVE_UINT64_T
+
+/* uint8_t is defined in system headers */
+#undef HAVE_UINT8_T
+
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
+/* Define to 1 if you have the <winsock2.h> header file. */
+#undef HAVE_WINSOCK2_H
+
+/* Define to 1 if you have the <winsock.h> header file. */
+#undef HAVE_WINSOCK_H
+
 /* Define to 1 if the system has the type `_Bool'. */
 #undef HAVE__BOOL
+
+/* __int64 is defined in system headers */
+#undef HAVE___INT64
+
+/* configure command line used to configure libcrs */
+#undef LIBCRS_CONFIGURE_OPTIONS
 
 /* Define to the sub-directory in which libtool stores uninstalled libraries.
    */
@@ -126,6 +180,48 @@
 
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
+
+/* The size of `char', as computed by sizeof. */
+#undef SIZEOF_CHAR
+
+/* The size of `int', as computed by sizeof. */
+#undef SIZEOF_INT
+
+/* The size of `int16_t', as computed by sizeof. */
+#undef SIZEOF_INT16_T
+
+/* The size of `int32_t', as computed by sizeof. */
+#undef SIZEOF_INT32_T
+
+/* The size of `int64_t', as computed by sizeof. */
+#undef SIZEOF_INT64_T
+
+/* The size of `int8_t', as computed by sizeof. */
+#undef SIZEOF_INT8_T
+
+/* The size of `long', as computed by sizeof. */
+#undef SIZEOF_LONG
+
+/* The size of `long long', as computed by sizeof. */
+#undef SIZEOF_LONG_LONG
+
+/* The size of `short', as computed by sizeof. */
+#undef SIZEOF_SHORT
+
+/* The size of `uint16_t', as computed by sizeof. */
+#undef SIZEOF_UINT16_T
+
+/* The size of `uint32_t', as computed by sizeof. */
+#undef SIZEOF_UINT32_T
+
+/* The size of `uint64_t', as computed by sizeof. */
+#undef SIZEOF_UINT64_T
+
+/* The size of `uint8_t', as computed by sizeof. */
+#undef SIZEOF_UINT8_T
+
+/* The size of `__int64', as computed by sizeof. */
+#undef SIZEOF___INT64
 
 /* Define to 1 if you have the ANSI C header files. */
 #undef STDC_HEADERS

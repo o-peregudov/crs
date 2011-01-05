@@ -1,4 +1,5 @@
 // (c) Jul 24, 2009 Oleg N. Peregudov
+//	12/13/2010	default constructor for line
 #include <crs/math/interpolation.h>
 
 namespace Interpolation {
@@ -62,6 +63,17 @@ const double & polynom::sumOfSquaredResiduals ( const unsigned int nPoints, cons
 //
 // members of class line
 //
+line::line ( )
+	: polynom( 1 )
+	, c0( 0.0 )
+	, c1( 1.0 )
+	, b01( 0 )
+	, b02( 0 )
+	, s( 0 )
+	, q( 0 )
+{
+}
+
 line::line ( const std::pair<double, double> & coefficient )
 	: polynom( 1 )
 	, c0( 0 )

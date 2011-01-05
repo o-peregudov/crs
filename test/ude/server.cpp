@@ -1,14 +1,23 @@
+#if defined( _MSC_VER )
+#	pragma warning( disable : 4251 )
+#	pragma warning( disable : 4275 )
+#endif
+
+#if defined( HAVE_CONFIG_H )
+#	include "config.h"
+#endif
+
 #include <crs/ude/server.h>
 #include <csignal>
 #include <iostream>
 #include <sstream>
 
-class sdm : public ude::server_device_manager
+class sdm : public ude::device_manager
 {
 protected:
 	virtual bool checkTerminate ()
 	{
-		bool result = ude::server_device_manager::checkTerminate();
+		bool result = ude::device_manager::checkTerminate();
 		if( result )
 			std::cout << "\rGot terminate signal!" << std::endl;
 		return result;
@@ -17,14 +26,14 @@ protected:
 	virtual CrossClass::basicNetPoint * handleNewConnection ( CrossClass::cSocket & s, const CrossClass::cSockAddr & sa )
 	{
 		std::cout << "Connection from " << sa.DottedDecimal() << ':' << sa.Port() << std::endl;
-		CrossClass::basicNetPoint * newPeer = ude::server_device_manager::handleNewConnection( s, sa );
-		ude::basic_device * newDevice = dynamic_cast<ude::basic_device *>( newPeer );
+		CrossClass::basicNetPoint * newPeer = ude::device_manager::handleNewConnection( s, sa );
+		ude::device * newDevice = dynamic_cast<ude::device *>( newPeer );
 		
-		const char * welcomText = "Welcome!";
+		const char * welcomText = "You are Welcome!";
 		
-		ude::cTalkPacket welcom ( 0, strlen( welcomText ) + 1 );
-		welcom.domain = ude::cTalkPacket::domainRDevMan;
-		welcom.recepient = 0xFFFF;
+		ude::cTalkPacket welcom ( 0, static_cast<ude::ushort>( strlen( welcomText ) + 1 ) );
+		welcom.header().domain = ude::cPacketHeader::domainRDevMan;
+		welcom.header().recepient = 0xFFFF;
 		strcpy( reinterpret_cast<char *>( &(welcom.byte( 0 )) ), welcomText );
 		newDevice->take( welcom );
 		
@@ -34,35 +43,13 @@ protected:
 	virtual bool handleDisconnect ( CrossClass::basicNetPoint * peer )
 	{
 		std::cout << "client disconnected" << std::endl;
-		return ude::server_device_manager::handleDisconnect( peer );
+		return ude::device_manager::handleDisconnect( peer );
 	}
-	
-	virtual bool _send ( const ude::cTalkPacket & );
 	
 public:
-	sdm ()
-		: ude::server_device_manager( )
-	{
-	}
-	
-	virtual ~sdm ()
-	{
-	}
+	sdm () : ude::device_manager( ) { }
+	virtual ~sdm () { }
 };
-
-bool sdm::_send ( const ude::cTalkPacket & packet )
-{
-	switch( packet.domain )
-	{
-	case	ude::cTalkPacket::domainPMeasure:
-		proceed_response( packet );
-		break;
-	
-	default:
-		break;
-	}
-	return true;
-}
 
 sdm * netServ;
 
@@ -96,8 +83,8 @@ int	main ()
 	
 	while( server.serverSendRecv() )
 	{
-		server.proceed_response( );
-		server.proceed_request( 1 );
+		while( server.proceed_response() );
+		while( server.proceed_request() );
 	}
 	
 #if defined( USE_WIN32_API )

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1251"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="cross"
 	ProjectGUID="{DCB91340-649A-429C-B36A-E500A708E276}"
 	RootNamespace="cross"
@@ -46,8 +46,8 @@
 				InlineFunctionExpansion="0"
 				FavorSizeOrSpeed="0"
 				WholeProgramOptimization="false"
-				AdditionalIncludeDirectories="D:\oleg\devel\libcrs"
-				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_AFXDLL;COMPILING_CROSS_DLL"
+				AdditionalIncludeDirectories="..\"
+				PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_AFXDLL;COMPILING_CROSS_DLL;_CRT_SECURE_NO_DEPRECATE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -137,7 +137,7 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				AdditionalIncludeDirectories="..\"
-				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;__MULTITHREAD__;COMPILING_CROSS_DLL;_CRT_SECURE_NO_DEPRECATE"
+				PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;__MULTITHREAD__;DLL_EXPORT;_CRT_SECURE_NO_DEPRECATE;HAVE___INT64"
 				RuntimeLibrary="2"
 				DisableLanguageExtensions="false"
 				UsePrecompiledHeader="0"
@@ -321,15 +321,19 @@
 				Name="ude"
 				>
 				<File
-					RelativePath="..\crs\ude\basics.cpp"
-					>
-				</File>
-				<File
 					RelativePath="..\crs\ude\client.cpp"
 					>
 				</File>
 				<File
 					RelativePath="..\crs\ude\netpoint.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\crs\ude\packets.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\crs\ude\pingtool.cpp"
 					>
 				</File>
 				<File
@@ -543,10 +547,6 @@
 				Name="ude"
 				>
 				<File
-					RelativePath="..\crs\ude\basics.h"
-					>
-				</File>
-				<File
 					RelativePath="..\crs\ude\client.h"
 					>
 				</File>
@@ -556,6 +556,10 @@
 				</File>
 				<File
 					RelativePath="..\crs\ude\packets.h"
+					>
+				</File>
+				<File
+					RelativePath="..\crs\ude\pingtool.h"
 					>
 				</File>
 				<File

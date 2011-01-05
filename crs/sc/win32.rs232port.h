@@ -9,8 +9,8 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#include <windows.h>
 #include <crs/sc/basic.rs232port.h>
+#include <windows.h>
 
 namespace sc {
 

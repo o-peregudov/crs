@@ -1,7 +1,13 @@
 // (c) Apr 17, 2008 Oleg N. Peregudov
-// Aug 23, 2010 - POSIX thread envelope
-// Aug 27, 2010 - C++0x locks compartibility
-// Aug 30, 2010 - using our condition variable wrapper
+//	08/23/2010	POSIX thread envelope
+//	08/27/2010	C++0x locks compartibility
+//	08/30/2010	using our condition variable wrapper
+//	01/03/2011	integer types
+//
+
+#if defined( HAVE_CONFIG_H )
+#	include "config.h"
+#endif
 
 #include <crs/bits/posix.thread.h>
 #include <cstdio>
@@ -205,8 +211,8 @@ void sleep ( const unsigned long msDuration )
 	else
 	{
 		timespec rqtp, rmtp;
-		rqtp.tv_sec = msDuration / 1000L;
-		rqtp.tv_nsec = ( msDuration % 1000L ) * 1000000L;
+		rqtp.tv_sec = msDuration / 1000L;				// seconds
+		rqtp.tv_nsec = ( msDuration % 1000L ) * 1000000L;	// nanoseconds
 		while( nanosleep( &rqtp, &rmtp ) == -1 ) rqtp = rmtp;
 	}
 }

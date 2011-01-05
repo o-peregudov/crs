@@ -1,8 +1,11 @@
 // (c) Jan 31, 2009 Oleg N. Peregudov
-// 04/23/2009 - Win/Posix defines
-// 08/24/2010 - new server termination algorithm based on events
-// 12/01/2010 - new name for termination method
-//              new implementation
+//	04/23/2009	Win/Posix defines
+//	08/24/2010	new server termination algorithm based on events
+//	12/01/2010	new name for termination method
+//			new implementation
+//	12/10/2010	observer for transmission flag
+//	12/12/2010	clientSendRecv now checks for wait2transmit
+//	01/03/2011	fixed clients' loop in serverSendRecv
 #if defined( _MSC_VER )
 #	pragma warning( disable : 4251 )
 #	pragma warning( disable : 4275 )
@@ -72,22 +75,18 @@ void win32NetPoint::buildSelectList ()
 	FD_SET( _socket, &exceptset );
 	
 	// fill in clients
-	for( size_t i = 0; i < _nClients; ++i )
+	for( size_t i = 0; i < _clientList.size(); ++i )
 	{
-		while( _nClients && ( _clientList[ i ] == 0 ) )
+		while( ( i < _clientList.size() ) && ( _clientList[ i ] == 0 ) )
 		{
-			if( i < --_nClients )
-			{
-				_clientList[ i ] = _clientList[ _nClients ];
-				_clientList[ _nClients ] = 0;
-			}
-			else
-				break;
+			_clientList[ i ] = _clientList.back();
+			_clientList.pop_back();
 		}
-		if( _clientList[ i ] )
+		if( i < _clientList.size() )
 		{
 			FD_SET( _clientList[ i ]->getSocket(), &readset );
-			FD_SET( _clientList[ i ]->getSocket(), &writeset );
+			if( _clientList[ i ]->want2transmit() )
+				FD_SET( _clientList[ i ]->getSocket(), &writeset );
 			FD_SET( _clientList[ i ]->getSocket(), &exceptset );
 			if( highsock < _clientList[ i ]->getSocket() )
 				highsock = _clientList[ i ]->getSocket();
@@ -117,10 +116,11 @@ bool win32NetPoint::clientSendRecv ()
 		
 		highsock = _socket;
 		FD_SET( _socket, &readset );
-		FD_SET( _socket, &writeset );
+		if( want2transmit() )
+			FD_SET( _socket, &writeset );
 		FD_SET( _socket, &exceptset );
 		
-		selectTimeOut.milliseconds( 10 );
+		selectTimeOut.microseconds( 100 );
 		switch( select( highsock+1, &readset, &writeset, &exceptset, &selectTimeOut ) )
 		{
 		case	SOCKET_ERROR:
@@ -152,7 +152,7 @@ bool win32NetPoint::serverSendRecv ()
 	else
 	{
 		buildSelectList();
-		selectTimeOut.milliseconds( 10 );
+		selectTimeOut.microseconds( 100 );
 		switch( select( highsock+1, &readset, &writeset, &exceptset, &selectTimeOut ) )
 		{
 		case	SOCKET_ERROR:
@@ -174,16 +174,16 @@ bool win32NetPoint::serverSendRecv ()
 					addClient( handleNewConnection( newPeer, newPeerAddr ) );
 			}
 			
-			#pragma omp parallel for if ( _nClients > 100 )
-			for( int i = 0; i < _nClients; ++i )
+			#pragma omp parallel for if ( _clientList.size() > 100 )
+			for( int i = 0; i < _clientList.size(); ++i )
 			{
 				try
 				{
-					if( FD_ISSET( _clientList[ i ]->getSocket(), &readset ) )
-						clientReceive( i );
-					
 					if( FD_ISSET( _clientList[ i ]->getSocket(), &writeset ) )
 						clientTransmit( i );
+					
+					if( FD_ISSET( _clientList[ i ]->getSocket(), &readset ) )
+						clientReceive( i );
 					
 					if( FD_ISSET( _clientList[ i ]->getSocket(), &exceptset ) )
 						throw basicNetPoint::end_of_file( "exceptset" );
@@ -200,4 +200,3 @@ bool win32NetPoint::serverSendRecv ()
 }
 
 } // namespace CrossClass
-

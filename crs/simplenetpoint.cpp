@@ -1,6 +1,7 @@
 // (c) Mar 3, 2009 Oleg N. Peregudov
 //	09/19/2010	default callback function
 //	11/30/2010	updated netPoint interface
+//	12/09/2010	observer for transmission flag
 #if defined( _MSC_VER )
 #	pragma warning( disable : 4251 )
 #	pragma warning( disable : 4275 )
@@ -71,6 +72,7 @@ server::server ()
 	, _outboxMutex( )
 	, _outbox( )
 	, _outContents( true )
+	, _outNeeded( false )
 	, _outNextByte( 0 )
 	, _outBytesRest( 0 )
 {
@@ -93,6 +95,7 @@ server::server ( CrossClass::cSocket & sckt )
 	, _outboxMutex( )
 	, _outbox( )
 	, _outContents( true )
+	, _outNeeded( false )
 	, _outNextByte( 0 )
 	, _outBytesRest( 0 )
 {
@@ -104,13 +107,15 @@ server::~server ()
 
 void server::sendMessage ( const message & msg )
 {
-	CrossClass::_LockIt exclusive_access ( _outboxMutex );
+	CrossClass::_LockIt theLock ( _outboxMutex );
 	_outbox.push_back( msg );
+	theLock.unlock();
+	postRestart();
 }
 
 bool server::recvMessage ( message & msg )
 {
-	CrossClass::_LockIt exclusive_access ( _inboxMutex );
+	CrossClass::_LockIt theLock ( _inboxMutex );
 	if( _inbox.empty() )
 		return false;
 	else
@@ -127,11 +132,15 @@ void server::transmit ()
 	{
 		if( _outContents )
 		{
-			// start transmission of new packet
-			CrossClass::_LockIt exclusive_access ( _outboxMutex );
+			CrossClass::_LockIt theLock ( _outboxMutex );
 			if( _outbox.empty() )
-				return;	// there is nothing to transmit!
+				// there is nothing to transmit!
+				return;// ( _outNeeded = false );
 			
+			//
+			// start transmission of new packet
+			//
+			_outNeeded = true;
 			_outContents = false;
 			_outNextByte = reinterpret_cast<char *>( &_outbox.front().size );
 			_outBytesRest = sizeof( _inMessage.size );
@@ -139,7 +148,7 @@ void server::transmit ()
 		else
 		{
 			// continue packet's transmission
-			CrossClass::_LockIt exclusive_access ( _outboxMutex );
+			CrossClass::_LockIt theLock ( _outboxMutex );
 			_outContents = true;
 			_outNextByte = _outbox.front().contents;
 			_outBytesRest = _outbox.front().size;
@@ -153,13 +162,16 @@ void server::transmit ()
 	_outBytesRest -= nBytesProcessed;
 	_outNextByte += nBytesProcessed;
 	
+	CrossClass::_LockIt theLock ( _outboxMutex );
 	if( _outContents && ( _outBytesRest == 0 ) )
 	{
 		// transmission of packet is done
 		// so we can remove packet from the outbox queue
-		CrossClass::_LockIt exclusive_access ( _outboxMutex );
 		_outbox.pop_front();
+		if( _outbox.empty() )
+			_outNeeded = false;	// there is nothing left to transmit!
 	}
+	//return _outNeeded;
 }
 
 void server::receive ()
@@ -185,11 +197,11 @@ void server::receive ()
 				_inNextByte = reinterpret_cast<char *>( &_inMessage.size );
 				_inBytesRest = sizeof( _inMessage.size );
 				{
-					CrossClass::_LockIt exclusive_access ( _inboxMutex );
+					CrossClass::_LockIt theLock ( _inboxMutex );
 					_inbox.push_back( _inMessage );
 				}
 				{
-					CrossClass::_LockIt exclusive_access ( _callBackLock );
+					CrossClass::_LockIt theLock ( _callBackLock );
 					if( _newMessageCallBack )
 						_newMessageCallBack( _callBackData );
 				}
@@ -210,6 +222,12 @@ void server::receive ()
 	}
 }
 
+bool server::want2transmit ()
+{
+	CrossClass::_LockIt theLock ( _outboxMutex );
+	return ( !_outbox.empty() || _outNeeded );
+}
+
 CrossClass::basicNetPoint * server::handleNewConnection ( CrossClass::cSocket & sckt, const CrossClass::cSockAddr & sa )
 {
 	return new server ( sckt );
@@ -217,9 +235,10 @@ CrossClass::basicNetPoint * server::handleNewConnection ( CrossClass::cSocket & 
 
 void	server::setAsyncDataCallback ( asyncDataCallBackFunction func, void * pData )
 {
-	CrossClass::_LockIt exclusive_access ( _callBackLock );
+	CrossClass::_LockIt theLock ( _callBackLock );
 	_newMessageCallBack = func;
 	_callBackData = pData;
 }
 
 } // namespace SimpleNetPoint
+

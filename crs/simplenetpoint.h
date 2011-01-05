@@ -3,6 +3,7 @@
 // (c) Aug 29, 2010 Oleg N. Peregudov
 //	09/19/2010	default callback function
 //	11/30/2010	updated netPoint interface
+//	12/09/2010	observer for transmission flag
 
 #include <crs/netpoint.h>
 #include <crs/callback.h>
@@ -44,7 +45,8 @@ protected:
 	
 	CrossClass::LockType	_outboxMutex;
 	std::deque<message>	_outbox;
-	bool				_outContents;
+	bool				_outContents,
+					_outNeeded;
 	char *			_outNextByte;
 	unsigned long		_outBytesRest;
 	
@@ -57,6 +59,8 @@ protected:
 public:
 	server ();
 	virtual ~server ();
+	
+	virtual bool want2transmit ();
 	
 	void	sendMessage ( const message & );
 	bool	recvMessage ( message & );

@@ -1,12 +1,15 @@
 #ifndef CROSS_POSIX_NETPOINT_H_INCLUDED
 #define CROSS_POSIX_NETPOINT_H_INCLUDED 1
 // (c) Jan 28, 2009 Oleg N. Peregudov
-// 04/23/2009 - Win/Posix defines
-// 08/26/2010 - new server termination algorithm based on pipes
-// 11/30/2010 - usage of the poll system call
-// 12/04/2010 - new pipe creation concept
+//	04/23/2009	Win/Posix defines
+//	08/26/2010	new server termination algorithm based on pipes
+//	11/30/2010	usage of the poll system call
+//	12/04/2010	new pipe creation concept
+//	12/09/2010	postRestart member
+//	12/12/2010	postRestart status flag to avoid request stacking
 
 #include <crs/bits/basic.netpoint.h>
+#include <crs/security.h>
 #include <poll.h>
 
 namespace CrossClass {
@@ -21,6 +24,9 @@ protected:
 	pollfd *	fds;
 	size_t	nfdsAllocated,
 			nfdsUsed;
+	
+	CrossClass::cMutex	postRestartMutex;
+	bool				postRestartFlag;
 	
 	void createPipe ();
 	void closePipe ();
@@ -40,6 +46,7 @@ public:
 	
 	virtual void bindSocket ( const cSockAddr & );
 	virtual void clientConnect ( const cSockAddr & );
+	virtual void postRestart ();
 	virtual void postTerminate ();
 	virtual bool clientSendRecv ();
 	virtual bool serverSendRecv ();

@@ -1,13 +1,18 @@
 #ifndef CROSS_BASICNETPOINT_H_INCLUDED
 #define CROSS_BASICNETPOINT_H_INCLUDED 1
 // (c) Jan 28, 2009 Oleg N. Peregudov
-// 04/23/2009 - Win/Posix defines
-// 08/24/2010 - new server termination algorithm
-// 11/30/2010 - new name for termination method
-//              new implementation
-// 12/04/2010 - stored socket address
+//	04/23/2009	Win/Posix defines
+//	08/24/2010	new server termination algorithm
+//	11/30/2010	new name for termination method
+//			new implementation
+//	12/04/2010	stored socket address
+//	12/09/2010	postRestart member
+//			observer for transmission flag
+//	12/19/2010	using std::vector as a client list container
+//	01/03/2011	removing unused member _nClientList
 
 #include <crs/socket.h>
+#include <vector>
 
 #define NETPOINT_EXPORTED_EXCEPTION( exception_name )			\
 	struct CROSS_EXPORT exception_name : std::runtime_error	\
@@ -21,11 +26,11 @@ namespace CrossClass {
 class CROSS_EXPORT basicNetPoint
 {
 protected:
-	cSocket 		_socket;
-	cSockAddr		_sockAddress;
-	basicNetPoint* *	_clientList;
-	size_t		_nClients,
-				_nClientsAllocated;
+	typedef std::vector<basicNetPoint*> clListType;
+	
+	cSocket	_socket;
+	cSockAddr	_sockAddress;
+	clListType	_clientList;
 	
 	basicNetPoint ( cSocket & );
 	
@@ -72,9 +77,12 @@ public:
 	virtual void bindSocket ( const cSockAddr & );
 	virtual void clientConnect ( const cSockAddr & );
 	
+	virtual void postRestart ();
 	virtual void postTerminate ();
 	virtual bool clientSendRecv ();
 	virtual bool serverSendRecv ();
+	
+	virtual bool want2transmit ();
 	
 	cSocket & getSocket ();
 };

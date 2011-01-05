@@ -3,11 +3,17 @@
 // (c) Dec 20, 2007 Oleg N. Peregudov
 //	09/07/2010	conforming libcrs v1.0.x
 //	12/07/2010	included into libcrs
+//	01/03/2011	integer types
 //
 #if defined( _MSC_VER )
 #	pragma warning( disable : 4251 )
 #	pragma warning( disable : 4351 )
 #endif
+
+#if defined( HAVE_CONFIG_H )
+#	include "config.h"
+#endif
+
 #include <crs/msdc/composite_core.h>
 
 namespace msdc {

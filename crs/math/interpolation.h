@@ -1,6 +1,7 @@
 #ifndef INTERPOLATION_H_INCLUDED
 #define INTERPOLATION_H_INCLUDED 1
 // (c) Jul 24, 2009 Oleg N. Peregudov
+//	12/13/2010	default contructor for line
 
 #include <cmath>
 #include <cstring>
@@ -52,6 +53,7 @@ protected:
 	void regressCalcCoefficients ();
 	
 public:
+	line ();
 	line ( const std::pair<double, double> & coefficient );
 	line ( const double * x, const double * y );
 	line ( const unsigned int nPoints, const double * x, const double * y );

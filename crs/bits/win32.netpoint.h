@@ -1,11 +1,12 @@
 #ifndef CROSS_WIN32_NETPOINT_H_INCLUDED
 #define CROSS_WIN32_NETPOINT_H_INCLUDED 1
 // (c) Jan 28, 2009 Oleg N. Peregudov
-// 04/23/2009 - Win/Posix defines
-// 08/24/2010 - new server termination algorithm based on events
-// 12/01/2010 - new name for termination method
-//              new implementation
+//	04/23/2009	Win/Posix defines
+//	08/24/2010	new server termination algorithm based on events
+//	12/01/2010	new name for termination method
+//			new implementation
 
+#include <winsock2.h>
 #include <crs/bits/basic.netpoint.h>
 
 namespace CrossClass {

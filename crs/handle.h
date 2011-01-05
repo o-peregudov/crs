@@ -19,9 +19,10 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
-//	Nov 21, 2007 - new place for cross-compiling routines
-//	Dec 5, 2007 - DLL
-//	Aug 27, 2010 - compartibility with C++0x locks
+//	2007-11-21	new place for cross-compiling routines
+//	2007-12-05	DLL
+//	2010-08-27	compartibility with C++0x locks
+//	2010-12-17	reusable class handleCounter
 //
 
 #include <crs/security.h>
@@ -30,11 +31,11 @@ namespace CrossClass {
 
 struct CROSS_EXPORT handleCounter
 {
-	LockType lock;
+	LockType mutex;
 	long nlinks;
 	
 	handleCounter ( const long nStartCounter = 0 )
-		: lock()
+		: mutex()
 		, nlinks( nStartCounter )
 	{ }
 };
@@ -53,13 +54,13 @@ protected:
       
       void  addhandle ()
 	{
-		_LockIt exclusive_access ( hcounter->lock );
+		_LockIt lock ( hcounter->mutex );
 		++(hcounter->nlinks);
       }
       
 	long  releasehandle ()
 	{
-		_LockIt exclusive_access ( hcounter->lock );
+		_LockIt lock ( hcounter->mutex );
 		return --(hcounter->nlinks);
       }
       

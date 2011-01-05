@@ -1,7 +1,12 @@
 // (c) Aug 30, 2010 Oleg N. Peregudov
 //
 //	09/18/2010	expand errors using strerror function
+//	01/03/2011	integer types
 //
+
+#if defined( HAVE_CONFIG_H )
+#	include "config.h"
+#endif
 
 #include <crs/bits/posix.cond.h>
 

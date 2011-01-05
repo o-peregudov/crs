@@ -5,7 +5,6 @@
 #	pragma warning( disable : 4275 )
 #	pragma warning( disable : 4996 )
 #endif
-
 #include <crs/bits/win32.semaphore.h>
 #include <cstdio>
 

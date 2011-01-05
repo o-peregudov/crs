@@ -1,10 +1,14 @@
 // (c) Jan 31, 2009 Oleg N. Peregudov
-// 04/23/2009 - Win/Posix defines
-// 08/26/2010 - new server termination algorithm based on pipes
-// 11/30/2010 - usage of the poll system call
-// 12/04/2010 - checkTerminate bug fixed (pipe close)
-// 12/05/2010 - buildClientList bug fixed
-//              extended error info
+//	04/23/2009	Win/Posix defines
+//	08/26/2010	new server termination algorithm based on pipes
+//	11/30/2010	usage of the poll system call
+//	12/04/2010	checkTerminate bug fixed (pipe close)
+//	12/05/2010	buildClientList bug fixed
+//			extended error info
+//	12/09/2010	postRestart member
+//			observer for transmission flag
+//	12/12/2010	clientSendRecv now checks for wait2transmit
+//			postRestart status flag to avoid request stacking
 #include <crs/bits/posix.netpoint.h>
 #include <cstring>
 #include <cstdio>
@@ -13,6 +17,7 @@
 #define EMSGLENGTH	256
 
 static const char * termString = "^X";
+static const char * restartString = "^R";
 
 namespace CrossClass {
 
@@ -27,6 +32,8 @@ posixNetPoint::posixNetPoint ()
 	, fds( 0 )
 	, nfdsAllocated( 0 )
 	, nfdsUsed( 0 )
+	, postRestartMutex( )
+	, postRestartFlag( false )
 {
 	ipcPipeEnd[ 0 ] = ipcPipeEnd[ 1 ] = -1;
 }
@@ -39,6 +46,8 @@ posixNetPoint::posixNetPoint ( cSocket & clientSocket )
 	, fds( 0 )
 	, nfdsAllocated( 0 )
 	, nfdsUsed( 0 )
+	, postRestartMutex( )
+	, postRestartFlag( false )
 {
 	ipcPipeEnd[ 0 ] = ipcPipeEnd[ 1 ] = -1;
 	setNonBlock();
@@ -46,6 +55,12 @@ posixNetPoint::posixNetPoint ( cSocket & clientSocket )
 
 posixNetPoint::~posixNetPoint ()
 {
+	//
+	// release pollfds' memory
+	//
+	delete [] fds;
+	fds = 0;
+	
 	//
 	// disconnect all clients
 	//
@@ -141,22 +156,19 @@ void posixNetPoint::buildSelectList ()
 	nfdsUsed = 2;
 	
 	// fill in clients
-	for( size_t i = 0; i < _nClients; ++i )
+	for( size_t i = 0; i < _clientList.size(); ++i )
 	{
-		while( _nClients && ( _clientList[ i ] == 0 ) )
+		while( ( i < _clientList.size() ) && ( _clientList[ i ] == 0 ) )
 		{
-			if( i < --_nClients )
-			{
-				_clientList[ i ] = _clientList[ _nClients ];
-				_clientList[ _nClients ] = 0;
-			}
-			else
-				break;
+			_clientList[ i ] = _clientList.back();
+			_clientList.pop_back();
 		}
-		if( _clientList[ i ] )
+		if( i < _clientList.size() )
 		{
 			fds[ nfdsUsed ].fd = _clientList[ i ]->getSocket();
-			fds[ nfdsUsed ].events = POLLIN|POLLOUT;
+			fds[ nfdsUsed ].events = POLLIN;
+			if( _clientList[ i ]->want2transmit() )
+				fds[ nfdsUsed ].events |= POLLOUT;
 			++nfdsUsed;
 		}
 	}
@@ -203,10 +215,46 @@ bool posixNetPoint::checkTerminate ()
 			pipeInBufPtr = pipeInBuf;
 			return true;
 		}
+		else if( strcmp( pipeInBuf, restartString ) == 0 )
+		{
+			CrossClass::_LockIt postRestartLock ( postRestartMutex );
+			postRestartFlag = false;
+			pipeInBufPtr = pipeInBuf;
+			return false;
+		}
 	}
 	else
 		pipeInBufPtr = pipeInBuf;
 	return false;
+}
+
+void posixNetPoint::postRestart ()
+{
+	CrossClass::_LockIt postRestartLock ( postRestartMutex );
+	if( postRestartFlag )
+		return;
+	else
+		postRestartFlag = true;
+	postRestartLock.unlock();
+	long	nBytesWritten = 0;
+	size_t nBytes2Write = strlen( restartString ),
+		 nBytesRest = nBytes2Write;
+	const char * p = restartString;
+	while( nBytesRest )
+	{
+		nBytesWritten = write( ipcPipeEnd[ 1 ], p, nBytesRest );
+		if( nBytesWritten == -1 )
+		{
+			char msgText [ EMSGLENGTH ];
+			sprintf( msgText, "%s (%d)", strerror( errno ), errno );
+			throw basicNetPoint::write_error( msgText );
+		}
+		else
+		{
+			nBytesRest -= nBytesWritten;
+			p += nBytesWritten;
+		}
+	}
 }
 
 void posixNetPoint::postTerminate ()
@@ -239,7 +287,9 @@ bool posixNetPoint::clientSendRecv ()
 	lfds[ 0 ].fd = ipcPipeEnd[ 0 ];
 	lfds[ 0 ].events = POLLIN;
 	lfds[ 1 ].fd = _socket;
-	lfds[ 1 ].events = POLLIN|POLLOUT;
+	lfds[ 1 ].events = POLLIN;
+	if( want2transmit() )
+		lfds[ 1 ].events |= POLLOUT;
 	
 	switch( poll( lfds, sizeof( lfds ) / sizeof( pollfd ), -1 ) )
 	{
@@ -267,6 +317,9 @@ bool posixNetPoint::clientSendRecv ()
 		
 		if( lfds[ 1 ].revents & POLLOUT )
 			transmit();
+		
+		if( lfds[ 1 ].revents & POLLHUP )
+			return false;		// connection is broken or closed
 	}
 	return true;
 }
@@ -310,10 +363,10 @@ bool posixNetPoint::serverSendRecv ()
 			{
 				if( fds[ i ].revents & POLLHUP )
 					throw basicNetPoint::end_of_file( "POLLHUP" );
-				if( fds[ i ].revents & POLLIN )
-					clientReceive( i - 2 );
 				if( fds[ i ].revents & POLLOUT )
 					clientTransmit( i - 2 );
+				if( fds[ i ].revents & POLLIN )
+					clientReceive( i - 2 );
 			}
 			catch( ... )
 			{
@@ -326,4 +379,3 @@ bool posixNetPoint::serverSendRecv ()
 }
 
 } // namespace CrossClass
-

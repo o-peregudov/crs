@@ -3,3 +3,6 @@
 - mingw32/*
 - win32/release/*
 - win32/debug/*
+- test/cygwin/*
+- test/linux/*
+- test/mingw32/*

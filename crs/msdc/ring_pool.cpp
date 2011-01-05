@@ -7,11 +7,17 @@
 //	09/20/2010	swap thread
 //			notify validate iterators callback
 //	12/07/2010	included into libcrs
+//	01/03/2011	integer types
 //
 #if defined( _MSC_VER )
 #	pragma warning( disable : 4251 )
 #	pragma warning( disable : 4351 )
 #endif
+
+#if defined( HAVE_CONFIG_H )
+#	include "config.h"
+#endif
+
 #include <crs/msdc/ring_pool.h>
 
 namespace msdc {

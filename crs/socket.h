@@ -1,27 +1,28 @@
 #ifndef CROSS_SOCKET_H_INCLUDED
 #define CROSS_SOCKET_H_INCLUDED 1
 // (c) Dec 22, 2008 Oleg N. Peregudov
-// Apr 23, 2009 - Win/Posix defines
-// Aug 26, 2010 - simplified implementation
+//	04/23/2009	Win/Posix defines
+//	08/26/2010	simplified implementation
+//	01/03/2011	cSockAddr::setPort member
 
+#include <cstring>
 #include <crs/bits/hostsocket.hpp>
 #if defined( USE_WIN32_API )
 #	include <winsock2.h>
-struct WSAStartWrapper
-{
-	WSAStartWrapper ()
+	struct WSAStartWrapper
 	{
-		WSADATA wsaData;
-		WSAStartup( MAKEWORD( 2, 2 ), &wsaData );
-	}
-	
-	~WSAStartWrapper ()
-	{
-		WSACleanup();
-	}
-};
+		WSAStartWrapper ()
+		{
+			WSADATA wsaData;
+			WSAStartup( MAKEWORD( 2, 2 ), &wsaData );
+		}
+		
+		~WSAStartWrapper ()
+		{
+			WSACleanup();
+		}
+	};
 #elif defined( USE_POSIX_API )
-#	include <unistd.h>
 #	include <sys/socket.h>
 #	include <netinet/in.h>
 #	include <arpa/inet.h>
@@ -31,7 +32,6 @@ struct WSAStartWrapper
 #		define INFINITE static_cast<unsigned long>( -1 )
 #	endif
 #endif
-#include <cstring>
 
 namespace CrossClass
 {
@@ -78,7 +78,7 @@ namespace CrossClass
 		}
 	};
 	
-	struct CROSS_EXPORT cSockAddr : sockaddr_in
+	struct cSockAddr : sockaddr_in
 	{
 		cSockAddr( const unsigned short int portNo = 0 )
 			: sockaddr_in( )
@@ -125,6 +125,13 @@ namespace CrossClass
 			return *this;
 		}
 		
+		unsigned short int setPort ( const unsigned short int portNo )
+		{
+			unsigned short int oldPortNo = Port();
+			sin_port = htons( portNo );
+			return oldPortNo;
+		}
+		
 		// Return the address in dotted-decimal format
 		std::string DottedDecimal () const	{ return inet_ntoa(sin_addr); }
 		
@@ -136,7 +143,7 @@ namespace CrossClass
 		operator const sockaddr * () const	{ return reinterpret_cast<const sockaddr *>( this ); }
 	};
 	
-	class CROSS_EXPORT cSocket : public cHostSocketType
+	class cSocket : public cHostSocketType
 	{
 	public:
 		typedef cHostSocketType::host_socket_type host_socket_type;
@@ -192,7 +199,6 @@ namespace CrossClass
 			newSocket = newPeer;
 			return true;
 		}
-	
 	};
 } // namespace CrossClass
 #endif // CROSS_SOCKET_H_INCLUDED

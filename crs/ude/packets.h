@@ -6,29 +6,51 @@
 // Copyright (c) Feb 13, 2003 Oleg N. Peregudov
 // Support: op@pochta.ru
 //
-// 05/29/2006 - support for __int64 data type
-// 09/04/2006 - wrappers
-// 10/19/2006 - IFPACKET filter macro
-// 02/06/2007 - packet's sender id & header checksum
-// 06/12/2007 - new data types
-// 01/21/2008 - included in cross library
-// 02/12/2008 - id for fast processing packet
-// 04/05/2008 - rename UDE_SENDER_IDENTIFICATION macro
-// 12/03/2010 - packet number field
+//	05/29/2006	support for __int64 data type
+//	09/04/2006	wrappers
+//	10/19/2006	IFPACKET filter macro
+//	02/06/2007	packet's sender id & header checksum
+//	06/12/2007	new data types
+//	01/21/2008	included in cross library
+//	02/12/2008	id for fast processing packet
+//	04/05/2008	rename UDE_SENDER_IDENTIFICATION macro
+//	12/03/2010	packet number field
+//	12/10/2010	using unsigned long instead of size_t for packet size
+//	12/12/2010	domainStat
+//	12/17/2010	new packet structure (size field first)
+//	12/20/2010	char type for packet contents
+//	01/03/2011	integer types
 //
 
 #include <cstring>
 #include <stdexcept>
 #include <crs/libexport.h>
+#include <crs/handle.h>
 
 namespace ude {
 
-typedef unsigned char	uchar;
-typedef unsigned short	ushort;
-#if defined( __GNUG__ )
-typedef long long		long64;
+#if defined( HAVE_UINT16_T )
+	typedef uint16_t		ushort;
 #elif defined( _MSC_VER )
-typedef __int64		long64;
+	typedef UINT16		ushort;
+#else
+	typedef unsigned short	ushort;
+#endif
+
+#if defined( HAVE_UINT32_T )
+	typedef uint32_t		ulong;
+#elif defined( _MSC_VER )
+	typedef UINT32		ulong;
+#else
+	typedef unsigned long	ulong;
+#endif
+
+#if defined( HAVE_INT64_T )
+	typedef int64_t		long64;
+#elif defined( HANE_LONG_LONG )
+	typedef long long		long64;
+#elif defined( HAVE___INT64 )
+	typedef __int64		long64;
 #endif
 
 #pragma pack(push,1)
@@ -57,101 +79,79 @@ struct CROSS_EXPORT cPacketHeader
 		domainCommon	= 0xFFFF,	// for broadband packets
 		domainRDevMan	= 0x8001,	// remote device manager
 		domainStatus	= 0x8002,	// status messages
-		domainPMeasure	= 0x8003	// performance measurements
+		domainStat		= 0x8004,	// performance measurements & statistics
+		domainSDevMan	= 0x8008	// packets for server device manager
 	};
 	
 	enum reserved_recepients {
 		//
 		// reserved recepients
 		//
-		rcpError		= 0xFFFF	// life critical message
+		rcpError		= 0xEEEE,	// life critical message
+		rcpThread		= 0xFEAD	// service threads of device manager
 	};
 	
+	ulong sz;					// packet's contents size
 	ushort id;					// packet type
 	ushort domain;				// owner\destination location
 	ushort recepient;				// owner\destination address
-#if defined( UDE_SENDER_IDENTIFICATION )
-	size_t sender;				// sender id
-	ushort crc;					// checksum
-	ushort crc2;
-#endif
 	
-	cPacketHeader ( const ushort pid = 0x0000, const ushort dmn = domainCommon, const ushort rcp = 0x0000 )
-		: id( pid )
+	cPacketHeader (
+			const ushort pid = 0x0000,
+			const ushort dmn = domainCommon,
+			const ushort rcp = 0x0000,
+			const ulong csz = 0x00F0 )
+		: sz( csz )
+		, id( pid )
 		, domain( dmn )
 		, recepient( rcp )
-#if defined( UDE_SENDER_IDENTIFICATION )
-		, sender( 0 )
-		, crc( 0 )
-		, crc2( 0 )
-#endif
 	{}
 	
 	cPacketHeader ( const cPacketHeader & ph )
-		: id( ph.id )
+		: sz( ph.sz )
+		, id( ph.id )
 		, domain( ph.domain )
 		, recepient( ph.recepient )
-#if defined( UDE_SENDER_IDENTIFICATION )
-		, sender( ph.sender )
-		, crc( ph.crc )
-		, crc2( ph.crc2 )
-#endif
 	{}
 };
 #pragma pack(pop)
 
-class cTalkPacket : public cPacketHeader
+class CROSS_EXPORT cTalkPacket
 {
-	size_t _size;
+protected:
+	ulong size;						// RAW packet size
+	char * contents;					// RAW packet's contents
+	CrossClass::handleCounter * hcounter;	// handle counter
 	
-	union {
-		uchar * _byte;
-		ushort * _word;
-		double * _value;
-		long64 * _intvalue;
-	};
+	void	addhandle ();
+	long	releasehandle ();
+	void	release ();
+	void	unbind ();
+	void	assign ( const cTalkPacket & );
+	void	construct ( const ushort pid, const ulong csz, const ushort dmn, const ushort rcp );
 	
-	void	_allocate ()
-	{
-		if( _size > 0 )
-		{
-			size_t slack ( _size % sizeof( double ) );
-			if( slack ) // round contents size if nesseccary
-				_size += sizeof( double ) - slack;
-			_byte = new uchar [ _size ];
-			memset( _byte, 0x00, _size );
-		}
-	}
-	
-	void	_release ()
-	{
-		delete [] _byte;
-		_byte = 0;
-		_size = 0;
-	}
-	
-	const size_t _byte_range ( const size_t idx ) const
+	const ulong _byte_range ( const ulong idx ) const
 	{
 		if( idx >= byteSize() )
 			throw std::range_error ( "cTalkPacket::_byte_range" );
 		return idx;
 	}
 	
-	const size_t _word_range ( const size_t idx ) const
+	const ulong _word_range ( const ulong idx ) const
 	{
 		if( idx >= wordSize() )
 			throw std::range_error ( "cTalkPacket::_word_range" );
 		return idx;
 	}
 	
-	const size_t _value_range ( const size_t idx ) const
+	const ulong _value_range ( const ulong idx ) const
 	{
 		if( idx >= valueSize() )
 			throw std::range_error ( "cTalkPacket::_value_range" );
 		return idx;
 	}
 	
-	const size_t _int64_range ( const size_t idx ) const
+	const ulong _int64_range ( const ulong idx ) const
 	{
 		if( idx >= int64Size() )
 			throw std::range_error ( "cTalkPacket::_int64_range" );
@@ -159,86 +159,67 @@ class cTalkPacket : public cPacketHeader
 	}
 	
 public:
-	cTalkPacket ( const ushort pid = 0x0000, const size_t sz = 0x0F0,
-			const ushort dmn = domainCommon, const ushort rcp = 0x0000 )
-		: cPacketHeader( pid, dmn, rcp )
-		, _size( sz )
-		, _byte( 0 )
+	cTalkPacket ( const ushort pid = 0x0000,
+			  const ulong csz = 0x0F0,
+			  const ushort dmn = cPacketHeader::domainCommon,
+			  const ushort rcp = 0x0000 );
+	cTalkPacket ( const unsigned long rawSize, const char * rawContents );
+	cTalkPacket ( const cPacketHeader & );
+	cTalkPacket ( const cTalkPacket & );
+	
+	cTalkPacket & operator = ( const cTalkPacket & );
+	
+	~cTalkPacket ()
 	{
-		_allocate();
+		unbind();
 	}
 	
-	cTalkPacket ( const cPacketHeader & hdr, const size_t sz = 0x0F0 )
-		: cPacketHeader( hdr )
-		, _size( sz )
-		, _byte( 0 )
+	operator const void * () const
 	{
-		_allocate();
+		return contents;
 	}
 	
-	cTalkPacket ( const cTalkPacket & packet )
-		: cPacketHeader( packet )
-		, _size( packet._size )
-		, _byte( 0 )
+	operator void * ()
 	{
-		if( _size )
-		{
-			_byte = new uchar [ _size ];
-			memcpy( _byte, packet._byte, _size );
-		}
+		return contents;
 	}
 	
-	cTalkPacket ( const ushort pid, const ushort dmn, const ushort rcp, const cTalkPacket & packet )
-		: cPacketHeader( pid|cPacketHeader::idWrapper, dmn, rcp )
-		, _size( packet.fullSize() )
-		, _byte( 0 )
+	const cPacketHeader & header () const
 	{
-		_byte = new uchar [ _size ];
-		memcpy( _byte, &packet, _size );
+		return *( reinterpret_cast<const cPacketHeader *>( contents ) );
 	}
 	
-	cTalkPacket & operator = ( const cTalkPacket & packet )
+	cPacketHeader & header ()
 	{
-		if( this != &packet )
-		{
-			_release();
-			if( ( _size = packet._size ) )
-			{
-				_byte = new uchar [ _size ];
-				memcpy( _byte, packet._byte, _size );
-			}
-			cPacketHeader::operator = ( packet );
-		}
-		return *this;
+		return *( reinterpret_cast<cPacketHeader *>( contents ) );
 	}
 	
-	~cTalkPacket ()							{ _release(); }
+	ulong rawSize () const				{ return size; }
 	
-	const size_t & byteSize () const				{ return _size; }
-	const size_t wordSize () const				{ return ( _size / sizeof( ushort ) ); }
-	const size_t valueSize () const				{ return ( _size / sizeof( double ) ); }
-	const size_t int64Size () const				{ return ( _size / sizeof( long64 ) ); }
+	const ulong & byteSize () const		{ return header().sz; }
+	const ulong wordSize () const			{ return ( byteSize() / sizeof( ushort ) ); }
+	const ulong valueSize () const		{ return ( byteSize() / sizeof( double ) ); }
+	const ulong int64Size () const		{ return ( byteSize() / sizeof( long64 ) ); }
 	
-	uchar & byte ( const size_t idx )				{ return _byte[ _byte_range( idx ) ]; }
-	ushort & word ( const size_t idx )				{ return _word[ _word_range( idx ) ]; }
-	double & value ( const size_t idx )				{ return _value[ _value_range( idx ) ]; }
-	long64 & int64 ( const size_t idx )				{ return _intvalue[ _int64_range( idx ) ]; }
+	char * const byte () const			{ return ( contents + sizeof( cPacketHeader ) ); }
+	ushort * const word () const			{ return reinterpret_cast<ushort * const>( byte() ); }
+	double * const value () const			{ return reinterpret_cast<double * const>( byte() ); }
+	long64 * const int64 () const			{ return reinterpret_cast<long64 * const>( byte() ); }
 	
-	const uchar & byte ( const size_t idx ) const		{ return _byte[ _byte_range( idx ) ]; }
-	const ushort & word ( const size_t idx ) const		{ return _word[ _word_range( idx ) ]; }
-	const double & value ( const size_t idx ) const		{ return _value[ _value_range( idx ) ]; }
-	const long64 & int64 ( const size_t idx ) const		{ return _intvalue[ _int64_range( idx ) ]; }
+	char * const byte ()				{ return ( contents + sizeof( cPacketHeader ) ); }
+	ushort * const word ()				{ return reinterpret_cast<ushort *>( byte() ); }
+	double * const value ()				{ return reinterpret_cast<double *>( byte() ); }
+	long64 * const int64 ()				{ return reinterpret_cast<long64 *>( byte() ); }
 	
-	double & operator [] ( const size_t idx )			{ return value( idx ); }
-	const double & operator [] ( const size_t idx ) const	{ return value( idx ); }
+	char & byte ( const ulong idx )		{ return byte()[ _byte_range( idx ) ]; }
+	ushort & word ( const ulong idx )		{ return word()[ _word_range( idx ) ]; }
+	double & value ( const ulong idx )		{ return value()[ _value_range( idx ) ]; }
+	long64 & int64 ( const ulong idx )		{ return int64()[ _int64_range( idx ) ]; }
 	
-	uchar * const byte () const					{ return _byte; }
-	ushort * const word () const					{ return _word; }
-	double * const value () const					{ return _value; }
-	long64 * const int64 () const					{ return _intvalue; }
-	
-	const cTalkPacket & unwrap () const				{ return *reinterpret_cast<const cTalkPacket*>( _byte ); }
-	size_t fullSize () const					{ return _size + sizeof( size_t ) + sizeof( cPacketHeader ); }
+	const char & byte ( const ulong idx ) const	{ return byte()[ _byte_range( idx ) ]; }
+	const ushort & word ( const ulong idx ) const	{ return word()[ _word_range( idx ) ]; }
+	const double & value ( const ulong idx ) const	{ return value()[ _value_range( idx ) ]; }
+	const long64 & int64 ( const ulong idx ) const	{ return int64()[ _int64_range( idx ) ]; }
 };
 
 } // namespace ude
@@ -249,3 +230,4 @@ public:
 	 && ( (packet).word( 0 ) == (cmd) ) )
 
 #endif // CROSS_UDE_PACKETS_H
+

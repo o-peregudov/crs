@@ -1,3 +1,7 @@
+#if defined( HAVE_CONFIG_H )
+#	include "config.h"
+#endif
+
 #include <crs/sc/twelvebyte.h>
 #include <crs/oio/iniFile.h>
 #include <crs/timer.h>
@@ -61,7 +65,7 @@ void	processor ( void * pData )
 	{
 		port->pop();
 		if( packet.data.id != 0x01 )
-			packet.data.cmd = 0xAD;		// неверный адрес (байт [0])
+			packet.data.cmd = 0xAD;		// wrong address (byte[0])
 		else
 		{
 			switch( packet.data.cmd )
@@ -71,23 +75,23 @@ void	processor ( void * pData )
 				packet.byteArray[ 2 ] = transmuteStateByte( state );
 				break;
 			
-			case	0x3A:				// ток коллектора
+			case	0x3A:				// collector current
 				*( reinterpret_cast<float*>( packet.byteArray + 3 ) ) = static_cast<float>( rand() ) / RAND_MAX + 1.0;
 				packet.byteArray[ 2 ] = transmuteStateByte( state );
 				break;
 			
-			case	0x3B:				// ток эмиссии
+			case	0x3B:				// emission current
 				*( reinterpret_cast<float*>( packet.byteArray + 3 ) ) = static_cast<float>( rand() ) / RAND_MAX - 1.0;
 				packet.byteArray[ 2 ] = transmuteStateByte( state );
 				break;
 			
-			case	0x3E:				// ускоряющее напряжение
+			case	0x3E:				// accelerating voltage
 				*( reinterpret_cast<float*>( packet.byteArray + 3 ) ) = static_cast<float>( rand() ) / RAND_MAX + 2.0;
 				packet.byteArray[ 2 ] = transmuteStateByte( state );
 				break;
 			
 			default:
-				packet.data.cmd = 0xCD;	// неизвестная команда
+				packet.data.cmd = 0xCD;	// unknown command
 			}
 		}
 		packet.data.id = 0x10;
@@ -98,6 +102,13 @@ void	processor ( void * pData )
 
 int	main ( int argc, const char ** argv )
 {
+	bool runLoop = true;
+	if( argc > 1 )
+	{
+		if( strcmp( argv[ 1 ], "--write-conf" ) == 0 )
+			runLoop = false;
+	}
+	
 	//
 	// read configuration file
 	//
@@ -119,33 +130,36 @@ int	main ( int argc, const char ** argv )
 	confFile.clear();
 	confFile.close();
 	
-	//
-	// open serial port
-	//
-	sc::twByte port;
-	std::string portName;
-	unsigned int baudRate;
-	
-	ObjectIO::cHubHandle hubLocalConnection = conf.get( "local connection" );
-	conf.readvar( hubLocalConnection, "port", portName );
-	conf.readvar( hubLocalConnection, "baud", baudRate );
-	std::cout << "Opening '" << portName << "' at " << baudRate << " baud ... ";
-	port.open( portName, baudRate );
-	std::cout << "done" << std::endl;
-	
-	//
-	// set Ctrl+C signal handler
-	//
-	std::cout << "Press Ctrl+C to terminate ... " << std::flush;
-	port4signal = &port;
-	signal( SIGINT, terminate );
-	
-	//
-	// set packet processor as a callback function
-	//
-	port.setAsyncDataCallback( processor, &port );
-	while( port.receive() );
-	
+	if( runLoop )
+	{
+		//
+		// open serial port
+		//
+		sc::twByte port;
+		std::string portName;
+		unsigned int baudRate;
+		
+		ObjectIO::cHubHandle hubLocalConnection = conf.get( "local connection" );
+		conf.readvar( hubLocalConnection, "port", portName );
+		conf.readvar( hubLocalConnection, "baud", baudRate );
+		std::cout << "Opening '" << portName << "' at " << baudRate << " baud ... ";
+		port.open( portName, baudRate );
+		std::cout << "done" << std::endl;
+		
+		//
+		// set Ctrl+C signal handler
+		//
+		std::cout << "Press Ctrl+C to terminate ... " << std::flush;
+		port4signal = &port;
+		signal( SIGINT, terminate );
+		
+		//
+		// set packet processor as a callback function
+		//
+		port.setAsyncDataCallback( processor, &port );
+		while( port.receive() );
+	}
+		
 	//
 	// write configuration file
 	//

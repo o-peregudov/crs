@@ -177,4 +177,3 @@ typedef CrossClass::cMutex 				LockType;
 
 } // namespace CrossClass
 #endif // CROSS_SECURITY_H
-

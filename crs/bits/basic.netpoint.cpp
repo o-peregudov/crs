@@ -1,21 +1,25 @@
 // (c) Jan 31, 2009 Oleg N. Peregudov
-// 04/23/2009 - Win/Posix defines
-// 08/24/2010 - new server termination algorithm
-// 11/30/2010 - new name for termination method
-//              new implementation
-// 12/05/2010 - stored socket address
-//              extended error info
+//	04/23/2009	Win/Posix defines
+//	08/24/2010	new server termination algorithm
+//	11/30/2010	new name for termination method
+//			new implementation
+//	12/05/2010	stored socket address
+//			extended error info
+//	12/09/2010	postRestart member
+//			observer for transmission flag
+//	12/19/2010	using std::vector as a client list container
+//	01/03/2011	removing unused member _nClientList
 #if defined( _MSC_VER )
 #	pragma warning( disable : 4251 )
 #	pragma warning( disable : 4275 )
 #endif
-
 #include <crs/bits/basic.netpoint.h>
 #include <algorithm>
 #include <cstdio>
 #include <cerrno>
 
 #define EMSGLENGTH	256
+#define MAXCLIENTS	256
 
 namespace CrossClass {
 
@@ -25,10 +29,9 @@ namespace CrossClass {
 basicNetPoint::basicNetPoint ()
 	: _socket( AF_INET, SOCK_STREAM, 0 )
 	, _sockAddress( )
-	, _clientList( 0 )
-	, _nClients( 0 )
-	, _nClientsAllocated( 0 )
+	, _clientList( )
 {
+	_clientList.reserve( MAXCLIENTS );
 	if( _socket == -1 )
 		throw socket_allocation_error( "basicNetPoint::basicNetPoint" );
 }
@@ -36,10 +39,9 @@ basicNetPoint::basicNetPoint ()
 basicNetPoint::basicNetPoint ( cSocket & clientSocket )
 	: _socket( clientSocket )
 	, _sockAddress( )
-	, _clientList( 0 )
-	, _nClients( 0 )
-	, _nClientsAllocated( 0 )
+	, _clientList( )
 {
+	_clientList.reserve( MAXCLIENTS );
 }
 
 basicNetPoint::~basicNetPoint ()
@@ -47,18 +49,14 @@ basicNetPoint::~basicNetPoint ()
 	disconnectAll();
 }
 
+void basicNetPoint::disconnectAll ()
+{
+	for( size_t i = 0; i < _clientList.size(); removeClient( i++ ) );
+}
+
 void basicNetPoint::addClient ( basicNetPoint * newClient )
 {
-	++_nClients;
-	if( _nClientsAllocated < _nClients )
-	{
-		basicNetPoint* * newClients = new basicNetPoint* [ _nClients ];
-		memcpy( newClients, _clientList, _nClientsAllocated * sizeof( basicNetPoint* ) );
-		std::swap( _clientList, newClients );
-		_nClientsAllocated = _nClients;
-		delete [] newClients;
-	}
-	_clientList[ _nClients - 1 ] = newClient;
+	_clientList.push_back( newClient );
 }
 
 void basicNetPoint::removeClient ( const size_t nClient )
@@ -78,20 +76,6 @@ void basicNetPoint::clientReceive ( const size_t nClient )
 void basicNetPoint::clientTransmit ( const size_t nClient )
 {
 	_clientList[ nClient ]->transmit();
-}
-
-void basicNetPoint::disconnectAll ()
-{
-	if( _clientList )
-	{
-		for( int i = 0; i < _nClients; ++i )
-			delete _clientList[ i ];
-		
-		delete [] _clientList;
-		
-		_nClients = _nClientsAllocated = 0;
-		_clientList = 0;
-	}
 }
 
 void basicNetPoint::setNonBlock ()
@@ -127,6 +111,11 @@ void basicNetPoint::receive ()
 {
 }
 
+bool basicNetPoint::want2transmit ()
+{
+	return false;
+}
+
 basicNetPoint * basicNetPoint::handleNewConnection ( cSocket & s, const cSockAddr & sa )
 {
 	return 0;		// new basicNetPoint( s );
@@ -134,7 +123,7 @@ basicNetPoint * basicNetPoint::handleNewConnection ( cSocket & s, const cSockAdd
 
 size_t basicNetPoint::enumerateDescriptors ()
 {
-	return _nClients;
+	return _clientList.size();
 }
 
 void basicNetPoint::buildSelectList ()
@@ -169,10 +158,14 @@ void basicNetPoint::clientConnect ( const cSockAddr & sa )
 		setNonBlock();
 }
 
+void basicNetPoint::postRestart ()
+{
+}
+
 void basicNetPoint::postTerminate ()
 {
 }
-	
+
 bool basicNetPoint::clientSendRecv ()
 {
 	return true;

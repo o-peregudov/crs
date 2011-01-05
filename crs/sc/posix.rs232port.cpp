@@ -6,8 +6,13 @@
 //	09/16/2010	some non standard baudrate constant fixed
 //	09/20/2010	non-blocking postTerminate
 //	09/22/2010	using 'poll' instead of 'select'
+//	01/03/2011	integer types
 //
 //////////////////////////////////////////////////////////////////////
+
+#if defined( HAVE_CONFIG_H )
+#	include "config.h"
+#endif
 
 #include <crs/sc/posix.rs232port.h>
 #include <cerrno>
