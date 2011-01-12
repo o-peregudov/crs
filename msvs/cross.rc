@@ -1,0 +1,43 @@
+#include <windows.h>
+#include "resource.h"
+
+LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
+#pragma codepage(1252)
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 0,7,0,10
+ PRODUCTVERSION 0,7,0,10
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "042204e3"
+        BEGIN
+            VALUE "CompanyName", "Oleg N. Peregudov"
+            VALUE "FileDescription", "Cross-platform routines (POSIX+Win32)"
+            VALUE "FileVersion", "0.7.0.10"
+            VALUE "InternalName", "cross"
+            VALUE "LegalCopyright", "(c) Dec 28, 2010 Oleg N. Peregudov"
+            VALUE "OriginalFilename", "cross.dll"
+            VALUE "ProductName", "cross"
+            VALUE "ProductVersion", "0.7.0.10"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x422, 1251
+    END
+END

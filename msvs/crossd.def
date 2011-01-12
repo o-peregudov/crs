@@ -1,0 +1,7 @@
+; crossd.def : Declares the module parameters for the DLL.
+
+LIBRARY      "crossd"
+
+EXPORTS
+    ; Explicit exports can go here
+get_crc_ccitt @1 NONAME

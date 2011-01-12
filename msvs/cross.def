@@ -1,0 +1,7 @@
+; cross.def : Declares the module parameters for the DLL.
+
+LIBRARY      "cross"
+
+EXPORTS
+    ; Explicit exports can go here
+get_crc_ccitt @1 NONAME
