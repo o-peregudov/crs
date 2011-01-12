@@ -3,6 +3,7 @@
 //	08/27/2010	C++0x locks compartibility
 //	08/30/2010	using our condition variable wrapper
 //	01/03/2011	integer types
+//	01/05/2011	slightly changed Step
 //
 
 #if defined( HAVE_CONFIG_H )
@@ -22,9 +23,9 @@ namespace CrossClass {
 void * cPosixThread::thread_routine ( void * pParam )
 {
 	cPosixThread * pThreadClass = reinterpret_cast<cPosixThread *>( pParam );
-	_LockIt lockFlags ( pThreadClass->_flags_mutex );
+	_LockIt _flags_lock ( pThreadClass->_flags_mutex );
 	pThreadClass->_running_flag = true;
-	lockFlags.unlock();
+	_flags_lock.unlock();
 	try
 	{
 		pThreadClass->_thread_routine_result = pThreadClass->Run ();
@@ -39,34 +40,34 @@ void * cPosixThread::thread_routine ( void * pParam )
 		pThreadClass->_error_text = "unhandled exception in 'thread_routine'";
 		pThreadClass->_thread_routine_result = reinterpret_cast<void *>( -1 );
 	}
-	lockFlags.lock();
+	_flags_lock.lock();
 	pThreadClass->_running_flag = false;
-	lockFlags.unlock();
+	_flags_lock.unlock();
 	return pThreadClass->_thread_routine_result;
 }
 
 bool cPosixThread::active ()
 {
-	_LockIt lockFlags ( _flags_mutex );
+	_LockIt _flags_lock ( _flags_mutex );
 	return _running_flag;
 }
 
 bool cPosixThread::_check_terminate ()
 {
-	_LockIt lockFlags ( _flags_mutex );
+	_LockIt _flags_lock ( _flags_mutex );
 	return _terminate_flag;
 }
 
 bool cPosixThread::_check_terminate ( bool & activationFlag )
 {
-	_LockIt lockFlags ( _flags_mutex );
+	_LockIt _flags_lock ( _flags_mutex );
 	activationFlag = _activate_flag;
 	return _terminate_flag;
 }
 
 bool cPosixThread::_check_activate ()
 {
-	_LockIt lockFlags ( _flags_mutex );
+	_LockIt _flags_lock ( _flags_mutex );
 	return _activate_flag;
 }
 
@@ -75,32 +76,32 @@ void cPosixThread::_wake_up ()
 	// NOTE: if predictable scheduling behavior is required,
 	// then that mutex shall be locked by the thread calling
 	// pthread_cond_broadcast() or pthread_cond_signal()
-	_LockIt condition_lock ( _condition_mutex );
+	_LockIt _condition_lock ( _condition_mutex );
 	_wake_up_flag = true;
 	_condition.notify_one();	// wake up the thread
 }
 
 void cPosixThread::_post_terminate ()
 {
-	_LockIt lockFlags ( _flags_mutex );
+	_LockIt _flags_lock ( _flags_mutex );
 	_terminate_flag = true;
-	lockFlags.unlock();
+	_flags_lock.unlock();
 	_wake_up();
 }
 
 void cPosixThread::_post_activate ()
 {
-	_LockIt lockFlags ( _flags_mutex );
+	_LockIt _flags_lock ( _flags_mutex );
 	_activate_flag = true;
-	lockFlags.unlock();
+	_flags_lock.unlock();
 	_wake_up();
 }
 
 void cPosixThread::_post_deactivate ()
 {
-	_LockIt lockFlags ( _flags_mutex );
+	_LockIt _flags_lock ( _flags_mutex );
 	_activate_flag = false;
-	lockFlags.unlock();
+	_flags_lock.unlock();
 	_wake_up();
 }
 
@@ -110,21 +111,17 @@ void * cPosixThread::Run ()
 	{
 		if( _check_terminate( runStep ) )
 			return StepResult( 0 );
-		
-		if( runStep )
+		else if( runStep )
 		{
 			if( Step() )
 				return StepResult( 0 );
 		}
 		else
 		{
-			_LockIt lockCondition ( _condition_mutex );
+			_LockIt _condition_lock ( _condition_mutex );
+			while( !_wake_up_flag )
+				_condition.wait( _condition_lock );
 			_wake_up_flag = false;
-			do
-			{
-				_condition.wait( lockCondition );
-			}
-			while( !_wake_up_flag );
 		}
 	}
 }

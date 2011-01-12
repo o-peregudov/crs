@@ -9,9 +9,10 @@
 //       (2) always call cThread::kill() memeber in the destructor of your derived class
 //           in order to proceed all virtual members properly
 //
-//	Aug 30, 2010	- compartibility with STL condition_variable
-//	Sep 4, 2010		- using our condition_variable
-//				- new running flag
+//	08/30/2010	compartibility with STL condition_variable
+//	09/04/2010	using our condition_variable
+//			new running flag
+//	01/05/2011	slightly changed Step
 //
 
 #include <crs/security.h>
@@ -24,7 +25,7 @@ namespace CrossClass
 	{
 	protected:
 		pthread_t	_thread;
-		LockType	_condition_mutex,
+		cMutex	_condition_mutex,
 				_flags_mutex;
 		cConditionVariable _condition;
 		bool		_terminate_flag,

@@ -66,8 +66,10 @@ pkginclude_bits_HEADERS += bits/c++0x.timer.h
 endif
 
 if CYGWIN_TARGET
-libcrs_la_SOURCES += bits/win32.timer.cpp
-pkginclude_bits_HEADERS += bits/win32.timer.h
+libcrs_la_SOURCES += bits/win32.timer.cpp bits/win32.mutex.cpp bits/win32.thread.cpp \
+	bits/win32.cond.cpp bits/win32.semaphore.cpp
+pkginclude_bits_HEADERS += bits/win32.timer.h bits/win32.mutex.h bits/win32.thread.h \
+	bits/win32.cond.h bits/win32.semaphore.h 
 
 libcrs_la_SOURCES += cross.res.rc
 pkginclude_bits_HEADERS += resource.h

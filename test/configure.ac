@@ -1,5 +1,5 @@
-#                                               -*- Autoconf -*-
-# Process this file with autoconf to produce a configure script.
+dnl                                               -*- Autoconf -*-
+dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.63])
 AC_INIT([libcrs-test], [1.0], [op@pochta.ru])
@@ -7,11 +7,11 @@ AC_INIT([libcrs-test], [1.0], [op@pochta.ru])
 AM_INIT_AUTOMAKE
 AC_CONFIG_HEADERS([config.h])
 
-# Check for which system.
+dnl Check for which system.
 AC_CANONICAL_BUILD
 AC_CANONICAL_HOST
 
-# Checks for typedefs, structures, and compiler characteristics.
+dnl Checks for typedefs, structures, and compiler characteristics.
 case "$build_os" in
 	cygwin*)
 		CFLAGS="$CFLAGS -D__LARGE64_FILES"
@@ -21,8 +21,8 @@ case "$build_os" in
 		allow_cpp0xapi=no
 		;;
 	mingw*)
-		CFLAGS="$CFLAGS -DCROSS_EXPORT= -mno-cygwin"
-		CXXFLAGS="$CXXFLAGS -DCROSS_EXPORT= -mno-cygwin"
+		CFLAGS="$CFLAGS -mno-cygwin"
+		CXXFLAGS="$CXXFLAGS -mno-cygwin"
 		allow_win32api=yes
 		allow_posixapi=no
 		allow_cpp0xapi=no
@@ -46,54 +46,14 @@ AC_DEFINE_UNQUOTED(CONFIGURE_OPTIONS, "$ac_configure_args", [configure command l
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_INSTALL
+LT_INIT
 
-# Check for needed libraries
-AC_SEARCH_LIBS([gethostbyname],[nsl resolv bind])
-AC_SEARCH_LIBS([bind],[socket])
-
-# Checks for libraries.
-AC_CHECK_LIB(crs, get_crc_ccitt)
-AC_CHECK_LIB(pthread, pthread_mutex_init)
-AC_CHECK_LIB(rt, clock_gettime)
-
-# Check for Winsock only on MinGW, on Cygwin we must use emulated BSD socket API
-case "$host_os" in
-	mingw*)
-		AC_MSG_CHECKING(for winsock)
-		save_LIBS="$LIBS"
-		for curlib in ws2_32 wsock32; do
-			LIBS="$LIBS -l$curlib"
-			AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <winsock.h>]], [[
-					socket(0,0,0);
-					select(0,NULL,NULL,NULL,NULL);
-					closesocket(0);
-					gethostname(NULL,0);
-					]])],[have_winsock=yes],[have_winsock=no])
-			
-			if test $have_winsock = yes; then
-				ac_cv_func_select='yes'
-				if test $curlib = ws2_32; then
-					have_winsock=winsock2
-				fi
-				break
-			fi
-			LIBS="$save_LIBS"
-		done
-			AC_MSG_RESULT($have_winsock)
-		if test $have_winsock = winsock2; then
-			AC_CHECK_HEADERS(winsock2.h)
-		else
-			AC_CHECK_HEADERS(winsock.h)
-		fi
-	;;
-esac
-
-# Checks for header files.
+dnl Checks for header files.
 AC_CHECK_HEADERS([\
-      stdint.h    \
-      inttypes.h])
+	stdint.h	\
+	inttypes.h])
 
-# Checks for typedefs, structures, and compiler characteristics.
+dnl Checks for typedefs, structures, and compiler characteristics.
 dnl 8 bit integers - int8_t
 dnl if this is defined we trust it to be 8 bits
 AC_CHECK_TYPE(int8_t,[
@@ -187,8 +147,63 @@ AC_CHECK_TYPE(uint64_t,[
   AC_DEFINE(HAVE_UINT64_T,1,[uint64_t is defined in system headers])
   ],,LIBCRS_DEFAULT_INCLUDES)
 
-# Checks for library functions.
+dnl Check for libcrs
+AC_MSG_CHECKING(for libcrs)
+AC_LANG_PUSH([C++])
+save_LIBS="$LIBS"
+LIBS="$LIBS -lcrs"
+AC_LINK_IFELSE(
+	[AC_LANG_PROGRAM(
+		[[#include <crs/mutex.h>]],
+		[[CrossClass::cMutex mutex; mutex.lock(); mutex.unlock();]])],
+	[have_libcrs=yes],
+	[have_libcrs=no])
+LIBS="$save_LIBS"
+AC_LANG_POP([C++])
+AC_MSG_RESULT($have_libcrs)
+if test $have_libcrs = yes; then
+	LIBS="$LIBS -lcrs"
+else
+	AC_MSG_FAILURE([failed to link with libcrs])
+fi
+
+dnl Check for Winsock only on MinGW, on Cygwin we must use emulated BSD socket API
+case "$host_os" in
+	mingw*)
+		AC_MSG_CHECKING(for winsock)
+		save_LIBS="$LIBS"
+		for curlib in ws2_32 wsock32; do
+			LIBS="$LIBS -l$curlib"
+			AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <winsock.h>]], [[
+					socket(0,0,0);
+					select(0,NULL,NULL,NULL,NULL);
+					closesocket(0);
+					gethostname(NULL,0);
+					]])],[have_winsock=yes],[have_winsock=no])
+			
+			if test $have_winsock = yes; then
+				ac_cv_func_select='yes'
+				if test $curlib = ws2_32; then
+					have_winsock=winsock2
+				fi
+				break
+			fi
+			LIBS="$save_LIBS"
+		done
+		AC_MSG_RESULT($have_winsock)
+		if test $have_winsock = winsock2; then
+			AC_CHECK_HEADERS(winsock2.h)
+		else
+			AC_CHECK_HEADERS(winsock.h)
+		fi
+	;;
+esac
+
+dnl Check for needed libraries
+AC_SEARCH_LIBS([gethostbyname],[nsl resolv bind])
+AC_SEARCH_LIBS([bind],[socket])
+AC_SEARCH_LIBS([pthread_mutex_init],[pthread])
+AC_SEARCH_LIBS([clock_gettime],[rt])
 
 AC_CONFIG_FILES([Makefile twbyte/Makefile ude/Makefile])
 AC_OUTPUT
-

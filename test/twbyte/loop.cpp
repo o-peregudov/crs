@@ -1,3 +1,4 @@
+// according to protocol dated Dec 16, 2010
 #if defined( HAVE_CONFIG_H )
 #	include "config.h"
 #endif
@@ -47,7 +48,7 @@ unsigned char transmuteStateByte ( const unsigned char stateByte )
 {
 	unsigned char result = 0;
 	if( ( stateByte & 0x01 ) == 0x01 )
-		result |= 0x04;	// HV pump unit
+		result |= 0x02;	// HV pump unit
 	if( ( stateByte & 0x02 ) == 0x02 )
 		result |= 0x08;	// IS unit
 	if( ( stateByte & 0x04 ) == 0x04 )
@@ -58,6 +59,9 @@ unsigned char transmuteStateByte ( const unsigned char stateByte )
 void	processor ( void * pData )
 {
 	static unsigned char state = 0;
+	static unsigned short emissionCurrentCode = 0;
+	static unsigned short accVoltageCode = 0;
+	static unsigned short pumpCurrentCode = 0;
 	
 	sc::twByte::comPacket packet;
 	sc::twByte * port = reinterpret_cast<sc::twByte *>( pData );
@@ -70,7 +74,7 @@ void	processor ( void * pData )
 		{
 			switch( packet.data.cmd )
 			{
-			case	0x2A:
+			case	0x2A:				// set state
 				state = state & ~packet.byteArray[ 4 ] | packet.byteArray[ 5 ];
 				packet.byteArray[ 2 ] = transmuteStateByte( state );
 				break;
@@ -82,11 +86,18 @@ void	processor ( void * pData )
 			
 			case	0x3B:				// emission current
 				*( reinterpret_cast<float*>( packet.byteArray + 3 ) ) = static_cast<float>( rand() ) / RAND_MAX - 1.0;
+				*( reinterpret_cast<unsigned short*>( packet.byteArray + 9 ) ) = emissionCurrentCode;
+				packet.byteArray[ 2 ] = transmuteStateByte( state );
+				break;
+			
+			case	0x33:				// set accelerating voltage
+				accVoltageCode = *( reinterpret_cast<unsigned short*>( packet.byteArray + 4 ) );
 				packet.byteArray[ 2 ] = transmuteStateByte( state );
 				break;
 			
 			case	0x3E:				// accelerating voltage
-				*( reinterpret_cast<float*>( packet.byteArray + 3 ) ) = static_cast<float>( rand() ) / RAND_MAX + 2.0;
+				*( reinterpret_cast<float*>( packet.byteArray + 3 ) ) = static_cast<float>( accVoltageCode ) / 0xFFFF * 3000.0 + 0.001 * static_cast<float>( rand() ) / RAND_MAX;
+				*( reinterpret_cast<unsigned short*>( packet.byteArray + 9 ) ) = accVoltageCode;
 				packet.byteArray[ 2 ] = transmuteStateByte( state );
 				break;
 			

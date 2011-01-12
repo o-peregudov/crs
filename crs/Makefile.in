@@ -56,8 +56,14 @@ host_triplet = @host@
 @USE_POSIXAPI_TRUE@am__append_6 = sc/posix.rs232port.h
 @USE_CPP0XAPI_TRUE@am__append_7 = bits/c++0x.timer.cpp
 @USE_CPP0XAPI_TRUE@am__append_8 = bits/c++0x.timer.h
-@CYGWIN_TARGET_TRUE@am__append_9 = bits/win32.timer.cpp cross.res.rc
-@CYGWIN_TARGET_TRUE@am__append_10 = bits/win32.timer.h resource.h
+@CYGWIN_TARGET_TRUE@am__append_9 = bits/win32.timer.cpp \
+@CYGWIN_TARGET_TRUE@	bits/win32.mutex.cpp bits/win32.thread.cpp \
+@CYGWIN_TARGET_TRUE@	bits/win32.cond.cpp \
+@CYGWIN_TARGET_TRUE@	bits/win32.semaphore.cpp cross.res.rc
+@CYGWIN_TARGET_TRUE@am__append_10 = bits/win32.timer.h \
+@CYGWIN_TARGET_TRUE@	bits/win32.mutex.h bits/win32.thread.h \
+@CYGWIN_TARGET_TRUE@	bits/win32.cond.h bits/win32.semaphore.h \
+@CYGWIN_TARGET_TRUE@	resource.h
 subdir = crs
 DIST_COMMON = $(am__pkginclude_bits_HEADERS_DIST) \
 	$(am__pkginclude_sc_HEADERS_DIST) $(pkginclude_HEADERS) \
@@ -128,7 +134,9 @@ am__libcrs_la_SOURCES_DIST = CRCStuff.c cmdLine.cpp parsing.cpp \
 @USE_POSIXAPI_TRUE@	posix.semaphore.lo posix.rs232port.lo \
 @USE_POSIXAPI_TRUE@	posix.netpoint.lo
 @USE_CPP0XAPI_TRUE@am__objects_3 = c++0x.timer.lo
-@CYGWIN_TARGET_TRUE@am__objects_4 = win32.timer.lo cross.res.lo
+@CYGWIN_TARGET_TRUE@am__objects_4 = win32.timer.lo win32.mutex.lo \
+@CYGWIN_TARGET_TRUE@	win32.thread.lo win32.cond.lo \
+@CYGWIN_TARGET_TRUE@	win32.semaphore.lo cross.res.lo
 am_libcrs_la_OBJECTS = CRCStuff.lo cmdLine.lo parsing.lo security.lo \
 	timer.lo FileVar.lo iniFile.lo interpolation.lo peakCenter.lo \
 	stddev.lo basic.netpoint.lo simplenetpoint.lo \
