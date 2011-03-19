@@ -20,13 +20,14 @@
 //  License along with this library; if not, write to the Free Software
 //  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 //
-//	Jun 13, 2007 - uniform locks & handles
-//	Aug 3, 2007	- default typedef for cBaseHubHandle
-//			  read and write operations are for istream|ostream
-//	Nov 21, 2007 - new place for cross-compiling routines
-//	Dec 6, 2007 - new project name & DLL
-//	Jan 24, 2008 - no throw specificator for read\write members
-//	Sep 8, 2010 - C++0x compartible locks
+//	07/13/2007	uniform locks & handles
+//	08/03/2007	default typedef for cBaseHubHandle
+//			read and write operations are for istream|ostream
+//	11/21/2007	new place for cross-compiling routines
+//	12/06/2007	new project name & DLL
+//	01/24/2008	no throw specificator for read\write members
+//	09/08/2010	C++0x compartible locks
+//	01/21/2011	bug in BaseHub::get causes a deadlock
 //
 
 #include <algorithm>
@@ -195,9 +196,7 @@ public:
 	template <typename VarType>
 	data_type get ( const key_type & name, const VarType & )
 	{
-		CrossClass::_LockIt lock ( _mutex );
 		data_type var ( get( name ) );
-		lock.unlock();
 		if( !var )
 		{
 			var = new VarType ( name );

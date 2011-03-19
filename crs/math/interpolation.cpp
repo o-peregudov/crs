@@ -1,5 +1,6 @@
 // (c) Jul 24, 2009 Oleg N. Peregudov
-//	12/13/2010	default constructor for line
+//	2010/12/13	default constructor for line
+//	2011/03/17	coefficients bug fixed
 #include <crs/math/interpolation.h>
 
 namespace Interpolation {
@@ -8,20 +9,22 @@ namespace Interpolation {
 // members of abstract polynom class
 //
 polynom::polynom ( const unsigned int p )
-	: power( p + 1 )
-	, cf( new double [ power ] )
+	: power( p )
+	, cf( new double [ power + 1 ] )
 	, resSum( 0 )
 	, b00( 0 )	// number of points for regression
 {
+	cf[ 0 ] = 0.0;
+	cf[ 1 ] = 1.0;
 }
 
 polynom::polynom ( const polynom & p )
 	: power( p.power )
-	, cf( new double [ power ] )
+	, cf( new double [ power + 1 ] )
 	, resSum( p.resSum )
 	, b00( p.b00 )
 {
-	memcpy( cf, p.cf, power * sizeof( double ) );
+	memcpy( cf, p.cf, ( power + 1 ) * sizeof( double ) );
 }
 
 polynom::~polynom ()
@@ -29,17 +32,34 @@ polynom::~polynom ()
 	delete [] cf;
 }
 
+polynom & polynom::operator = ( const polynom & p )
+{
+	if( &p != this )
+	{
+		if( p.power != power )
+		{
+			power = p.power;
+			delete [] cf;
+			cf = new double [ power + 1 ];
+		}
+		memcpy( cf, p.cf, ( power + 1 ) * sizeof( double ) );
+		resSum = p.resSum;
+		b00 = p.b00;
+	}
+	return *this;
+}
+
 void polynom::constructOther ( const unsigned int p )
 {
 	delete [] cf;
-	power = p + 1;
-	cf = new double [ power ];
+	power = p;
+	cf = new double [ power + 1 ];
 }
 
 double polynom::func ( const double & x ) const
 {
 	double result ( 0 );
-	for( unsigned int i = 0; i < power; ++i )
+	for( unsigned int i = 0; i < ( power + 1 ); ++i )
 		result += cf[ i ] * pow( x, static_cast<int>( i ) );
 	return result;
 }
@@ -47,7 +67,7 @@ double polynom::func ( const double & x ) const
 double polynom::deriv ( const double & x ) const
 {
 	double result ( 0 );
-	for( unsigned int i = 1; i < power; ++i )
+	for( unsigned int i = 1; i < ( power + 1 ); ++i )
 		result += cf[ i ] * i * pow( x, static_cast<int>( i - 1 ) );
 	return result;
 }
@@ -65,13 +85,15 @@ const double & polynom::sumOfSquaredResiduals ( const unsigned int nPoints, cons
 //
 line::line ( )
 	: polynom( 1 )
-	, c0( 0.0 )
-	, c1( 1.0 )
+	, c0( 0 )
+	, c1( 0 )
 	, b01( 0 )
 	, b02( 0 )
 	, s( 0 )
 	, q( 0 )
 {
+	cf[ 0 ] = 0.0;
+	cf[ 1 ] = 1.0;
 }
 
 line::line ( const std::pair<double, double> & coefficient )
@@ -125,6 +147,21 @@ line::line ( const line & l )
 line::~line ()
 {
 
+}
+
+line & line::operator = ( const line & l )
+{
+	polynom::operator = ( l );
+	if( &l != this )
+	{
+		c0 = l.c0;
+		c1 = l.c1;
+		b01 = l.b01;
+		b02 = l.b02;
+		s = l.s;
+		q = l.q;
+	}
+	return *this;
 }
 
 void line::ipBuild ( const double * x, const double * y )

@@ -6,6 +6,7 @@
 //	12/18/2010	new names: _post/_send/_recv
 //	01/03/2011	integer types
 //			notification about posted packet & proceed_request_job
+//	01/23/2011	device::attach, device::detach members
 //
 #if defined( _MSC_VER )
 #	pragma warning( disable : 4251 )
@@ -30,6 +31,16 @@ using namespace CrossClass;
 void	device::postPacket ( const cTalkPacket & packet )
 {
 	_device_manager->register_request( this, packet );
+}
+
+bool	device::attach ( const ushort domain )
+{
+	return _device_manager->register_device( domain, this );
+}
+
+bool	device::detach ( const ushort domain )
+{
+	return _device_manager->unregister_device( domain, this );
 }
 
 void	device::reset ()

@@ -1,8 +1,7 @@
-- cygwin/*
-- linux/*
-- mingw32/*
+- i686-pc-cygwin/*
+- i686-pc-linux-gnu/*
+- i686-pc-mingw32/*
+- i686-w64-mingw32/*
+- i586-mingw32msvc/*
 - msvs/release/*
 - msvs/debug/*
-- test/cygwin/*
-- test/linux/*
-- test/mingw32/*

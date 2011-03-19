@@ -5,11 +5,8 @@
 //			new implementation
 //	12/10/2010	observer for transmission flag
 //	12/12/2010	clientSendRecv now checks for wait2transmit
-//	01/03/2011	fixed clients' loop in serverSendRecv
-#if defined( _MSC_VER )
-#	pragma warning( disable : 4251 )
-#	pragma warning( disable : 4275 )
-#endif
+//	01/03/2011	bug fixed in the clients' loop in serverSendRecv
+#include <crs/defsys.h>
 #include <crs/bits/win32.netpoint.h>
 #include <cstdio>
 

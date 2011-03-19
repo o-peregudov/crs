@@ -2,35 +2,35 @@
 #define CROSS_DEFSYS_H_INCLUDED 1
 //	2010-12-17	default integer types
 //	2010-12-26	WINVER define for Win32API
+//	2011-01-18	special case for MS VC compiler
 
-#ifdef USE_POSIX_API
-#undef USE_POSIX_API
+#define HAVE_WIN32_API 1
+#define HAVE_POSIX_API 0
+#define HAVE_CPP0X_API 0
+
+#define HAVE_STDINT_H 0
+#define HAVE_INTTYPES_H 0
+#define HAVE_SYS_TYPES_H 0
+
+#if HAVE_STDINT_H
+#	include <stdint.h>
+#endif
+#if HAVE_INTTYPES_H
+#	include <inttypes.h>
+#endif
+#if HAVE_SYS_TYPES_H
+#	include <sys/types.h>
+#endif
+#if STDC_HEADERS
+#	include <stdlib.h>
+#	include <stddef.h>
 #endif
 
-#ifdef USE_WIN32_API
-#undef USE_WIN32_API
-#endif
-
-#ifdef USE_CXX0X_API
-#undef USE_CXX0X_API
-#endif
-
-#if defined( __GNUG__ ) || defined( __GNUC__ )
-#	if defined( __MINGW32__ )
-#		define USE_WIN32_API 1
-#	else
-#		define USE_POSIX_API 1
-#	endif
-#	if defined( __GXX_EXPERIMENTAL_CXX0X__ )
-#		define USE_CXX0X_API 1
-#	endif
-#elif defined( _MSC_VER )
+#if defined( _MSC_VER )
+#	pragma warning( disable : 4251 )
+#	pragma warning( disable : 4275 )
+#	pragma warning( disable : 4996 )
 #	define USE_WIN32_API 1
-#else
-#	define USE_POSIX_API 1
-#endif
-
-#if defined( USE_WIN32_API )
 #	ifndef WINVER				// Allow use of features specific to Windows XP or later.
 #		define WINVER 0x0502		// Change this to the appropriate value to target other versions of Windows.
 #	endif
@@ -43,18 +43,16 @@
 #	ifndef _WIN32_IE				// Allow use of features specific to IE 6.0 or later.
 #		define _WIN32_IE 0x0600		// Change this to the appropriate value to target other versions of IE.
 #	endif
-#endif
-
-#if HAVE_STDINT_H
-#	include <stdint.h>
-#endif
-#if STDC_HEADERS
-#	include <stdlib.h>
-#	include <stddef.h>
-#endif
-#if HAVE_INTTYPES_H
-#	include <inttypes.h>
+#	include <winsock2.h>
+	
+	typedef CHAR crs_int8_t;
+	typedef SHORT crs_int16_t;
+	typedef INT32 crs_int32_t;
+	typedef INT64 crs_int64_t;
+	
+	typedef BYTE crs_uint8_t;
+	typedef WORD crs_uint16_t;
+	typedef DWORD crs_uint32_t;
 #endif
 
 #endif // CROSS_DEFSYS_H_INCLUDED
-

@@ -2,11 +2,7 @@
 // win32.timer.cpp: interface for the cTimer class (Win32 API)
 // (c) Aug 23, 2010 Oleg N. Peregudov
 //
-
-#if defined( _MSC_VER )
-#	pragma warning( disable : 4251 )
-#	pragma warning( disable : 4275 )
-#endif
+#include <crs/defsys.h>
 #include <crs/bits/win32.timer.h>
 
 namespace CrossClass {
@@ -35,7 +31,7 @@ const cWin32Timer::host_time_type & cWin32Timer::startTime () const
 const double & cWin32Timer::getStamp ()
 {
 	QueryPerformanceCounter( &_actual );
-	_timeFromStart += static_cast<double>( _actual.QuadPart - _recent.QuadPart ) / _freq.QuadPart;
+	_timeFromStart +=	static_cast<double>( _actual.QuadPart - _recent.QuadPart ) / _freq.QuadPart;
 	_recent.QuadPart = _actual.QuadPart;
 	return _timeFromStart;
 }

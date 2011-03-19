@@ -19,7 +19,7 @@
 //	12/12/2010	domainStat
 //	12/17/2010	new packet structure (size field first)
 //	12/20/2010	char type for packet contents
-//	01/03/2011	integer types
+//	01/17/2011	integer types
 //
 
 #include <cstring>
@@ -29,29 +29,9 @@
 
 namespace ude {
 
-#if defined( HAVE_UINT16_T )
-	typedef uint16_t		ushort;
-#elif defined( _MSC_VER )
-	typedef UINT16		ushort;
-#else
-	typedef unsigned short	ushort;
-#endif
-
-#if defined( HAVE_UINT32_T )
-	typedef uint32_t		ulong;
-#elif defined( _MSC_VER )
-	typedef UINT32		ulong;
-#else
-	typedef unsigned long	ulong;
-#endif
-
-#if defined( HAVE_INT64_T )
-	typedef int64_t		long64;
-#elif defined( HANE_LONG_LONG )
-	typedef long long		long64;
-#elif defined( HAVE___INT64 )
-	typedef __int64		long64;
-#endif
+typedef crs_uint16_t	ushort;
+typedef crs_uint32_t	ulong;
+typedef crs_int64_t	long64;
 
 #pragma pack(push,1)
 struct CROSS_EXPORT cPacketHeader

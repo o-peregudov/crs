@@ -9,7 +9,8 @@
 //       (2) always call cThread::kill() memeber in the destructor of your derived class
 //           in order to proceed all virtual members properly
 //
-//	Sep 4, 2010 - running flag
+//	09/04/2010	running flag
+//	01/21/2011	separate running and activation flags observers
 //
 
 #include <crs/libexport.h>
@@ -48,6 +49,8 @@ namespace CrossClass
 		virtual ~cWin32Thread ();
 		virtual void Resume ();
 		virtual void Stop ();
+		
+		operator bool ();
 		
 		bool active ();
 		void * kill ();

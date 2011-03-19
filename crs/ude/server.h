@@ -21,6 +21,7 @@
 //	12/18/2010	new names: _post/_send/_recv
 //	01/03/2011	integer types
 //			notification about posted packet & proceed_request_job
+//	01/23/2011	device::attach, device::detach members
 //
 
 #include <map>
@@ -70,6 +71,8 @@ protected:
 	device_manager * _device_manager;
 	
 	void	postPacket ( const cTalkPacket & );
+	bool	attach ( const ushort domain );
+	bool	detach ( const ushort domain );
 	
 public:
 	device ( device_manager * dm = 0 )
@@ -256,4 +259,3 @@ public:
 
 } // namespace ude
 #endif // CROSS_UDE_SERVER_H_INCLUDED
-

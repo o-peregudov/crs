@@ -5,7 +5,6 @@
 // Aug 27, 2010 - compartibility with std::mutex from C++0x standard
 
 #include <crs/libexport.h>
-#include <windows.h>
 #include <stdexcept>
 
 namespace CrossClass
@@ -29,7 +28,7 @@ namespace CrossClass
 		operator const native_handle_type & () const	{ return _mutex; }
 		
 		operator native_handle_type * ()			{ return &_mutex; }
-		operator const native_handle_type * ()	const { return &_mutex; }
+		operator const native_handle_type * ()const	{ return &_mutex; }
 	};
 } // namespace CrossClass
 #endif // CROSS_WIN32_LOCK_H_INCLUDED

@@ -13,6 +13,7 @@
 //	09/04/2010	using our condition_variable
 //			new running flag
 //	01/05/2011	slightly changed Step
+//	01/21/2011	separate running and activation flags observers
 //
 
 #include <crs/security.h>
@@ -73,6 +74,8 @@ namespace CrossClass
 		virtual ~cPosixThread ();
 		virtual void Resume ();
 		virtual void Stop ();
+		
+		operator bool ();
 		
 		bool active ();
 		void * kill ();

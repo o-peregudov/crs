@@ -1,8 +1,10 @@
 // win32.rs232port.cpp: interface for the rs232port class (Win32 API).
 // (c) Sep 4, 2010 Oleg N. Peregudov
-//	09/09/2010	baudrate constant selector
-//	09/10/2010	reset termination event on sequential open
-//	09/20/2010	non-blocking postTerminate
+//	2010/09/09	baudrate constant selector
+//	2010/09/10	reset termination event on sequential open
+//	2010/09/20	non-blocking postTerminate
+//	2011/03/13	Wine eventualy returns ERROR_TIMEOUT instead of ERROR_IO_PENDING
+//			from GetOverlappedResult
 #if defined( _MSC_VER )
 #	pragma warning( disable : 4251 )
 #	pragma warning( disable : 4275 )
@@ -343,7 +345,7 @@ bool win32RS232port::receive ()
 			if( GetOverlappedResult( m_hCommPort, &osRead, &dwRead, FALSE ) == 0 )
 			{
 				errCode = GetLastError();
-				if( errCode != ERROR_IO_PENDING )
+				if( ( errCode != ERROR_IO_PENDING ) && ( errCode != ERROR_TIMEOUT ) )
 				{
 					//
 					// readfile failed, but it isn't delayed
@@ -385,3 +387,4 @@ void win32RS232port::postTerminate ( const bool doWaitTerminate )
 }
 
 } // namespace sc
+

@@ -5,7 +5,7 @@
 // (c) Sep 3, 2010 Oleg N. Peregudov
 //
 //	09/18/2010	expand errors using strerror function
-//	01/03/2011	integer types
+//	01/17/2011	integer types
 //
 
 #include <crs/security.h>
@@ -31,16 +31,9 @@ namespace CrossClass
 		template <class Predicate>
 		bool wait_for ( _LockIt & lock, const unsigned long dwMilliseconds, Predicate pred )
 		{
-			#if defined( HAVE_INT64_T )
-			typedef int64_t	long64;
-			#elif defined( HANE_LONG_LONG )
-			typedef long long	long64;
-			#elif defined( HAVE___INT64 )
-			typedef __int64	long64;
-			#endif
 			timespec abstime;
 			clock_gettime( CLOCK_REALTIME, &abstime );
-			long64 nanoseconds = abstime.tv_nsec + dwMilliseconds * 1000000L;
+			crs_int64_t nanoseconds = abstime.tv_nsec + dwMilliseconds * 1000000L;
 			abstime.tv_sec += nanoseconds / 1000000000L;	// seconds
 			abstime.tv_nsec = nanoseconds % 1000000000L;	// nanoseconds
 			for( int errCode = 0; !pred(); )

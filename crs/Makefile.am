@@ -4,7 +4,7 @@ INCLUDES = -I$(top_srcdir)
 
 libcrs_la_SOURCES = CRCStuff.c cmdLine.cpp parsing.cpp security.cpp timer.cpp \
 	oio/FileVar.cpp oio/iniFile.cpp \
-	math/interpolation.cpp math/peakCenter.cpp math/stddev.c \
+	math/interpolation.cpp math/peakCenter.cpp math/stddev.c math/spectrum.cpp \
 	bits/basic.netpoint.cpp simplenetpoint.cpp \
 	sc/basic.rs232port.cpp \
 	ude/packets.cpp ude/netpoint.cpp ude/server.cpp ude/client.cpp ude/pingtool.cpp \
@@ -27,7 +27,7 @@ pkginclude_oiodir = $(pkgincludedir)/oio
 pkginclude_oio_HEADERS = oio/FileVar.h oio/iniFile.h
 
 pkginclude_mathdir = $(pkgincludedir)/math
-pkginclude_math_HEADERS = math/interpolation.h math/peakCenter.h math/stddev.h math/unimath.h math/unimath.cc
+pkginclude_math_HEADERS = math/interpolation.h math/peakCenter.h math/stddev.h math/unimath.h math/unimath.cc math/spectrum.h
 
 pkginclude_udedir = $(pkgincludedir)/ude
 pkginclude_ude_HEADERS = ude/packets.h ude/netpoint.h ude/server.h ude/client.h ude/pingtool.h
@@ -44,7 +44,9 @@ pkginclude_bits_HEADERS += bits/win32.timer.h bits/win32.mutex.h bits/win32.thre
 	bits/win32.cond.h bits/win32.semaphore.h bits/win32.netpoint.h
 
 pkginclude_sc_HEADERS += sc/win32.rs232port.h
+endif
 
+if WINDOWS_RESOURCE
 libcrs_la_SOURCES += cross.res.rc
 pkginclude_bits_HEADERS += resource.h
 endif
@@ -65,15 +67,10 @@ libcrs_la_SOURCES += bits/c++0x.timer.cpp
 pkginclude_bits_HEADERS += bits/c++0x.timer.h
 endif
 
-if CYGWIN_TARGET
-libcrs_la_SOURCES += bits/win32.timer.cpp bits/win32.mutex.cpp bits/win32.thread.cpp \
-	bits/win32.cond.cpp bits/win32.semaphore.cpp
-pkginclude_bits_HEADERS += bits/win32.timer.h bits/win32.mutex.h bits/win32.thread.h \
-	bits/win32.cond.h bits/win32.semaphore.h 
-
-libcrs_la_SOURCES += cross.res.rc
-pkginclude_bits_HEADERS += resource.h
-endif
-
+#if CYGWIN_TARGET
+#libcrs_la_SOURCES += cross.res.rc
+#pkginclude_bits_HEADERS += resource.h
+#endif
+#
 .rc.lo: 
 	$(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --tag=RC --mode=compile $(RC) $(RCFLAGS) $< -o $@ 

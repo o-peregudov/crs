@@ -9,12 +9,6 @@
 /* Define to 1 if you have the <arpa/inet.h> header file. */
 #undef HAVE_ARPA_INET_H
 
-/* char is defined in system headers */
-#undef HAVE_CHAR
-
-/* Define to 1 if you have the `clock_gettime' function. */
-#undef HAVE_CLOCK_GETTIME
-
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
@@ -27,21 +21,6 @@
 /* Define to 1 if you have the `inet_ntoa' function. */
 #undef HAVE_INET_NTOA
 
-/* int is defined in system headers */
-#undef HAVE_INT
-
-/* int16_t is defined in system headers */
-#undef HAVE_INT16_T
-
-/* int32_t is defined in system headers */
-#undef HAVE_INT32_T
-
-/* int64_t is defined in system headers */
-#undef HAVE_INT64_T
-
-/* int8_t is defined in system headers */
-#undef HAVE_INT8_T
-
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
@@ -50,12 +29,6 @@
 
 /* Define to 1 if you have the `rt' library (-lrt). */
 #undef HAVE_LIBRT
-
-/* long is defined in system headers */
-#undef HAVE_LONG
-
-/* long long is defined in system headers */
-#undef HAVE_LONG_LONG
 
 /* Define to 1 if you have the `memcpy' function. */
 #undef HAVE_MEMCPY
@@ -83,9 +56,6 @@
 
 /* Define to 1 if you have the `select' function. */
 #undef HAVE_SELECT
-
-/* short is defined in system headers */
-#undef HAVE_SHORT
 
 /* Define to 1 if you have the `socket' function. */
 #undef HAVE_SOCKET
@@ -126,18 +96,6 @@
 /* Define to 1 if you have the <termios.h> header file. */
 #undef HAVE_TERMIOS_H
 
-/* uint16_t is defined in system headers */
-#undef HAVE_UINT16_T
-
-/* uint32_t is defined in system headers */
-#undef HAVE_UINT32_T
-
-/* uint64_t is defined in system headers */
-#undef HAVE_UINT64_T
-
-/* uint8_t is defined in system headers */
-#undef HAVE_UINT8_T
-
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
@@ -149,9 +107,6 @@
 
 /* Define to 1 if the system has the type `_Bool'. */
 #undef HAVE__BOOL
-
-/* __int64 is defined in system headers */
-#undef HAVE___INT64
 
 /* configure command line used to configure libcrs */
 #undef LIBCRS_CONFIGURE_OPTIONS
@@ -214,11 +169,17 @@
 /* The size of `uint32_t', as computed by sizeof. */
 #undef SIZEOF_UINT32_T
 
-/* The size of `uint64_t', as computed by sizeof. */
-#undef SIZEOF_UINT64_T
-
 /* The size of `uint8_t', as computed by sizeof. */
 #undef SIZEOF_UINT8_T
+
+/* The size of `u_int16_t', as computed by sizeof. */
+#undef SIZEOF_U_INT16_T
+
+/* The size of `u_int32_t', as computed by sizeof. */
+#undef SIZEOF_U_INT32_T
+
+/* The size of `u_int8_t', as computed by sizeof. */
+#undef SIZEOF_U_INT8_T
 
 /* The size of `__int64', as computed by sizeof. */
 #undef SIZEOF___INT64

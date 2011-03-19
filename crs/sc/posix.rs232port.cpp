@@ -38,6 +38,16 @@ static const size_t baudRate [] = {
 	2500000L, 3000000L
 };
 
+static const char portConf [] = 
+	"[SerialPortConfig]\n"					\
+	"port=/dev/ttyS0\n"					\
+	"baud=115200\n"						\
+	"data=8\n"							\
+	"stop=0\n"							\
+	"parity=none; (odd | even | none | space)\n"	\
+	"flow=none; (xon | xoff)\n"				\
+	;
+
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////

@@ -1,9 +1,8 @@
 // (c) Apr 17, 2008 Oleg N. Peregudov
-// Aug 23, 2010 - Win32 thread envelope
-// Sep 4, 2010 - running flag
-#if defined( _MSC_VER )
-#	pragma warning( disable : 4251 )
-#endif
+//	08/23/2010	Win32 thread envelope
+//	09/04/2010	running flag
+//	01/21/2011	separate running and activation flags observers
+#include <crs/defsys.h>
 #include <crs/bits/win32.thread.h>
 #include <cstdio>
 
@@ -124,12 +123,17 @@ void cWin32Thread::Stop ()
 
 bool cWin32Thread::active ()
 {
+	return _check_activate();
+}
+
+cWin32Thread::operator bool ()
+{
 	return ( WaitForSingleObject( _evntStopped, 0 ) == WAIT_TIMEOUT );
 }
 
 void * cWin32Thread::kill ()
 {
-	if( active() )
+	if( *this )
 	{
 		_post_terminate();
 		WaitForSingleObject( _evntStopped, INFINITE );

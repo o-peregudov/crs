@@ -1,7 +1,8 @@
 #ifndef INTERPOLATION_H_INCLUDED
 #define INTERPOLATION_H_INCLUDED 1
 // (c) Jul 24, 2009 Oleg N. Peregudov
-//	12/13/2010	default contructor for line
+//	2010/12/13	default contructor for line
+//	2011/03/19	assignment operator
 
 #include <cmath>
 #include <cstring>
@@ -25,6 +26,8 @@ protected:
 	virtual ~polynom ();
 	
 	void constructOther ( const unsigned int p );
+	
+	polynom & operator = ( const polynom & );
 	
 public:
 	virtual double func ( const double & x ) const;
@@ -58,6 +61,8 @@ public:
 	line ( const double * x, const double * y );
 	line ( const unsigned int nPoints, const double * x, const double * y );
 	line ( const line & );
+	
+	line & operator = ( const line & );
 	
 	virtual ~line ();
 	

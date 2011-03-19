@@ -4,6 +4,7 @@
 //	08/30/2010	using our condition variable wrapper
 //	01/03/2011	integer types
 //	01/05/2011	slightly changed Step
+//	01/21/2011	separate running and activation flags observers
 //
 
 #if defined( HAVE_CONFIG_H )
@@ -46,10 +47,16 @@ void * cPosixThread::thread_routine ( void * pParam )
 	return pThreadClass->_thread_routine_result;
 }
 
-bool cPosixThread::active ()
+cPosixThread::operator bool ()
 {
 	_LockIt _flags_lock ( _flags_mutex );
 	return _running_flag;
+}
+
+bool cPosixThread::active ()
+{
+	_LockIt _flags_lock ( _flags_mutex );
+	return _activate_flag;
 }
 
 bool cPosixThread::_check_terminate ()
@@ -177,7 +184,7 @@ cPosixThread::~cPosixThread ()
 
 void * cPosixThread::kill ()
 {
-	if( active() )
+	if( *this )
 	{
 		_post_terminate();
 		switch( pthread_join( _thread, NULL ) )

@@ -4,7 +4,6 @@
 // Envelop for the Win32 semaphore
 
 #include <crs/libexport.h>
-#include <windows.h>
 #include <stdexcept>
 
 namespace CrossClass

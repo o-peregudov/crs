@@ -35,51 +35,43 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-@USE_WIN32API_TRUE@am__append_1 = bits/win32.timer.cpp \
-@USE_WIN32API_TRUE@	bits/win32.mutex.cpp bits/win32.thread.cpp \
-@USE_WIN32API_TRUE@	bits/win32.cond.cpp \
-@USE_WIN32API_TRUE@	bits/win32.semaphore.cpp \
-@USE_WIN32API_TRUE@	sc/win32.rs232port.cpp \
-@USE_WIN32API_TRUE@	bits/win32.netpoint.cpp cross.res.rc
-@USE_WIN32API_TRUE@am__append_2 = bits/win32.timer.h \
-@USE_WIN32API_TRUE@	bits/win32.mutex.h bits/win32.thread.h \
-@USE_WIN32API_TRUE@	bits/win32.cond.h bits/win32.semaphore.h \
-@USE_WIN32API_TRUE@	bits/win32.netpoint.h resource.h
+@USE_WIN32API_TRUE@am__append_1 = bits/win32.timer.cpp bits/win32.mutex.cpp bits/win32.thread.cpp \
+@USE_WIN32API_TRUE@	bits/win32.cond.cpp bits/win32.semaphore.cpp \
+@USE_WIN32API_TRUE@	sc/win32.rs232port.cpp bits/win32.netpoint.cpp
+
+@USE_WIN32API_TRUE@am__append_2 = bits/win32.timer.h bits/win32.mutex.h bits/win32.thread.h \
+@USE_WIN32API_TRUE@	bits/win32.cond.h bits/win32.semaphore.h bits/win32.netpoint.h
+
 @USE_WIN32API_TRUE@am__append_3 = sc/win32.rs232port.h
-@USE_POSIXAPI_TRUE@am__append_4 = bits/posix.timer.cpp bits/posix.mutex.cpp bits/posix.thread.cpp \
+@WINDOWS_RESOURCE_TRUE@am__append_4 = cross.res.rc
+@WINDOWS_RESOURCE_TRUE@am__append_5 = resource.h
+@USE_POSIXAPI_TRUE@am__append_6 = bits/posix.timer.cpp bits/posix.mutex.cpp bits/posix.thread.cpp \
 @USE_POSIXAPI_TRUE@	bits/posix.cond.cpp bits/posix.semaphore.cpp \
 @USE_POSIXAPI_TRUE@	sc/posix.rs232port.cpp bits/posix.netpoint.cpp
 
-@USE_POSIXAPI_TRUE@am__append_5 = bits/posix.timer.h bits/posix.mutex.h bits/posix.thread.h \
+@USE_POSIXAPI_TRUE@am__append_7 = bits/posix.timer.h bits/posix.mutex.h bits/posix.thread.h \
 @USE_POSIXAPI_TRUE@	bits/posix.cond.h bits/posix.semaphore.h bits/posix.netpoint.h
 
-@USE_POSIXAPI_TRUE@am__append_6 = sc/posix.rs232port.h
-@USE_CPP0XAPI_TRUE@am__append_7 = bits/c++0x.timer.cpp
-@USE_CPP0XAPI_TRUE@am__append_8 = bits/c++0x.timer.h
-@CYGWIN_TARGET_TRUE@am__append_9 = bits/win32.timer.cpp \
-@CYGWIN_TARGET_TRUE@	bits/win32.mutex.cpp bits/win32.thread.cpp \
-@CYGWIN_TARGET_TRUE@	bits/win32.cond.cpp \
-@CYGWIN_TARGET_TRUE@	bits/win32.semaphore.cpp cross.res.rc
-@CYGWIN_TARGET_TRUE@am__append_10 = bits/win32.timer.h \
-@CYGWIN_TARGET_TRUE@	bits/win32.mutex.h bits/win32.thread.h \
-@CYGWIN_TARGET_TRUE@	bits/win32.cond.h bits/win32.semaphore.h \
-@CYGWIN_TARGET_TRUE@	resource.h
+@USE_POSIXAPI_TRUE@am__append_8 = sc/posix.rs232port.h
+@USE_CPP0XAPI_TRUE@am__append_9 = bits/c++0x.timer.cpp
+@USE_CPP0XAPI_TRUE@am__append_10 = bits/c++0x.timer.h
 subdir = crs
 DIST_COMMON = $(am__pkginclude_bits_HEADERS_DIST) \
 	$(am__pkginclude_sc_HEADERS_DIST) $(pkginclude_HEADERS) \
 	$(pkginclude_math_HEADERS) $(pkginclude_msdc_HEADERS) \
 	$(pkginclude_oio_HEADERS) $(pkginclude_ude_HEADERS) \
-	$(srcdir)/Makefile.am $(srcdir)/Makefile.in
+	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
+	$(srcdir)/defsys.h.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
 	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
 	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
-	$(top_srcdir)/acinclude.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
-CONFIG_CLEAN_FILES =
+CONFIG_CLEAN_FILES = defsys.h
 CONFIG_CLEAN_VPATH_FILES =
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
@@ -114,7 +106,7 @@ libcrs_la_LIBADD =
 am__libcrs_la_SOURCES_DIST = CRCStuff.c cmdLine.cpp parsing.cpp \
 	security.cpp timer.cpp oio/FileVar.cpp oio/iniFile.cpp \
 	math/interpolation.cpp math/peakCenter.cpp math/stddev.c \
-	bits/basic.netpoint.cpp simplenetpoint.cpp \
+	math/spectrum.cpp bits/basic.netpoint.cpp simplenetpoint.cpp \
 	sc/basic.rs232port.cpp ude/packets.cpp ude/netpoint.cpp \
 	ude/server.cpp ude/client.cpp ude/pingtool.cpp \
 	msdc/data_classes.cpp msdc/pools.cpp msdc/ring_pool.cpp \
@@ -128,18 +120,16 @@ am__libcrs_la_SOURCES_DIST = CRCStuff.c cmdLine.cpp parsing.cpp \
 @USE_WIN32API_TRUE@am__objects_1 = win32.timer.lo win32.mutex.lo \
 @USE_WIN32API_TRUE@	win32.thread.lo win32.cond.lo \
 @USE_WIN32API_TRUE@	win32.semaphore.lo win32.rs232port.lo \
-@USE_WIN32API_TRUE@	win32.netpoint.lo cross.res.lo
-@USE_POSIXAPI_TRUE@am__objects_2 = posix.timer.lo posix.mutex.lo \
+@USE_WIN32API_TRUE@	win32.netpoint.lo
+@WINDOWS_RESOURCE_TRUE@am__objects_2 = cross.res.lo
+@USE_POSIXAPI_TRUE@am__objects_3 = posix.timer.lo posix.mutex.lo \
 @USE_POSIXAPI_TRUE@	posix.thread.lo posix.cond.lo \
 @USE_POSIXAPI_TRUE@	posix.semaphore.lo posix.rs232port.lo \
 @USE_POSIXAPI_TRUE@	posix.netpoint.lo
-@USE_CPP0XAPI_TRUE@am__objects_3 = c++0x.timer.lo
-@CYGWIN_TARGET_TRUE@am__objects_4 = win32.timer.lo win32.mutex.lo \
-@CYGWIN_TARGET_TRUE@	win32.thread.lo win32.cond.lo \
-@CYGWIN_TARGET_TRUE@	win32.semaphore.lo cross.res.lo
+@USE_CPP0XAPI_TRUE@am__objects_4 = c++0x.timer.lo
 am_libcrs_la_OBJECTS = CRCStuff.lo cmdLine.lo parsing.lo security.lo \
 	timer.lo FileVar.lo iniFile.lo interpolation.lo peakCenter.lo \
-	stddev.lo basic.netpoint.lo simplenetpoint.lo \
+	stddev.lo spectrum.lo basic.netpoint.lo simplenetpoint.lo \
 	basic.rs232port.lo packets.lo netpoint.lo server.lo client.lo \
 	pingtool.lo data_classes.lo pools.lo ring_pool.lo \
 	composite_core.lo $(am__objects_1) $(am__objects_2) \
@@ -207,9 +197,9 @@ CXXCPP = @CXXCPP@
 CXXDEPMODE = @CXXDEPMODE@
 CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
+DEFINE_CROSS_EXPORT = @DEFINE_CROSS_EXPORT@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
-DLLTOOL = @DLLTOOL@
 DSYMUTIL = @DSYMUTIL@
 DUMPBIN = @DUMPBIN@
 ECHO_C = @ECHO_C@
@@ -219,6 +209,13 @@ EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
 GREP = @GREP@
+HAVE_CPP0X_API = @HAVE_CPP0X_API@
+HAVE_INTTYPES_H = @HAVE_INTTYPES_H@
+HAVE_POSIX_API = @HAVE_POSIX_API@
+HAVE_STDINT_H = @HAVE_STDINT_H@
+HAVE_SYS_TYPES_H = @HAVE_SYS_TYPES_H@
+HAVE_WIN32_API = @HAVE_WIN32_API@
+HAVE_WINSOCK2_H = @HAVE_WINSOCK2_H@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -233,7 +230,6 @@ LIPO = @LIPO@
 LN_S = @LN_S@
 LTLIBOBJS = @LTLIBOBJS@
 MAKEINFO = @MAKEINFO@
-MANIFEST_TOOL = @MANIFEST_TOOL@
 MKDIR_P = @MKDIR_P@
 NM = @NM@
 NMEDIT = @NMEDIT@
@@ -254,13 +250,19 @@ RC = @RC@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
+SIZE16 = @SIZE16@
+SIZE32 = @SIZE32@
+SIZE64 = @SIZE64@
+SIZE8 = @SIZE8@
 STRIP = @STRIP@
+USIZE16 = @USIZE16@
+USIZE32 = @USIZE32@
+USIZE8 = @USIZE8@
 VERSION = @VERSION@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
 abs_top_srcdir = @abs_top_srcdir@
-ac_ct_AR = @ac_ct_AR@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
 ac_ct_DUMPBIN = @ac_ct_DUMPBIN@
@@ -294,6 +296,7 @@ libdir = @libdir@
 libexecdir = @libexecdir@
 localedir = @localedir@
 localstatedir = @localstatedir@
+lt_ECHO = @lt_ECHO@
 mandir = @mandir@
 mkdir_p = @mkdir_p@
 oldincludedir = @oldincludedir@
@@ -314,12 +317,12 @@ INCLUDES = -I$(top_srcdir)
 libcrs_la_SOURCES = CRCStuff.c cmdLine.cpp parsing.cpp security.cpp \
 	timer.cpp oio/FileVar.cpp oio/iniFile.cpp \
 	math/interpolation.cpp math/peakCenter.cpp math/stddev.c \
-	bits/basic.netpoint.cpp simplenetpoint.cpp \
+	math/spectrum.cpp bits/basic.netpoint.cpp simplenetpoint.cpp \
 	sc/basic.rs232port.cpp ude/packets.cpp ude/netpoint.cpp \
 	ude/server.cpp ude/client.cpp ude/pingtool.cpp \
 	msdc/data_classes.cpp msdc/pools.cpp msdc/ring_pool.cpp \
 	msdc/composite_core.cpp $(am__append_1) $(am__append_4) \
-	$(am__append_7) $(am__append_9)
+	$(am__append_6) $(am__append_9)
 libcrs_la_LDFLAGS = -no-undefined -version-info $(CRS_LT_VERSION)
 pkginclude_HEADERS = cmdLine.h mutex.h handle.h parsing.h security.h \
 	thread.h timer.h socket.h netpoint.h simplenetpoint.h main myexcept.h \
@@ -328,16 +331,16 @@ pkginclude_HEADERS = cmdLine.h mutex.h handle.h parsing.h security.h \
 
 pkginclude_bitsdir = $(pkgincludedir)/bits
 pkginclude_bits_HEADERS = bits/basic.netpoint.h bits/hostsocket.hpp \
-	$(am__append_2) $(am__append_5) $(am__append_8) \
+	$(am__append_2) $(am__append_5) $(am__append_7) \
 	$(am__append_10)
 pkginclude_scdir = $(pkgincludedir)/sc
 pkginclude_sc_HEADERS = sc/basic.rs232port.h sc/rs232port.h \
 	sc/serialbyte.h sc/i41serial.h sc/twelvebyte.h $(am__append_3) \
-	$(am__append_6)
+	$(am__append_8)
 pkginclude_oiodir = $(pkgincludedir)/oio
 pkginclude_oio_HEADERS = oio/FileVar.h oio/iniFile.h
 pkginclude_mathdir = $(pkgincludedir)/math
-pkginclude_math_HEADERS = math/interpolation.h math/peakCenter.h math/stddev.h math/unimath.h math/unimath.cc
+pkginclude_math_HEADERS = math/interpolation.h math/peakCenter.h math/stddev.h math/unimath.h math/unimath.cc math/spectrum.h
 pkginclude_udedir = $(pkgincludedir)/ude
 pkginclude_ude_HEADERS = ude/packets.h ude/netpoint.h ude/server.h ude/client.h ude/pingtool.h
 pkginclude_msdcdir = $(pkgincludedir)/msdc
@@ -376,6 +379,8 @@ $(top_srcdir)/configure:  $(am__configure_deps)
 $(ACLOCAL_M4):  $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
+defsys.h: $(top_builddir)/config.status $(srcdir)/defsys.h.in
+	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 install-libLTLIBRARIES: $(lib_LTLIBRARIES)
 	@$(NORMAL_INSTALL)
 	test -z "$(libdir)" || $(MKDIR_P) "$(DESTDIR)$(libdir)"
@@ -444,6 +449,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/security.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/server.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/simplenetpoint.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/spectrum.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stddev.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/timer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/win32.cond.Plo@am__quote@
@@ -530,6 +536,13 @@ peakCenter.lo: math/peakCenter.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='math/peakCenter.cpp' object='peakCenter.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o peakCenter.lo `test -f 'math/peakCenter.cpp' || echo '$(srcdir)/'`math/peakCenter.cpp
+
+spectrum.lo: math/spectrum.cpp
+@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT spectrum.lo -MD -MP -MF $(DEPDIR)/spectrum.Tpo -c -o spectrum.lo `test -f 'math/spectrum.cpp' || echo '$(srcdir)/'`math/spectrum.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/spectrum.Tpo $(DEPDIR)/spectrum.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='math/spectrum.cpp' object='spectrum.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o spectrum.lo `test -f 'math/spectrum.cpp' || echo '$(srcdir)/'`math/spectrum.cpp
 
 basic.netpoint.lo: bits/basic.netpoint.cpp
 @am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT basic.netpoint.lo -MD -MP -MF $(DEPDIR)/basic.netpoint.Tpo -c -o basic.netpoint.lo `test -f 'bits/basic.netpoint.cpp' || echo '$(srcdir)/'`bits/basic.netpoint.cpp
@@ -1078,6 +1091,11 @@ uninstall-am: uninstall-libLTLIBRARIES uninstall-pkgincludeHEADERS \
 	uninstall-pkginclude_udeHEADERS
 
 
+#if CYGWIN_TARGET
+#libcrs_la_SOURCES += cross.res.rc
+#pkginclude_bits_HEADERS += resource.h
+#endif
+#
 .rc.lo: 
 	$(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --tag=RC --mode=compile $(RC) $(RCFLAGS) $< -o $@ 
 
