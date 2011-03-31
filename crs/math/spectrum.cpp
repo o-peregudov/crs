@@ -16,8 +16,9 @@ massSpectrum::massSpectrum ()
 	, intensity( 0 )
 	, sigma( 0 )
 	, bgLevel( 0 )
-	, pcd( )
 	, smoothIntensity( 0 )
+	, pcd( )
+	, hist( )
 {
 	mass = new double [ nPointsReserved ];
 	time = new double [ nPointsReserved ];
@@ -33,13 +34,78 @@ massSpectrum::~massSpectrum ()
 	delete [] time;
 	delete [] mass;
 }
+
+massSpectrum::massSpectrum ( const massSpectrum & s )
+	: nPoints( s.nPoints )
+	, nPointsReserved( s.nPointsReserved )
+	, mass( 0 )
+	, time( 0 )
+	, intensity( 0 )
+	, sigma( 0 )
+	, bgLevel( s.bgLevel )
+	, smoothIntensity( 0 )
+	, pcd( s.pcd )
+	, hist( s.hist )
+{
+	mass = new double [ nPointsReserved ];
+	time = new double [ nPointsReserved ];
+	intensity = new double [ nPointsReserved ];
+	sigma = new double [ nPointsReserved ];
+	smoothIntensity = new double [ nPoints ];
 	
+	memcpy( mass, s.mass, nPoints * sizeof( double ) );
+	memcpy( time, s.time, nPoints * sizeof( double ) );
+	memcpy( intensity, s.intensity, nPoints * sizeof( double ) );
+	memcpy( sigma, s.sigma, nPoints * sizeof( double ) );
+	memcpy( smoothIntensity, s.smoothIntensity, nPoints * sizeof( double ) );
+}
+
+massSpectrum & massSpectrum::operator = ( const massSpectrum & s )
+{
+	if( &s != this )
+	{
+		if( nPointsReserved < s.nPointsReserved )
+		{
+			delete [] sigma;
+			delete [] intensity;
+			delete [] time;
+			delete [] mass;
+			
+			nPointsReserved = s.nPointsReserved;
+			
+			mass = new double [ nPointsReserved ];
+			time = new double [ nPointsReserved ];
+			intensity = new double [ nPointsReserved ];
+			sigma = new double [ nPointsReserved ];
+		}
+		
+		if( nPoints < s.nPoints )
+		{
+			delete [] smoothIntensity;
+			
+			nPoints = s.nPoints;
+			
+			smoothIntensity = new double [ nPoints ];
+		}
+		
+		bgLevel = s.bgLevel;
+		pcd = s.pcd;
+		hist = s.hist;
+		
+		memcpy( mass, s.mass, nPoints * sizeof( double ) );
+		memcpy( time, s.time, nPoints * sizeof( double ) );
+		memcpy( intensity, s.intensity, nPoints * sizeof( double ) );
+		memcpy( sigma, s.sigma, nPoints * sizeof( double ) );
+		memcpy( smoothIntensity, s.smoothIntensity, nPoints * sizeof( double ) );
+	}
+	return *this;
+}
+
 void	massSpectrum::read ( std::istream & is, const std::string & format )
 {
 	std::string lineBuffer;
 	std::istringstream line;
 	
-//	int nDuplicates = 0;
 	double m( 1 ), t( 0 ), i( 0 ), s( 1 );
 	try
 	{
@@ -88,10 +154,7 @@ void	massSpectrum::read ( std::istream & is, const std::string & format )
 			if( ( m != std::numeric_limits<double>::infinity() ) &&
 			    ( i != std::numeric_limits<double>::infinity() ) )
 			{
-//				if( nPoints && UniMath::isZero( m - mass[ nPoints - 1 ] ) )
-//					++nDuplicates;
-//				else
-					addPoint( m, i, s, t );
+				addPoint( m, i, s, t );
 			}
 			else
 				break;

@@ -1,5 +1,5 @@
 AC_PREREQ([2.63])
-AC_INIT([crs],[0.8.0],[op@pochta.ru])
+AC_INIT([crs],[1.0.1],[op@pochta.ru])
 AM_INIT_AUTOMAKE
 
 dnl  Here are a set of rules to help you update your library version information:
@@ -16,7 +16,7 @@ dnl 6. If any interfaces have been removed since the last public release, then s
 
 CRS_CURRENT=1
 CRS_REVISION=0
-CRS_AGE=0
+CRS_AGE=1
 
 dnl Check for which system.
 AC_CANONICAL_BUILD
@@ -42,7 +42,6 @@ AC_ARG_ENABLE(shared,
 			no)	libcrs_disable_shared=yes ;;
 			*)	AC_MSG_ERROR(bad value ${enableval} for --disable-shared) ;;
 		esac
-dnl		AC_MSG_RESULT([$libcrs_disable_shared])
 	]
 )
 
@@ -58,11 +57,8 @@ AC_CHECK_HEADERS([\
 	sys/select.h\
 	poll.h	\
 	syslog.h	\
-	termios.h	])
-
-dnl AC_CHECK_HEADERS(	[inttypes.h],	[HAVE_INTTYPES_H=1],	[HAVE_INTTYPES_H=0] )
-dnl AC_CHECK_HEADERS(	[stdint.h],		[HAVE_STDINT_H=1],	[HAVE_STDINT_H=0]	)
-dnl AC_CHECK_HEADERS(	[sys/types.h],	[HAVE_SYS_TYPES_H=1],	[HAVE_SYS_TYPES_H=0] )
+	termios.h	\
+	omp.h		])
 
 if test $ac_cv_header_inttypes_h = yes; then
 	HAVE_INTTYPES_H=1
@@ -80,6 +76,32 @@ if test $ac_cv_header_sys_types_h = yes; then
 	HAVE_SYS_TYPES_H=1
 else
 	HAVE_SYS_TYPES_H=0
+fi
+
+dnl Check for OpenMP
+if test $ac_cv_header_omp_h = yes; then
+	AC_MSG_CHECKING(whether -fopenmp switch usable)
+	AC_LANG_PUSH([C])
+	save_CFLAGS="$CFLAGS"
+	CFLAGS="$CFLAGS -fopenmp"
+	AC_LINK_IFELSE(
+		[AC_LANG_PROGRAM(
+			[[#include <omp.h>]],
+			[[#pragma omp parallel num_threads( 3 )
+			{ omp_get_thread_num(); }]])],
+		[have_openmp=yes],
+		[have_openmp=no])
+	CFLAGS="$save_CFLAGS"
+	AC_LANG_POP([C])
+	AC_MSG_RESULT($have_openmp)
+	if test $have_openmp = yes; then
+		CFLAGS="$CFLAGS -fopenmp"
+		CXXFLAGS="$CXXFLAGS -fopenmp"
+		LIBS="$LIBS -lgomp"
+		HAVE_OMP_H=1
+	else
+		HAVE_OMP_H=0
+	fi
 fi
 
 dnl Checks for library functions.
@@ -108,7 +130,6 @@ ac_have_win32_api=no
 ac_have_posix_api=no
 ac_have_cpp0x_api=no
 
-ac_make_dll=no
 ac_have_winsock=no
 
 case "$host_os" in
@@ -129,7 +150,7 @@ case "$host_os" in
 		save_LIBS="$LIBS"
 		for curlib in ws2_32 wsock32; do
 			LIBS="$LIBS -l$curlib"
-			AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <winsock.h>]], [[
+			AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <winsock2.h>]], [[
 					socket(0,0,0);
 					select(0,NULL,NULL,NULL,NULL);
 					closesocket(0);
@@ -154,6 +175,7 @@ case "$host_os" in
 	*)
 		ac_have_posix_api=yes
 		ac_linux_target=yes
+		ac_make_dll=no
 		;;
 esac
 

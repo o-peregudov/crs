@@ -2,9 +2,10 @@
 #define PEAKCENTER_H_INCLUDED 1
 // (c) Mar 11, 2010 Oleg N. Peregudov
 //	2011-Mar-19	new algorithms for peak measurement
+//	2011-Mar-31	optimized version of the estimateGuess
 
 #include <crs/libexport.h>
-#include <vector>
+#include <map>
 
 struct CROSS_EXPORT intPair
 {
@@ -104,5 +105,7 @@ extern void	CROSS_EXPORT peakCenter ( const int nData, const double * x, const d
 extern double CROSS_EXPORT background ( const int nData, const double * y );
 
 // full preprocessing
-extern void CROSS_EXPORT estimateGuess ( const int nData, const double * x, const double * y, double * yo, peakCenterData & pcd, double & bgLevel, std::vector<intDoublePair> & hist, const int nFilterSize = 5 );
+extern void CROSS_EXPORT estimateGuess ( const int nData, const double * x, const double * y, double * yo, peakCenterData & pcd, double & bgLevel, std::map<double, size_t> & hist, const int nFilterSize = 5 );
+
 #endif
+

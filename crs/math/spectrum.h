@@ -1,6 +1,9 @@
 #ifndef CRS_MATH_SPECTRUM_H_INCLUDED
 #define CRS_MATH_SPECTRUM_H_INCLUDED 1
 // (c) 2011-03-19 O. Peregudov
+//	2011-Mar-30	copy constructor and assignment operator
+//			for struct massSpectrum
+//	2011-Mar-31	optimized version of the estimateGuess
 
 #include <crs/math/peakCenter.h>
 #include <iostream>
@@ -17,7 +20,7 @@ struct CROSS_EXPORT massSpectrum
 	double 	*smoothIntensity;
 	
 	peakCenterData			pcd;
-	std::vector<intDoublePair>	hist;
+	std::map<double, size_t>	hist;
 	
 	void	addPoint ( const double & mm, const double & ii, const double & ss, const double & tt );
 	void	read ( std::istream & is, const std::string & format );
@@ -36,6 +39,9 @@ struct CROSS_EXPORT massSpectrum
 	
 	massSpectrum ();
 	~massSpectrum ();
+	
+	massSpectrum ( const massSpectrum & );
+	massSpectrum & operator = ( const massSpectrum & );
 };
 
 #endif // CRS_MATH_SPECTRUM_H_INCLUDED

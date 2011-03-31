@@ -90,6 +90,11 @@ void	processor ( void * pData )
 				packet.byteArray[ 2 ] = transmuteStateByte( state );
 				break;
 			
+			case	0x3C:				// ion pump current
+				*( reinterpret_cast<float*>( packet.byteArray + 3 ) ) = static_cast<float>( rand() ) / RAND_MAX - 1.0;
+				packet.byteArray[ 2 ] = transmuteStateByte( state );
+				break;
+			
 			case	0x33:				// set accelerating voltage
 				accVoltageCode = *( reinterpret_cast<unsigned short*>( packet.byteArray + 4 ) );
 				packet.byteArray[ 2 ] = transmuteStateByte( state );

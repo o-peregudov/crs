@@ -313,3 +313,4 @@ void parabola::regressAddPoint ( const double & x, const double & y )
 }
 
 } // namespace Interpolation
+

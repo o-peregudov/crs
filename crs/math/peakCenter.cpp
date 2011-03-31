@@ -1,10 +1,13 @@
 // (c) Mar 12, 2010 Oleg N. Peregudov
 //	2011-Mar-19	new algorithms for peak measurement
+//	2011-Mar-20	taking into account defines from 'config.h'
+//	2011-Mar-31	optimized version of the estimateGuess
+#if defined( HAVE_CONFIG_H )
+#	include "config.h"
+#endif
 #include <crs/math/peakCenter.h>
 #include <crs/math/interpolation.h>
 #include <crs/math/unimath.h>
-
-#define NSIGMA    3
 
 intDoublePair findMaximum ( const int nData, const double * y )
 {
@@ -70,59 +73,42 @@ void	peakCenter ( const int nData, const double * x, const double * y, peakCente
 double centroid ( const int nData, const double * x, const double * y, const double & absoluteLevel )
 {
 	double sumY = 0, sumXY = 0;
-      for( int i = 0; i < nData; ++i )
+	for( int i = 0; i < nData; ++i )
 		if( absoluteLevel < y[ i ] )
-	      {
+		{
 			sumXY += y[ i ] * x[ i ];
 			sumY += y[ i ];
-	      }
+		}
 	return ( sumXY /= sumY );
 }
 
 double background ( const int nData, const double * y )
 {
-	// prepare local copy of data for sorting
-	double * ys = new double [ nData * sizeof( double ) ];
-	memcpy( ys, y, nData * sizeof( double ) );
-	
-	// sort local copy of data
-	double * pBegin = ys,
-		 * pEnd = ( pBegin + nData );
-	std::sort( pBegin, pEnd );
-	
 	// allocate histogram
-	std::vector<unsigned int> histCounts;
-	std::vector<double> histRanges;
-	histRanges.push_back( ys[ 0 ] );
-	histCounts.push_back( 1 );
+	std::map<double, size_t> hist;
+	std::map<double, size_t>::iterator p;
 	
-	// will trace maximum counts in the fist half of the intensity range
-	const int bgIdxLimit = nData / 2;
-	unsigned int maxCounts = 0;
-	unsigned int maxPosition = 0;
-	
-	// build up histogram and trace maximum counts for the first half
-	// of the intensity range
-	for( int i = 1; i < nData; ++i )
-		if( UniMath::isZero( ys[ i ] - histRanges.back() ) )
-			++(histCounts.back());
+	// build histogram
+	for( int i = 0; i < nData; ++i )
+	{
+		p = hist.find( y[ i ] );
+		if( p == hist.end() )
+			hist.insert( std::pair<double, size_t>( y[ i ], 1 ) );
 		else
-		{
-			if( ( i < bgIdxLimit ) && ( maxCounts < histCounts.back() ) )
-			{
-				maxCounts = histCounts.back();
-				maxPosition = histCounts.size() - 1;
-			}
-			histRanges.push_back( ys[ i ] );
-			histCounts.push_back( 1 );
-		}
+			++((*p).second);
+	}
 	
-	double bgLevel = 0;
-	if( maxPosition < ( histCounts.size() / 3 ) )
-		bgLevel = histRanges[ maxPosition ];
-	
-	delete [] ys;
-	return bgLevel;
+	// trace maximum counts for the first half of the intensity range
+	const int bgIdxLimit = hist.size() / 2;
+	std::map<double, size_t>::iterator maxPosition = hist.begin();
+	++( p = maxPosition );
+	for( int i = 1; ( i < bgIdxLimit ); ++i, ++p )
+		if( (*maxPosition).second < (*p).second )
+			maxPosition = p;
+	if( std::distance( hist.begin(), maxPosition ) < ( hist.size() / 3 ) )
+		return (*maxPosition).first;
+	else
+		return 0;
 }
 
 void	fltMovingAverage ( const int nData, const double * x, const double * y, double * yo, const int nFilterSize )
@@ -182,104 +168,112 @@ void	fltSavitzkyGolay ( const int nData, const double * x, const double * y, dou
 }
 
 // full preprocessing; returns spectrum intensity histogram 
-void	estimateGuess ( const int nData, const double * x, const double * y, double * yo, peakCenterData & pcd, double & bgLevel, std::vector<intDoublePair> & hist, const int nFilterSize )
+void	estimateGuess ( const int nData, const double * x, const double * y, double * yo, peakCenterData & pcd, double & bgLevel, std::map<double, size_t> & hist, const int nFilterSize )
 {
-	//
-	// estimate background level
-	//
-	
-	// prepare local copy of data for sorting
-	memcpy( yo, y, nData * sizeof( double ) );
-	
-	// sort local copy of data
-	double * pBegin = yo,
-		 * pEnd = ( pBegin + nData );
-	std::sort( pBegin, pEnd );
-	
-	// initialize histogram
-	hist.clear();
-	hist.push_back( intDoublePair( 1, yo[ 0 ] ) );
-	
-	// will trace maximum counts in the fist half of the intensity range
-	const int bgIdxLimit = nData / 2;
-	unsigned int maxCounts = 0;
-	unsigned int maxPosition = 0;
-	
-	// build up histogram and trace maximum counts for the first half
-	// of the intensity range
-	for( int i = 1; i < nData; ++i )
-		if( UniMath::isZero( yo[ i ] - hist.back().second ) )
-			++(hist.back().first);
-		else
-		{
-			if( ( i < bgIdxLimit ) && ( maxCounts < hist.back().first ) )
-			{
-				maxCounts = hist.back().first;
-				maxPosition = hist.size() - 1;
-			}
-			hist.push_back( intDoublePair( 1, yo[ i ] ) );
-		}
-	
-	if( maxPosition < ( hist.size() / 3 ) )
-		bgLevel = hist[ maxPosition ].second;
-	else
-		bgLevel = 0;
-	
-	//
-	// smooth raw data, compensate background and find maximum smoothed
-	// intensity
-	//
+	// allocate data for smoothing
 	int nPoints = abs( nFilterSize );
 	if( nPoints < 3 )
 		nPoints = 3;
 	const int HALFPOINTS = ( nPoints - 1 ) / 2;
 	
+	//
+	// smooth data and estimate background level
+	//
+	
+	// initialize histogram
+	std::map<double, size_t>::iterator p;
+	hist.clear();
+	
 	pcd.peakMaximum.first = 0;
 	for( int i = 0; i < HALFPOINTS; ++i )
 	{
-		yo[ i ] = y[ i ] - bgLevel;
+		// first HALFPOINTS couldn't be smoothed
+		yo[ i ] = y[ i ];
+		
+		// trace maximum intensity
 		if( yo[ pcd.peakMaximum.first ] < yo[ i ] )
 			pcd.peakMaximum.first = i;
 		
-		yo[ nData - i - 1 ] = y[ nData - i - 1 ] - bgLevel;
+		// update histogram
+		p = hist.find( y[ i ] );
+		if( p == hist.end() )
+			hist.insert( std::pair<double, size_t>( y[ i ], 1 ) );
+		else
+			++((*p).second);
+		
+		// last HALFPOINTS also couldn't be smoothed
+		yo[ nData - i - 1 ] = y[ nData - i - 1 ];
+		
+		// trace maximum intensity
 		if( yo[ pcd.peakMaximum.first ] < yo[ nData - i - 1 ] )
 			pcd.peakMaximum.first = nData - i - 1;
+		
+		// update histogram
+		p = hist.find( y[ nData - i - 1 ] );
+		if( p == hist.end() )
+			hist.insert( std::pair<double, size_t>( y[ nData - i - 1 ], 1 ) );
+		else
+			++((*p).second);
 	}
 	
-	int & maxPos = pcd.peakMaximum.first;
-	#pragma omp parallel for if ( nData > 2000 ), shared ( maxPos )
 	for( int i = HALFPOINTS; i < (nData-HALFPOINTS); ++i )
 	{
+		// smooth rest points
 		yo[ i ] = y[ i ];
 		for( int j = 1; j < (HALFPOINTS+1); ++j )
 			yo[ i ] += y[ i - j ] + y[ i + j ];
-		yo[ i ] = yo[ i ] / ( 2.0 * HALFPOINTS + 1.0 ) - bgLevel;
-		if( yo[ maxPos ] < yo[ i ] )
-			maxPos = i;
+		yo[ i ] = yo[ i ] / ( 2.0 * HALFPOINTS + 1.0 );
+		
+		// trace max intensity
+		if( yo[ pcd.peakMaximum.first ] < yo[ i ] )
+			pcd.peakMaximum.first = i;
+		
+		// update histogram
+		p = hist.find( y[ i ] );
+		if( p == hist.end() )
+			hist.insert( std::pair<double, size_t>( y[ i ], 1 ) );
+		else
+			++((*p).second);
 	}
-	pcd.peakMaximum.second = yo[ pcd.peakMaximum.first ];
+	
+	// trace maximum counts for the first half of the intensity range
+	const int bgIdxLimit = hist.size() / 2;
+	std::map<double, size_t>::iterator maxPosition = hist.begin();
+	++( p = maxPosition );
+	for( int i = 1; ( i < bgIdxLimit ); ++i, ++p )
+		if( (*maxPosition).second < (*p).second )
+			maxPosition = p;
+	if( std::distance( hist.begin(), maxPosition ) < ( hist.size() / 3 ) )
+		bgLevel = (*maxPosition).first;
+	else
+		bgLevel = 0;
+	
+	// maximum intensity for smoothed data
+	pcd.peakMaximum.second = ( yo[ pcd.peakMaximum.first ] -= bgLevel );
 	
 	//
 	// do measure the peak
 	//
 	// estimate peak width at 50%-height
-      pcd.height50.height = 0.50 * pcd.peakMaximum.second;
+	pcd.height50.height = 0.50 * pcd.peakMaximum.second;
 	pcd.height50.idxSlope = intPair( pcd.peakMaximum, pcd.peakMaximum );
 	pcd.height50.centroid = 0;
-      
+	
 	// estimate peak width at 10%-height
-      pcd.height10.height = 0.10 * pcd.peakMaximum.second;
+	pcd.height10.height = 0.10 * pcd.peakMaximum.second;
 	pcd.height10.idxSlope = intPair( pcd.peakMaximum, pcd.peakMaximum );
 	pcd.height10.centroid = 0;
-      
+	
 	// estimate peak width at 98%-height
-      pcd.height98.height = 0.98 * pcd.peakMaximum.second;
+	pcd.height98.height = 0.98 * pcd.peakMaximum.second;
 	pcd.height10.idxSlope = intPair( pcd.peakMaximum, pcd.peakMaximum );
 	pcd.height98.centroid = 0;
 	
 	// left slope
-	for( int i = pcd.peakMaximum; -1 < i; --i )
+	for( int i = (pcd.peakMaximum - 1); -1 < i; --i )
 	{
+		yo[ i ] -= bgLevel;
+		
 		if( pcd.height98.height < yo[ i ] )
 			pcd.height98.idxSlope.first = i;
 		
@@ -291,8 +285,10 @@ void	estimateGuess ( const int nData, const double * x, const double * y, double
 	}
 	
 	// right slope
-	for( int i = pcd.peakMaximum; i < nData; ++i )
+	for( int i = ( pcd.peakMaximum + 1 ); i < nData; ++i )
 	{
+		yo[ i ] -= bgLevel;
+		
 		if( pcd.height98.height < yo[ i ] )
 			pcd.height98.idxSlope.second = i;
 		
