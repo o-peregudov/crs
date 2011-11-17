@@ -14,10 +14,12 @@
 //			new running flag
 //	01/05/2011	slightly changed Step
 //	01/21/2011	separate running and activation flags observers
+//	08/07/2011	no sleep function prototype
 //
 
 #include <crs/security.h>
 #include <crs/condition_variable.hpp>
+#include <pthread.h>
 #include <sched.h>
 
 namespace CrossClass
@@ -80,7 +82,5 @@ namespace CrossClass
 		bool active ();
 		void * kill ();
 	};
-	
-	extern CROSS_EXPORT void sleep ( const unsigned long msDuration );
 } // namespace CrossClass
 #endif // CROSS_POSIX_THREAD_H_INCLUDED

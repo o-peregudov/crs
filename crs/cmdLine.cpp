@@ -31,8 +31,8 @@
 
 namespace CommandLine {
 
-#define NEXT_COMMAND    '&'
-#define SCRIPT_PREFFIX  '@'
+#define NEXT_COMMAND	'&'
+#define SCRIPT_PREFFIX	'@'
 #define MINUS		'-'
 #define SLASH		'/'
 
@@ -59,55 +59,55 @@ reader::~reader ()
 void
 reader::pprocess ( string s_name )
 {
-      fstream subscript_file( s_name.c_str(), ios_base::in );
-      if( !subscript_file )
-            throw ErrOpen( s_name );
-      
-      try
-      {
-            // pre-process subscript ...
-            for( string one_token( "" );; )
-            {
-                  one_token = parsing::scan_token( subscript_file );
-                  
-                  if( one_token.size() == 0 )
-                        break;
-                  else if( one_token[0] == SCRIPT_PREFFIX )
-                  {
-                        if( (one_token.size() > 1) && (one_token[1] == SCRIPT_PREFFIX) )
-                              _script.push_back( one_token.substr( 1 ) );
-                        else
-                              pprocess( one_token.substr( 1 ) );
-                  }
-                  else
-                        _script.push_back( one_token );
-            }
-      }
-      catch ( in_stream_error )
-      {
-            throw ErrRead( s_name );
-      }
+	fstream subscript_file( s_name.c_str(), ios_base::in );
+	if( !subscript_file )
+		throw ErrOpen( s_name );
+	
+	try
+	{
+		// pre-process subscript ...
+		for( string one_token( "" );; )
+		{
+			one_token = parsing::scan_token( subscript_file );
+			
+			if( one_token.size() == 0 )
+				break;
+			else if( one_token[0] == SCRIPT_PREFFIX )
+			{
+				if( (one_token.size() > 1) && (one_token[1] == SCRIPT_PREFFIX) )
+					_script.push_back( one_token.substr( 1 ) );
+				else
+					pprocess( one_token.substr( 1 ) );
+			}
+			else
+				_script.push_back( one_token );
+		}
+	}
+	catch ( in_stream_error )
+	{
+		throw ErrRead( s_name );
+	}
 }
 
 int
 reader::get_sw ( string & csw )
 {
-      while( !read_script( csw ) )
-      {
-            if( ++_sw_position < _ac )
-            {
-                  csw = _av [ _sw_position ];
-                  
-                  if( csw[0] == SCRIPT_PREFFIX )
-                        use_script( csw.substr( 1 ) );
-                  else
-                        break;
-            }
-            else
-                  return 0;
-      }
-      
-      return 1;
+	while( !read_script( csw ) )
+	{
+		if( ++_sw_position < _ac )
+		{
+			csw = _av [ _sw_position ];
+			
+			if( csw[0] == SCRIPT_PREFFIX )
+				use_script( csw.substr( 1 ) );
+			else
+				break;
+		}
+		else
+			return 0;
+	}
+	
+	return 1;
 }
 
 int

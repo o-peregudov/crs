@@ -52,12 +52,13 @@ pkginclude_bits_HEADERS += resource.h
 endif
 
 if USE_POSIXAPI
-libcrs_la_SOURCES += bits/posix.timer.cpp bits/posix.mutex.cpp bits/posix.thread.cpp \
+libcrs_la_SOURCES += bits/posix.mutex.cpp bits/posix.thread.cpp \
 	bits/posix.cond.cpp bits/posix.semaphore.cpp \
-	sc/posix.rs232port.cpp bits/posix.netpoint.cpp
+	bits/posix.timer.cpp sc/posix.rs232port.cpp bits/posix.netpoint.cpp
 
-pkginclude_bits_HEADERS += bits/posix.timer.h bits/posix.mutex.h bits/posix.thread.h \
-	bits/posix.cond.h bits/posix.semaphore.h bits/posix.netpoint.h
+pkginclude_bits_HEADERS += bits/posix.mutex.h bits/posix.thread.h \
+	bits/posix.cond.h bits/posix.semaphore.h \
+	bits/posix.timer.h bits/posix.netpoint.h
 
 pkginclude_sc_HEADERS += sc/posix.rs232port.h
 endif
@@ -67,10 +68,5 @@ libcrs_la_SOURCES += bits/c++0x.timer.cpp
 pkginclude_bits_HEADERS += bits/c++0x.timer.h
 endif
 
-#if CYGWIN_TARGET
-#libcrs_la_SOURCES += cross.res.rc
-#pkginclude_bits_HEADERS += resource.h
-#endif
-#
 .rc.lo: 
 	$(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --tag=RC --mode=compile $(RC) $(RCFLAGS) $< -o $@ 

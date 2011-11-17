@@ -9,7 +9,7 @@ int main ( )
 	for( size_t i = 0; i < ip.size(); ++i )
 		ip[ i ] = i * i;
 	
-	msdc::ring_pool rp ( NCHANNELS );
+	msdc::ring_pool rp ( NCHANNELS, 4 );
 	
 	std::cout	<< "Before insertion:" << std::endl
 			<< "\tSize: " << rp.size() << std::endl

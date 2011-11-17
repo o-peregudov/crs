@@ -66,7 +66,7 @@ int main ( int argc, const char ** argv )
 		hout.setf( std::ios_base::fixed );
 		for( std::map<double, size_t>::const_iterator i = data.hist.begin(); ( i != data.hist.end() ) && hout.good(); ++i )
 			hout	<< (*i).first << '\t'
-				<< (*i).second << std::endl;
+				<< ( static_cast<double>( (*i).second ) / data.nPoints ) << std::endl;
 	}
 	
 	return 0;

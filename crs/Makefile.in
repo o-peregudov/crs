@@ -45,12 +45,13 @@ host_triplet = @host@
 @USE_WIN32API_TRUE@am__append_3 = sc/win32.rs232port.h
 @WINDOWS_RESOURCE_TRUE@am__append_4 = cross.res.rc
 @WINDOWS_RESOURCE_TRUE@am__append_5 = resource.h
-@USE_POSIXAPI_TRUE@am__append_6 = bits/posix.timer.cpp bits/posix.mutex.cpp bits/posix.thread.cpp \
+@USE_POSIXAPI_TRUE@am__append_6 = bits/posix.mutex.cpp bits/posix.thread.cpp \
 @USE_POSIXAPI_TRUE@	bits/posix.cond.cpp bits/posix.semaphore.cpp \
-@USE_POSIXAPI_TRUE@	sc/posix.rs232port.cpp bits/posix.netpoint.cpp
+@USE_POSIXAPI_TRUE@	bits/posix.timer.cpp sc/posix.rs232port.cpp bits/posix.netpoint.cpp
 
-@USE_POSIXAPI_TRUE@am__append_7 = bits/posix.timer.h bits/posix.mutex.h bits/posix.thread.h \
-@USE_POSIXAPI_TRUE@	bits/posix.cond.h bits/posix.semaphore.h bits/posix.netpoint.h
+@USE_POSIXAPI_TRUE@am__append_7 = bits/posix.mutex.h bits/posix.thread.h \
+@USE_POSIXAPI_TRUE@	bits/posix.cond.h bits/posix.semaphore.h \
+@USE_POSIXAPI_TRUE@	bits/posix.timer.h bits/posix.netpoint.h
 
 @USE_POSIXAPI_TRUE@am__append_8 = sc/posix.rs232port.h
 @USE_CPP0XAPI_TRUE@am__append_9 = bits/c++0x.timer.cpp
@@ -63,10 +64,10 @@ DIST_COMMON = $(am__pkginclude_bits_HEADERS_DIST) \
 	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(srcdir)/defsys.h.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
-	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
-	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
-	$(top_srcdir)/configure.ac
+am__aclocal_m4_deps = $(top_srcdir)/m4/gsl.m4 \
+	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
+	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
+	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -113,18 +114,19 @@ am__libcrs_la_SOURCES_DIST = CRCStuff.c cmdLine.cpp parsing.cpp \
 	msdc/composite_core.cpp bits/win32.timer.cpp \
 	bits/win32.mutex.cpp bits/win32.thread.cpp bits/win32.cond.cpp \
 	bits/win32.semaphore.cpp sc/win32.rs232port.cpp \
-	bits/win32.netpoint.cpp cross.res.rc bits/posix.timer.cpp \
-	bits/posix.mutex.cpp bits/posix.thread.cpp bits/posix.cond.cpp \
-	bits/posix.semaphore.cpp sc/posix.rs232port.cpp \
-	bits/posix.netpoint.cpp bits/c++0x.timer.cpp
+	bits/win32.netpoint.cpp cross.res.rc bits/posix.mutex.cpp \
+	bits/posix.thread.cpp bits/posix.cond.cpp \
+	bits/posix.semaphore.cpp bits/posix.timer.cpp \
+	sc/posix.rs232port.cpp bits/posix.netpoint.cpp \
+	bits/c++0x.timer.cpp
 @USE_WIN32API_TRUE@am__objects_1 = win32.timer.lo win32.mutex.lo \
 @USE_WIN32API_TRUE@	win32.thread.lo win32.cond.lo \
 @USE_WIN32API_TRUE@	win32.semaphore.lo win32.rs232port.lo \
 @USE_WIN32API_TRUE@	win32.netpoint.lo
 @WINDOWS_RESOURCE_TRUE@am__objects_2 = cross.res.lo
-@USE_POSIXAPI_TRUE@am__objects_3 = posix.timer.lo posix.mutex.lo \
-@USE_POSIXAPI_TRUE@	posix.thread.lo posix.cond.lo \
-@USE_POSIXAPI_TRUE@	posix.semaphore.lo posix.rs232port.lo \
+@USE_POSIXAPI_TRUE@am__objects_3 = posix.mutex.lo posix.thread.lo \
+@USE_POSIXAPI_TRUE@	posix.cond.lo posix.semaphore.lo \
+@USE_POSIXAPI_TRUE@	posix.timer.lo posix.rs232port.lo \
 @USE_POSIXAPI_TRUE@	posix.netpoint.lo
 @USE_CPP0XAPI_TRUE@am__objects_4 = c++0x.timer.lo
 am_libcrs_la_OBJECTS = CRCStuff.lo cmdLine.lo parsing.lo security.lo \
@@ -165,10 +167,9 @@ DIST_SOURCES = $(am__libcrs_la_SOURCES_DIST)
 am__pkginclude_bits_HEADERS_DIST = bits/basic.netpoint.h \
 	bits/hostsocket.hpp bits/win32.timer.h bits/win32.mutex.h \
 	bits/win32.thread.h bits/win32.cond.h bits/win32.semaphore.h \
-	bits/win32.netpoint.h resource.h bits/posix.timer.h \
-	bits/posix.mutex.h bits/posix.thread.h bits/posix.cond.h \
-	bits/posix.semaphore.h bits/posix.netpoint.h \
-	bits/c++0x.timer.h
+	bits/win32.netpoint.h resource.h bits/posix.mutex.h \
+	bits/posix.thread.h bits/posix.cond.h bits/posix.semaphore.h \
+	bits/posix.timer.h bits/posix.netpoint.h bits/c++0x.timer.h
 am__pkginclude_sc_HEADERS_DIST = sc/basic.rs232port.h sc/rs232port.h \
 	sc/serialbyte.h sc/i41serial.h sc/twelvebyte.h \
 	sc/win32.rs232port.h sc/posix.rs232port.h
@@ -209,8 +210,12 @@ EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
 GREP = @GREP@
+GSL_CFLAGS = @GSL_CFLAGS@
+GSL_CONFIG = @GSL_CONFIG@
+GSL_LIBS = @GSL_LIBS@
 HAVE_CPP0X_API = @HAVE_CPP0X_API@
 HAVE_INTTYPES_H = @HAVE_INTTYPES_H@
+HAVE_LIBGSL = @HAVE_LIBGSL@
 HAVE_POSIX_API = @HAVE_POSIX_API@
 HAVE_STDINT_H = @HAVE_STDINT_H@
 HAVE_SYS_TYPES_H = @HAVE_SYS_TYPES_H@
@@ -670,13 +675,6 @@ win32.netpoint.lo: bits/win32.netpoint.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o win32.netpoint.lo `test -f 'bits/win32.netpoint.cpp' || echo '$(srcdir)/'`bits/win32.netpoint.cpp
 
-posix.timer.lo: bits/posix.timer.cpp
-@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT posix.timer.lo -MD -MP -MF $(DEPDIR)/posix.timer.Tpo -c -o posix.timer.lo `test -f 'bits/posix.timer.cpp' || echo '$(srcdir)/'`bits/posix.timer.cpp
-@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/posix.timer.Tpo $(DEPDIR)/posix.timer.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='bits/posix.timer.cpp' object='posix.timer.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o posix.timer.lo `test -f 'bits/posix.timer.cpp' || echo '$(srcdir)/'`bits/posix.timer.cpp
-
 posix.mutex.lo: bits/posix.mutex.cpp
 @am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT posix.mutex.lo -MD -MP -MF $(DEPDIR)/posix.mutex.Tpo -c -o posix.mutex.lo `test -f 'bits/posix.mutex.cpp' || echo '$(srcdir)/'`bits/posix.mutex.cpp
 @am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/posix.mutex.Tpo $(DEPDIR)/posix.mutex.Plo
@@ -704,6 +702,13 @@ posix.semaphore.lo: bits/posix.semaphore.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='bits/posix.semaphore.cpp' object='posix.semaphore.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o posix.semaphore.lo `test -f 'bits/posix.semaphore.cpp' || echo '$(srcdir)/'`bits/posix.semaphore.cpp
+
+posix.timer.lo: bits/posix.timer.cpp
+@am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT posix.timer.lo -MD -MP -MF $(DEPDIR)/posix.timer.Tpo -c -o posix.timer.lo `test -f 'bits/posix.timer.cpp' || echo '$(srcdir)/'`bits/posix.timer.cpp
+@am__fastdepCXX_TRUE@	$(am__mv) $(DEPDIR)/posix.timer.Tpo $(DEPDIR)/posix.timer.Plo
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='bits/posix.timer.cpp' object='posix.timer.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o posix.timer.lo `test -f 'bits/posix.timer.cpp' || echo '$(srcdir)/'`bits/posix.timer.cpp
 
 posix.rs232port.lo: sc/posix.rs232port.cpp
 @am__fastdepCXX_TRUE@	$(LIBTOOL)  --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT posix.rs232port.lo -MD -MP -MF $(DEPDIR)/posix.rs232port.Tpo -c -o posix.rs232port.lo `test -f 'sc/posix.rs232port.cpp' || echo '$(srcdir)/'`sc/posix.rs232port.cpp
@@ -1091,11 +1096,6 @@ uninstall-am: uninstall-libLTLIBRARIES uninstall-pkgincludeHEADERS \
 	uninstall-pkginclude_udeHEADERS
 
 
-#if CYGWIN_TARGET
-#libcrs_la_SOURCES += cross.res.rc
-#pkginclude_bits_HEADERS += resource.h
-#endif
-#
 .rc.lo: 
 	$(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --tag=RC --mode=compile $(RC) $(RCFLAGS) $< -o $@ 
 

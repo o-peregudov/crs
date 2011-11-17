@@ -11,6 +11,7 @@
 //
 //	09/04/2010	running flag
 //	01/21/2011	separate running and activation flags observers
+//	08/07/2011	no sleep function prototype
 //
 
 #include <crs/libexport.h>
@@ -55,11 +56,6 @@ namespace CrossClass
 		bool active ();
 		void * kill ();
 	};
-	
-	inline void sleep ( const unsigned long msDuration )
-	{
-		::Sleep( msDuration );
-	}
 } // namespace CrossClass
 #endif // CROSS_WIN32_THREAD_H_INCLUDED
 

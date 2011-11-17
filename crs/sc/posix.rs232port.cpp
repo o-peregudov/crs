@@ -2,11 +2,12 @@
 //
 // posix.rs232port.h: interface for the rs232port class (POSIX API).
 // (c) Sep 7, 2010 Oleg N. Peregudov
-//	09/09/2010	baudrate constant selector
-//	09/16/2010	some non standard baudrate constant fixed
-//	09/20/2010	non-blocking postTerminate
-//	09/22/2010	using 'poll' instead of 'select'
-//	01/03/2011	integer types
+//	2010/09/09	baudrate constant selector
+//	2010/09/16	some non standard baudrate constant fixed
+//	2010/09/20	non-blocking postTerminate
+//	2010/09/22	using 'poll' instead of 'select'
+//	2011/01/03	integer types
+//	2011/04/14	reset incoming buffers on open
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -111,6 +112,11 @@ void posixRS232port::open ( const std::string & port, const size_t baud )
 	// Set port state
 	//
 	UpdateConnection();
+	
+	//
+	// reset incoming buffers
+	//
+	basicRS232port::synchronize( 0 );
 	
 	//
 	// create an interprocess communication pipe

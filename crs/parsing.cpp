@@ -96,13 +96,13 @@ string predicate_scan_token ( string & s, scan_token_predicate & prd )
 
 string predicate_scan_token ( istream & is, scan_token_predicate & prd )
 {
-      char ch = '\0';
-      string res = "";
-      
-      do {  // eat whitespaces ...
-            ch = is.get();
-      } while ( isspace( ch ) );
-      
+	char ch = '\0';
+	string res = "";
+	
+	do {  // eat whitespaces ...
+		ch = is.get();
+	} while ( isspace( ch ) );
+	
 	for( bool longString = false;; ch = is.get() )
 	{
 		if( ch == DOUBLE_L )
@@ -126,30 +126,30 @@ string predicate_scan_token ( istream & is, scan_token_predicate & prd )
 			res += ch;
 	}
 	
-      return res;
+	return res;
 }
 
-streampos search_forward ( fstream & _bs, const string & sample )
+std::streampos search_forward ( std::fstream & _bs, const std::string & sample )
 {
-      size_t match ( 0 );
-      cSaveIStreamPosition ip ( &_bs );
-      streampos result ( static_cast<streampos>( -1 ) );
-      cSaveStreamExceptions se ( &_bs, std::ios_base::goodbit );
-      
-      for( int ch( EOF ); match < sample.length(); match++ )
-      {
-            ch = _bs.get();
-            if( ch == EOF )
-                  break;
-            else if( ch != sample[match] )
-                  match = 0;
-      }
-      if( match == sample.length() )
-            result = _bs.tellg() - static_cast<streampos>( match );
-      
-      _bs.clear();
-      
-      return result;
+	size_t match ( 0 );
+	cSaveIStreamPosition ip ( &_bs );
+	streampos result ( static_cast<streampos>( -1 ) );
+	cSaveStreamExceptions se ( &_bs, std::ios_base::goodbit );
+	
+	for( int ch( EOF ); match < sample.length(); match++ )
+	{
+		ch = _bs.get();
+		if( ch == EOF )
+			break;
+		else if( ch != sample[match] )
+			match = 0;
+	}
+	if( match == sample.length() )
+		result = _bs.tellg() - static_cast<streampos>( match );
+	
+	_bs.clear();
+	
+	return result;
 }
 
 std::string setCenter ( const std::string & str, const size_t nWidth, const char fillChar )

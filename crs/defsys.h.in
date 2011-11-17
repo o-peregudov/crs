@@ -4,6 +4,7 @@
 //	2010-12-26	WINVER define for Win32API
 //	2011-01-18	use of autoconf's substitutions
 //	2011-03-06	additional check for building static library only
+//	2011-03-05	GSL define
 
 #define HAVE_WIN32_API @HAVE_WIN32_API@
 #define HAVE_POSIX_API @HAVE_POSIX_API@
@@ -18,6 +19,8 @@
 #if DEFINE_CROSS_EXPORT
 #	define CROSS_EXPORT
 #endif
+
+#define HAVE_LIBGSL @HAVE_LIBGSL@
 
 #if defined( _MSC_VER )
 #	pragma warning( disable : 4251 )
@@ -50,6 +53,11 @@
 #	endif
 #endif
 
+#if HAVE_WINSOCK2_H
+#	include <winsock2.h>
+#elif defined( USE_WIN32_API )
+#	include <windows.h>
+#endif
 #if HAVE_STDINT_H
 #	include <stdint.h>
 #endif
@@ -62,11 +70,6 @@
 #if STDC_HEADERS
 #	include <stdlib.h>
 #	include <stddef.h>
-#endif
-#if HAVE_WINSOCK2_H
-#	include <winsock2.h>
-#elif defined( USE_WIN32_API )
-#	include <windows.h>
 #endif
 
 #if defined( _MSC_VER )

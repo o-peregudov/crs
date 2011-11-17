@@ -119,8 +119,8 @@ AM_CONDITIONAL([USE_WIN32API], [test "$ac_have_win32_api" = yes] )
 AM_CONDITIONAL([USE_POSIXAPI], [test "$ac_have_posix_api" = yes] )
 AM_CONDITIONAL([USE_CPP0XAPI], [test "$ac_have_cpp0x_api" = yes] )
 
-AC_DEFINE_UNQUOTED(CONFIG_HOST_TYPE, "$host",[Host type from configure])
-AC_DEFINE_UNQUOTED(CONFIG_BUILD_TYPE, "$build",[Build type from configure])
+AC_DEFINE_UNQUOTED(CONFIG_HOST_TYPE, "$host", [Host type from configure])
+AC_DEFINE_UNQUOTED(CONFIG_BUILD_TYPE, "$build", [Build type from configure])
 AC_DEFINE_UNQUOTED(CONFIGURE_OPTIONS, "$ac_configure_args", [Configure command line used to configure cmsc])
 
 if test $ac_make_dll = yes; then
@@ -152,11 +152,25 @@ AC_SEARCH_LIBS([bind],[socket])
 AC_SEARCH_LIBS([pthread_mutex_init], [pthread])
 AC_SEARCH_LIBS([clock_gettime], [rt])
 
+if test $prefix = NONE; then
+	DEFAULT_PREFIX="/usr/local"
+else
+	DEFAULT_PREFIX="$prefix"
+fi
+
+if test $exec_prefix = NONE; then
+	DEFAULT_EPREFIX="$DEFAULT_PREFIX"
+else
+	DEFAULT_EPREFIX="$exec_prefix"
+fi
+
 dnl Check for libcrs
 AC_MSG_CHECKING(for libcrs)
 AC_LANG_PUSH([C++])
 save_LIBS="$LIBS"
-LIBS="$LIBS -lcrs"
+save_CPPFLAGS="$CPPFLAGS"
+CPPFLAGS="$CPPFLAGS -I$DEFAULT_PREFIX/include"
+LIBS="$LIBS -L$DEFAULT_EPREFIX/lib -lcrs"
 AC_LINK_IFELSE(
 	[AC_LANG_PROGRAM(
 		[[#include <crs/mutex.h>]],
@@ -164,10 +178,12 @@ AC_LINK_IFELSE(
 	[have_libcrs=yes],
 	[have_libcrs=no])
 LIBS="$save_LIBS"
+CPPFLAGS="$save_CPPFLAGS"
 AC_LANG_POP([C++])
 AC_MSG_RESULT($have_libcrs)
 if test $have_libcrs = yes; then
-	LIBS="$LIBS -lcrs"
+	CPPFLAGS="$CPPFLAGS -I$DEFAULT_PREFIX/include"
+	LIBS="$LIBS -L$DEFAULT_EPREFIX/lib -lcrs"
 else
 	AC_MSG_FAILURE([failed to link with libcrs])
 fi

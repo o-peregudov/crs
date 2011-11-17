@@ -5,6 +5,7 @@
 //	2010/09/20	non-blocking postTerminate
 //	2011/03/13	Wine eventualy returns ERROR_TIMEOUT instead of ERROR_IO_PENDING
 //			from GetOverlappedResult
+//	2011/04/14	reset incoming buffers on open
 #if defined( _MSC_VER )
 #	pragma warning( disable : 4251 )
 #	pragma warning( disable : 4275 )
@@ -107,6 +108,11 @@ void win32RS232port::open ( const std::string & port, const size_t baud )
 	// Set port state
 	//
 	UpdateConnection();
+	
+	//
+	// reset incoming buffers
+	//
+	basicRS232port::synchronize( 0 );
 }
 
 void win32RS232port::UpdateConnection ()

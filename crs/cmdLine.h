@@ -42,103 +42,103 @@ class CROSS_EXPORT reader
 ////////////////////////////////////////////////////////////////////////////////
 {
 public:
-      // exceptions
-      class BaseException {};
-      
-      struct ErrOpen : BaseException, std::open_stream_error
-      {
-            ErrOpen( const std::string & what_arg ):
-                  BaseException(), std::open_stream_error( what_arg ) {}
-      };
-      
-      struct ErrRead : BaseException, std::in_stream_error
-      {
-            ErrRead( const std::string & what_arg ):
-                  BaseException(), std::in_stream_error( what_arg ) {}
-      };
-      
-      struct ErrWrite : BaseException, std::out_stream_error
-      {
-            ErrWrite( const std::string & what_arg ):
-                  BaseException(), std::out_stream_error( what_arg ) {}
-      };
-      
-      struct ErrErase : BaseException, std::file_system_error
-      {
-            ErrErase( const std::string & what_arg ):
-                  BaseException(), std::file_system_error( what_arg ) {}
-      };
-      
-      typedef std::list<std::string>                  tDList;
-      typedef std::list<std::string>::const_iterator  tDListIter;
-      
+	// exceptions
+	class BaseException {};
+	
+	struct ErrOpen : BaseException, std::open_stream_error
+	{
+		ErrOpen( const std::string & what_arg ):
+			BaseException(), std::open_stream_error( what_arg ) {}
+	};
+	
+	struct ErrRead : BaseException, std::in_stream_error
+	{
+		ErrRead( const std::string & what_arg ):
+			BaseException(), std::in_stream_error( what_arg ) {}
+	};
+	
+	struct ErrWrite : BaseException, std::out_stream_error
+	{
+		ErrWrite( const std::string & what_arg ):
+			BaseException(), std::out_stream_error( what_arg ) {}
+	};
+	
+	struct ErrErase : BaseException, std::file_system_error
+	{
+		ErrErase( const std::string & what_arg ):
+			BaseException(), std::file_system_error( what_arg ) {}
+	};
+	
+	typedef std::list<std::string>                  tDList;
+	typedef std::list<std::string>::const_iterator  tDListIter;
+	
 private:
-      // data members
-      int     _ac,                  // command line arguments count
-              _sw_position;         // command line switch position
-      char ** _av;                  // command line memory pointer
-      
-      tDList     _script;           // script list
-      tDListIter _script_iter;      // script iterator
-      
-      tDList     _command;          // command' switches
-      
-      // members
+	// data members
+	int     _ac,                  // command line arguments count
+	        _sw_position;         // command line switch position
+	char ** _av;                  // command line memory pointer
+	
+	tDList     _script;           // script list
+	tDListIter _script_iter;      // script iterator
+	
+	tDList     _command;          // command' switches
+	
+	// members
 	int   get_sw ( std::string & );
 	void  pprocess ( std::string );
-      
-      void  close_script ()
+	
+	void  close_script ()
 	{
-	      _script.clear();
-	      _script_iter = _script.begin();
+		_script.clear();
+		_script_iter = _script.begin();
 	}
       
 	void  use_script ( std::string s )
 	{
-	      // close previous script ...
-	      close_script();
-   		
-	      // pre-process script ...
-	      pprocess( s );
-	      _script_iter = _script.begin();
+		// close previous script ...
+		close_script();
+		
+		// pre-process script ...
+		pprocess( s );
+		_script_iter = _script.begin();
 	}
-      
-      int   read_script ( std::string & s )
+	
+	int   read_script ( std::string & s )
 	{
-	      if( _script_iter != _script.end() )
-	      {
-	            s = *_script_iter++;
-	            return 1;
-	      }
-	      return 0;
+		if( _script_iter != _script.end() )
+		{
+			s = *_script_iter++;
+			return 1;
+		}
+		return 0;
 	}
-      
+	
 public:
-      reader ( int argc, char ** argv );
-      ~reader ();
-      
-      int nswitches () const
+	reader ( int argc, char ** argv );
+	~reader ();
+	
+	int nswitches () const
 	{
 		return _command.size();
 	}
-      
+	
 	void reset ()
 	{
 		_sw_position = 0;
 		next_command();
 	}
-      
-      tDListIter begin ()
+	
+	tDListIter begin ()
 	{
 		return _command.begin();
 	}
-      
+	
 	tDListIter end ()
 	{
 		return _command.end();
 	}
 	
-      int next_command ();
+	int next_command ();
 	static bool parseSwitch ( std::string & sw, bool & swState );
 	// return true if argument is a switch
 };

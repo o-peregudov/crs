@@ -3,6 +3,7 @@
 //	2010-12-17	default integer types
 //	2010-12-26	WINVER define for Win32API
 //	2011-01-18	special case for MS VC compiler
+//	2011-03-05	GSL define
 
 #define HAVE_WIN32_API 1
 #define HAVE_POSIX_API 0
@@ -11,6 +12,7 @@
 #define HAVE_STDINT_H 0
 #define HAVE_INTTYPES_H 0
 #define HAVE_SYS_TYPES_H 0
+#define HAVE_LIBGSL 0
 
 #if HAVE_STDINT_H
 #	include <stdint.h>

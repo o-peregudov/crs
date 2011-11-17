@@ -1,5 +1,5 @@
 AC_PREREQ([2.63])
-AC_INIT([crs],[1.0.1],[op@pochta.ru])
+AC_INIT([crs],[1.1.1],[op@pochta.ru])
 AM_INIT_AUTOMAKE
 
 dnl  Here are a set of rules to help you update your library version information:
@@ -15,7 +15,7 @@ dnl 5. If any interfaces have been added since the last public release, then inc
 dnl 6. If any interfaces have been removed since the last public release, then set age to 0.
 
 CRS_CURRENT=1
-CRS_REVISION=0
+CRS_REVISION=1
 CRS_AGE=1
 
 dnl Check for which system.
@@ -130,7 +130,7 @@ ac_have_win32_api=no
 ac_have_posix_api=no
 ac_have_cpp0x_api=no
 
-ac_have_winsock=no
+ac_have_winsock2=no
 
 case "$host_os" in
 	cygwin*)
@@ -144,32 +144,33 @@ case "$host_os" in
 		ac_make_dll=yes
 		
 		dnl
-		dnl Check for Winsock only on MinGW, on Cygwin we must use emulated BSD socket API
+		dnl Check for Winsock2 only on MinGW, on Cygwin we must use emulated BSD socket API
 		dnl
-		AC_MSG_CHECKING(for winsock)
+		AC_MSG_CHECKING(for winsock2)
+		AC_LANG_PUSH([C])
 		save_LIBS="$LIBS"
-		for curlib in ws2_32 wsock32; do
-			LIBS="$LIBS -l$curlib"
-			AC_LINK_IFELSE([AC_LANG_PROGRAM([[#include <winsock2.h>]], [[
-					socket(0,0,0);
+		save_CFLAGS="$CFLAGS"
+		LIBS="$LIBS -lws2_32"
+		dnl CPPFLAGS="$CPPFLAGS -D__USE_W32_SOCKETS"
+		AC_LINK_IFELSE(
+			[AC_LANG_PROGRAM(
+				[[#include <winsock2.h>]],
+				[[	socket(0,0,0);
 					select(0,NULL,NULL,NULL,NULL);
 					closesocket(0);
 					gethostname(NULL,0);
-					]])],[ac_have_winsock=yes],[ac_have_winsock=no])
-			if test $ac_have_winsock = yes; then
-				ac_cv_func_select='yes'
-				if test $curlib = ws2_32; then
-					ac_have_winsock=winsock2
-				fi
-				break
-			fi
-			LIBS="$save_LIBS"
-		done
-			AC_MSG_RESULT($ac_have_winsock)
-		if test $ac_have_winsock = winsock2; then
-			AC_CHECK_HEADERS(winsock2.h)
+				]])],
+			[ac_have_winsock2=yes],
+			[ac_have_winsock2=no])
+		LIBS="$save_LIBS"
+		dnl CPPFLAGS="$save_CPPFLAGS"
+		AC_LANG_POP([C])
+		AC_MSG_RESULT($ac_have_winsock2)
+		if test $ac_have_winsock2 = yes; then
+			LIBS="$LIBS -lws2_32"
+			dnl CPPFLAGS="$CPPFLAGS -D__USE_W32_SOCKETS"
 		else
-			AC_CHECK_HEADERS(winsock.h)
+			AC_MSG_FAILURE([failed to link with winsock2])
 		fi
 		;;
 	*)
@@ -181,8 +182,7 @@ esac
 
 case "$build_os" in
 	cygwin*)
-		CFLAGS="$CFLAGS -D__LARGE64_FILES"
-		CXXFLAGS="$CXXFLAGS -D__LARGE64_FILES"
+		CPPFLAGS="$CPPFLAGS -D__LARGE64_FILES"
 		;;
 	mingw*)
 		CFLAGS="$CFLAGS -mno-cygwin"
@@ -192,6 +192,17 @@ case "$build_os" in
 		;;
 esac
 
+dnl Check for GSL
+AX_PATH_GSL([1.14],[have_libgsl=yes],[have_libgsl=no])
+if test $have_libgsl = yes; then
+	CFLAGS="$CFLAGS -DGSL_RANGE_CHECK_OFF -DHAVE_INLINE $GSL_CFLAGS"
+	CXXFLAGS="$CXXFLAGS -DGSL_RANGE_CHECK_OFF -DHAVE_INLINE $GSL_CFLAGS"
+	LIBS="$LIBS $GSL_LIBS"
+	HAVE_LIBGSL=1
+else
+	HAVE_LIBGSL=0
+fi
+
 AM_CONDITIONAL([CYGWIN_TARGET], [test "$ac_cygwin_target" = yes] )
 AM_CONDITIONAL([MINGW_TARGET], [test "$ac_mingw_target" = yes] )
 AM_CONDITIONAL([LINUX_TARGET], [test "$ac_linux_target" = yes] )
@@ -200,7 +211,7 @@ AM_CONDITIONAL([USE_WIN32API], [test "$ac_have_win32_api" = yes] )
 AM_CONDITIONAL([USE_POSIXAPI], [test "$ac_have_posix_api" = yes] )
 AM_CONDITIONAL([USE_CPP0XAPI], [test "$ac_have_cpp0x_api" = yes] )
 
-AM_CONDITIONAL([USE_WINSOCK2], [test "$ac_have_winsock" = yes] )
+AM_CONDITIONAL([USE_WINSOCK2], [test "$ac_have_winsock2" = yes] )
 
 AC_DEFINE_UNQUOTED(CONFIG_HOST_TYPE, "$host",[Host type from configure])
 AC_DEFINE_UNQUOTED(CONFIG_BUILD_TYPE, "$build",[Build type from configure])
@@ -243,7 +254,7 @@ else
 	HAVE_CPP0X_API=0
 fi
 
-if test $ac_have_winsock = winsock2; then
+if test $ac_have_winsock2 = yes; then
 	HAVE_WINSOCK2_H=1
 else
 	HAVE_WINSOCK2_H=0
@@ -350,6 +361,7 @@ AC_SUBST(HAVE_SYS_TYPES_H)
 AC_SUBST(HAVE_WINSOCK2_H)
 
 AC_SUBST(DEFINE_CROSS_EXPORT)
+AC_SUBST(HAVE_LIBGSL)
 
 AC_SUBST(SIZE8)
 AC_SUBST(USIZE8)

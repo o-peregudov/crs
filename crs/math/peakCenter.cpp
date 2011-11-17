@@ -2,12 +2,23 @@
 //	2011-Mar-19	new algorithms for peak measurement
 //	2011-Mar-20	taking into account defines from 'config.h'
 //	2011-Mar-31	optimized version of the estimateGuess
+//	2011-Apr-05	Gauss fit for estimation noise sigma
+//	2011-Aug-28	fixed bug in Savitzky-Golay filter
 #if defined( HAVE_CONFIG_H )
 #	include "config.h"
 #endif
+
 #include <crs/math/peakCenter.h>
 #include <crs/math/interpolation.h>
 #include <crs/math/unimath.h>
+
+#if HAVE_LIBGSL
+#	include <gsl/gsl_blas.h>
+#	include <gsl/gsl_errno.h>
+#	include <gsl/gsl_vector.h>
+#	include <gsl/gsl_integration.h>
+#	include <gsl/gsl_multifit_nlin.h>
+#endif
 
 intDoublePair findMaximum ( const int nData, const double * y )
 {
@@ -143,17 +154,14 @@ void	fltSavitzkyGolay ( const int nData, const double * x, const double * y, dou
 		 43.0,  42.0,  39.0,  34.0,  27.0,  18.0,   7.0,  -6.0, -21.0,      0,      0,      0,      0,	 323.0,	// 17
 		269.0, 264.0, 249.0, 224.0, 189.0, 144.0,  89.0,  24.0, -51.0, -136.0,      0,      0,      0,	2261.0,	// 19
 		329.0, 324.0, 309.0, 284.0, 249.0, 204.0, 149.0,  84.0,   9.0,  -76.0, -171.0,      0,      0,	3059.0,	// 21
-		 79.0,  78.0,  75.0,  70.0,  63.0,  54.0,  43.0,  30.0,  15.0,   -2.0,  -21.0,  -42.0,      0,	8059.0,	// 23
-		467.0, 462.0, 447.0, 422.0, 387.0, 322.0, 287.0, 222.0, 147.0,   62.0,  -33.0, -138.0, -253.0,	5175.0	// 25
+		 79.0,  78.0,  75.0,  70.0,  63.0,  54.0,  43.0,  30.0,  15.0,   -2.0,  -21.0,  -42.0,      0,	 805.0,	// 23
+		467.0, 462.0, 447.0, 422.0, 387.0, 322.0, 287.0, 222.0, 147.0,   62.0,  -33.0, -138.0, -253.0,	5135.0	// 25
 	};
 	
 	const int HALFPOINTS = ( nFilterSize - 1 ) / 2;
 	int nConstantRow = ( nFilterSize - 5 ) / 2;
 	if( ( nConstantRow < 0 ) || ( nConstantRow > 10 ) )
 		nConstantRow = 1;
-	if( nConstantRow == 9 )
-		// there is a bug in 23-point width kernel
-		nConstantRow = 8;
 	
 	#pragma omp parallel for if( nData > 2000 )
 	for( int i = HALFPOINTS; i < (nData-HALFPOINTS); ++i )
@@ -312,3 +320,7 @@ void	estimateGuess ( const int nData, const double * x, const double * y, double
 	pcd.height98.center = ( x[ pcd.height98.idxSlope.second ] + x[ pcd.height98.idxSlope.first ] ) / 2.0;
 }
 
+double noise ( std::map<double, size_t> & hist )
+{
+	return 1.0;
+}

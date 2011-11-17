@@ -3,6 +3,7 @@
 // (c) Mar 11, 2010 Oleg N. Peregudov
 //	2011-Mar-19	new algorithms for peak measurement
 //	2011-Mar-31	optimized version of the estimateGuess
+//	2011-Apr-05	Gauss fit for estimation noise sigma
 
 #include <crs/libexport.h>
 #include <map>
@@ -107,5 +108,7 @@ extern double CROSS_EXPORT background ( const int nData, const double * y );
 // full preprocessing
 extern void CROSS_EXPORT estimateGuess ( const int nData, const double * x, const double * y, double * yo, peakCenterData & pcd, double & bgLevel, std::map<double, size_t> & hist, const int nFilterSize = 5 );
 
-#endif
+// estimate noise
+extern double CROSS_EXPORT noise ( std::map<double, size_t> & hist );
 
+#endif

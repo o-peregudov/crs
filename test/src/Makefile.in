@@ -35,7 +35,7 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 bin_PROGRAMS = thread$(EXEEXT) server$(EXEEXT) client$(EXEEXT) \
-	cond$(EXEEXT)
+	cond$(EXEEXT) handle$(EXEEXT)
 subdir = src
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -57,6 +57,9 @@ client_LDADD = $(LDADD)
 am_cond_OBJECTS = cond.$(OBJEXT)
 cond_OBJECTS = $(am_cond_OBJECTS)
 cond_LDADD = $(LDADD)
+am_handle_OBJECTS = handle.$(OBJEXT)
+handle_OBJECTS = $(am_handle_OBJECTS)
+handle_LDADD = $(LDADD)
 am_server_OBJECTS = server.$(OBJEXT)
 server_OBJECTS = $(am_server_OBJECTS)
 server_LDADD = $(LDADD)
@@ -76,10 +79,10 @@ CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(client_SOURCES) $(cond_SOURCES) $(server_SOURCES) \
-	$(thread_SOURCES)
-DIST_SOURCES = $(client_SOURCES) $(cond_SOURCES) $(server_SOURCES) \
-	$(thread_SOURCES)
+SOURCES = $(client_SOURCES) $(cond_SOURCES) $(handle_SOURCES) \
+	$(server_SOURCES) $(thread_SOURCES)
+DIST_SOURCES = $(client_SOURCES) $(cond_SOURCES) $(handle_SOURCES) \
+	$(server_SOURCES) $(thread_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -212,6 +215,7 @@ thread_SOURCES = thread.cpp
 server_SOURCES = server.cpp
 client_SOURCES = client.cpp
 cond_SOURCES = cond.cpp
+handle_SOURCES = handle.cpp
 all: all-am
 
 .SUFFIXES:
@@ -295,6 +299,9 @@ client$(EXEEXT): $(client_OBJECTS) $(client_DEPENDENCIES)
 cond$(EXEEXT): $(cond_OBJECTS) $(cond_DEPENDENCIES) 
 	@rm -f cond$(EXEEXT)
 	$(CXXLINK) $(cond_OBJECTS) $(cond_LDADD) $(LIBS)
+handle$(EXEEXT): $(handle_OBJECTS) $(handle_DEPENDENCIES) 
+	@rm -f handle$(EXEEXT)
+	$(CXXLINK) $(handle_OBJECTS) $(handle_LDADD) $(LIBS)
 server$(EXEEXT): $(server_OBJECTS) $(server_DEPENDENCIES) 
 	@rm -f server$(EXEEXT)
 	$(CXXLINK) $(server_OBJECTS) $(server_LDADD) $(LIBS)
@@ -310,6 +317,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/client.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cond.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/handle.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/server.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/thread.Po@am__quote@
 

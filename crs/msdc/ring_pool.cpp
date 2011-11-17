@@ -8,6 +8,7 @@
 //			notify validate iterators callback
 //	12/07/2010	included into libcrs
 //	01/03/2011	integer types
+//	11/17/2011	64-bit issue fixed
 //
 #if defined( _MSC_VER )
 #	pragma warning( disable : 4251 )
@@ -19,6 +20,8 @@
 #endif
 
 #include <crs/msdc/ring_pool.h>
+#include <iostream>
+#include <iomanip>
 
 namespace msdc {
 
@@ -36,7 +39,7 @@ ring_pool::bit_mask_calculator::bit_mask_calculator ( const size_t desiredPoolSi
 	size_t bit;
 	for( int bitNo = std::numeric_limits<size_t>::digits; bitNo >= std::numeric_limits<unsigned char>::digits; --bitNo )
 	{
-		bit = ( 0x01 << ( bitNo - 1 ) );
+		bit = ( static_cast<size_t>( 0x01 ) << ( bitNo - 1 ) );
 		if( ( desiredPoolSize & bit ) == bit )
 		{
 			poolMask = ( bit | ( bit - 1 ) );
@@ -44,9 +47,10 @@ ring_pool::bit_mask_calculator::bit_mask_calculator ( const size_t desiredPoolSi
 			break;
 		}
 	}
+	
 	if( rootMaskShift == 0 )
 	{
-		bit = ( 0x01 << ( std::numeric_limits<unsigned char>::digits - 1 ) );
+		bit = ( static_cast<size_t>( 0x01 ) << ( std::numeric_limits<unsigned char>::digits - 1 ) );
 		poolMask = ( bit | ( bit - 1 ) );
 		rootMaskShift = std::numeric_limits<unsigned char>::digits;
 	}
@@ -57,13 +61,13 @@ ring_pool::bit_mask_calculator::bit_mask_calculator ( const size_t desiredPoolSi
 		rootDigits = 0;
 	else
 	{
-		bit = ( 0x01 << rootDigits );
+		bit = ( static_cast<size_t>( 0x01 ) << rootDigits );
 		nRootSize = ( bit | ( bit - 1 ) );
 		if( desiredRootSize < nRootSize )
 		{
 			for( int bitNo = rootDigits; bitNo; --bitNo )
 			{
-				bit = ( 0x01 << ( bitNo - 1 ) );
+				bit = ( static_cast<size_t>( 0x01 ) << ( bitNo - 1 ) );
 				if( ( desiredRootSize & bit ) == bit )
 				{
 					nRootSize = ( bit | ( bit - 1 ) );

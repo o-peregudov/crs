@@ -13,6 +13,7 @@
 #include <cstring>
 #include <cerrno>
 #include <ctime>
+#include <pthread.h>
 
 namespace CrossClass
 {

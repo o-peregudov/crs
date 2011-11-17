@@ -2,6 +2,8 @@
 //
 // basic.rs232port.cpp: bits of the implementation of the rs232port class.
 // (c) Aug 31, 2010 Oleg N. Peregudov
+//	2011-Apr-14	reset incoming buffer is a default action
+//			on basicRS232port::synchronize
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -48,6 +50,9 @@ basicRS232port::~basicRS232port()
 
 bool basicRS232port::synchronize ( const unsigned long dwTimeOut )
 {
+	CrossClass::_LockIt exclusive_access ( _inBufLock );
+	_inBufPtr = _inBuf;
+	_strInBuf = "";
 	return true;
 }
 
@@ -60,7 +65,7 @@ void basicRS232port::incomingData ()
 
 void basicRS232port::inBufAppend ( const char * pData, const size_t nData )
 {
-	CrossClass::_LockIt exclusive_access ( _callBackLock );
+	CrossClass::_LockIt exclusive_access ( _inBufLock );
 	_strInBuf.append( pData, nData );
 }
 

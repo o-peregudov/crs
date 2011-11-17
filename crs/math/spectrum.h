@@ -22,6 +22,7 @@ struct CROSS_EXPORT massSpectrum
 	peakCenterData			pcd;
 	std::map<double, size_t>	hist;
 	
+	void	clear ();
 	void	addPoint ( const double & mm, const double & ii, const double & ss, const double & tt );
 	void	read ( std::istream & is, const std::string & format );
 	
@@ -29,7 +30,6 @@ struct CROSS_EXPORT massSpectrum
 	void	doCompensateBackground ();
 	void	doPeakCenter ();
 	
-	void	clear ();
 	void	estimateGuess ( const int nFilterSize = 5 )
 	{
 		delete [] smoothIntensity;

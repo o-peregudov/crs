@@ -34,7 +34,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-bin_PROGRAMS = measurePeak$(EXEEXT)
+bin_PROGRAMS = measurePeak$(EXEEXT) parabolicInterpolation$(EXEEXT)
 subdir = math
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -53,6 +53,9 @@ PROGRAMS = $(bin_PROGRAMS)
 am_measurePeak_OBJECTS = measurePeak.$(OBJEXT)
 measurePeak_OBJECTS = $(am_measurePeak_OBJECTS)
 measurePeak_LDADD = $(LDADD)
+am_parabolicInterpolation_OBJECTS = parabolicInterpolation.$(OBJEXT)
+parabolicInterpolation_OBJECTS = $(am_parabolicInterpolation_OBJECTS)
+parabolicInterpolation_LDADD = $(LDADD)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -66,8 +69,9 @@ CXXLD = $(CXX)
 CXXLINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(measurePeak_SOURCES)
-DIST_SOURCES = $(measurePeak_SOURCES)
+SOURCES = $(measurePeak_SOURCES) $(parabolicInterpolation_SOURCES)
+DIST_SOURCES = $(measurePeak_SOURCES) \
+	$(parabolicInterpolation_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -197,6 +201,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 INCLUDES = -I$(top_srcdir)
 measurePeak_SOURCES = measurePeak.cpp
+parabolicInterpolation_SOURCES = parabolicInterpolation.cpp
 all: all-am
 
 .SUFFIXES:
@@ -277,6 +282,9 @@ clean-binPROGRAMS:
 measurePeak$(EXEEXT): $(measurePeak_OBJECTS) $(measurePeak_DEPENDENCIES) 
 	@rm -f measurePeak$(EXEEXT)
 	$(CXXLINK) $(measurePeak_OBJECTS) $(measurePeak_LDADD) $(LIBS)
+parabolicInterpolation$(EXEEXT): $(parabolicInterpolation_OBJECTS) $(parabolicInterpolation_DEPENDENCIES) 
+	@rm -f parabolicInterpolation$(EXEEXT)
+	$(CXXLINK) $(parabolicInterpolation_OBJECTS) $(parabolicInterpolation_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -285,6 +293,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/measurePeak.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/parabolicInterpolation.Po@am__quote@
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
