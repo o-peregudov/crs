@@ -1,15 +1,16 @@
 - i686-pc-cygwin/*
 - i686-pc-linux-gnu/*
 - i686-pc-mingw32/*
-- i686-w64-mingw32/*
+- *-w64-mingw32/*
 - i586-mingw32msvc/*
 - x86_64-linux-gnu/*
+- amd64-mingw32msvc/*
 - test/i686-pc-cygwin/*
 - test/i686-pc-linux-gnu/*
 - test/i686-pc-mingw32/*
-- test/i686-w64-mingw32/*
+- test/*-w64-mingw32/*
 - test/i586-mingw32msvc/*
 - test/x86_64-linux-gnu/*
 - msvc/release/*
 - msvc/debug/*
-
+- autom4te.cache/*

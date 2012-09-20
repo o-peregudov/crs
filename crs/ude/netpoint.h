@@ -1,14 +1,36 @@
 #ifndef CROSS_UDE_NETPOINT_H_INCLUDED
 #define CROSS_UDE_NETPOINT_H_INCLUDED 1
-// (c) Jan 22, 2009 Oleg N. Peregudov
-//	11/30/2010	condition variables for thread blocking
-//	12/03/2010	blocking and non-blocking send/receive packet members
-//			call-back function for incoming packets
-//	12/09/2010	observer for transmission flag
-//	12/10/2010	using unsigned long instead of size_t for packet size
-//			sequential send/recv operations relying for non-blocking sockets
-//	12/19/2010	new packet structure (size field first)
-//
+/*
+ *  crs/ude/netpoint.h
+ *  Copyright (c) 2009-2012 Oleg N. Peregudov <o.peregudov@gmail.com>
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2 of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+/*
+ *	2009/01/22
+ *	2010/11/30	condition variables for thread blocking
+ *	2010/12/03	blocking and non-blocking send/receive packet members
+ *			call-back function for incoming packets
+ *	2010/12/09	observer for transmission flag
+ *	2010/12/10	using unsigned long instead of size_t for packet size
+ *			sequential send/recv operations relying for non-blocking sockets
+ *	2010/12/19	new packet structure (size field first)
+ *	2012/08/16	new platform specific defines
+ */
+
 #include <crs/netpoint.h>
 #include <crs/callback.h>
 #include <crs/ude/packets.h>
@@ -76,6 +98,6 @@ public:
 	}
 };
 
-} // namespace ude
-#endif // CROSS_UDE_NETPOINT_H_INCLUDED
+}	/* namespace ude				*/
+#endif/* CROSS_UDE_NETPOINT_H_INCLUDED	*/
 

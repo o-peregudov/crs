@@ -3,9 +3,10 @@
 //////////////////////////////////////////////////////////////////////
 //
 // i41serial.h: interface for the i41serial class.
-// (c) Oct 14, 2005 Oleg N. Peregudov
-// (c) Jun 18, 2007 Oleg N. Peregudov - uniform locks
-// (c) Nov 21, 2007 Oleg N. Peregudov - new place for cross-compiling routines
+//	2005/10/14
+//	2007/06/18	uniform locks
+//	2007/11/21	new place for cross-compiling routines
+//	2011/12/03	portable integer types
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -15,13 +16,13 @@ namespace sc {
 	#pragma pack(push, 1)
 	struct eightBytePacket
 	{
-		unsigned char id,		// packet identification and controller code
-				  cmd,	// command code
-				  ext;	// command code extension
-		unsigned long param;
-		unsigned char crc;
+		crs_uint8_t	 id,	// packet identification and controller code
+				 cmd,	// command code
+				 ext;	// command code extension
+		crs_uint32_t param;
+		crs_uint8_t	 crc;
 	};
-	#pragma pop(push)
+	#pragma pack(pop)
 	
 	typedef serialByte<eightBytePacket> i41serial;
 };

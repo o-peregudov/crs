@@ -7,6 +7,8 @@
 //	09/19/2010	default callback function
 //	09/20/2010	non-blocking postTerminate
 //	09/22/2010	errPoll exception
+//	12/03/2011	additional exceptions
+//	2012/05/10	port polling is now moved to a separate class
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -29,12 +31,28 @@ public:
 		errOpen ( const std::string & wh ) : std::runtime_error( wh ) { }
 	};
 	
+	struct errCreatePipe : errOpen {
+		errCreatePipe ( const std::string & wh ) : errOpen( wh ) { }
+	};
+	
 	struct errStatus : std::runtime_error {
 		errStatus ( const std::string & wh ) : std::runtime_error( wh ) { }
 	};
 	
+	struct errReadStatus : errStatus {
+		errReadStatus ( const std::string & wh ) : errStatus( wh ) { }
+	};
+	
+	struct errSetStatus : errStatus {
+		errSetStatus ( const std::string & wh ) : errStatus( wh ) { }
+	};
+	
 	struct errClose : std::runtime_error {
 		errClose ( const std::string & wh ) : std::runtime_error( wh ) { }
+	};
+	
+	struct errClosePipe : errClose {
+		errClosePipe ( const std::string & wh ) : errClose( wh ) { }
 	};
 	
 	struct errWrite : std::runtime_error {
@@ -56,15 +74,15 @@ public:
 protected:
 	std::string		m_cComPortName;
 	size_t		m_Baud;
-	unsigned char	m_DataBits,
+	unsigned short	m_DataBits,
 				m_StopBits,
 				m_Parity;
 	bool			m_bConnected;
-	size_t		m_dwTimeOut;	// milliseconds
+	size_t		m_dwTimeOut;	/* milliseconds */
 	
-	//
-	// incoming buffer
-	//
+	/*
+	 * incoming buffer
+	 */
 	CrossClass::LockType	_inBufLock;
 	const size_t		_inBufSize;
 	char				*_inBuf,
@@ -87,12 +105,6 @@ public:
 	
 	void swrite ( const std::string & str );
 	virtual void write ( const char * lpBuf, const size_t dwToWrite ) = 0;
-	virtual bool receive ();
-	//
-	// return false when termination is requested
-	// can throw errRead
-	//
-	virtual void postTerminate ( const bool doWaitTerminate = true ) = 0;
 	
 	void setAsyncDataCallback ( asyncDataCallBackFunction func, void * pData );
 	std::string getString ();

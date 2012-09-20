@@ -6,11 +6,20 @@
 /* Host type from configure */
 #undef CONFIG_HOST_TYPE
 
+/* Define to 1 if you want to get all exceptions (even from destructors). */
+#undef DESTRUCTOR_EXCEPTIONS_ALLOWED
+
+/* Define to 1 if epoll should be used for I/O multiplexing. */
+#undef EPOLL_IO_MULTIPLEXING
+
 /* Define to 1 if you have the <arpa/inet.h> header file. */
 #undef HAVE_ARPA_INET_H
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
+
+/* Define to 1 if you have the `epoll_create' function. */
+#undef HAVE_EPOLL_CREATE
 
 /* Define to 1 if you have the <fcntl.h> header file. */
 #undef HAVE_FCNTL_H
@@ -24,23 +33,11 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
-/* Define to 1 if you have the `pthread' library (-lpthread). */
-#undef HAVE_LIBPTHREAD
-
 /* Define to 1 if you have the `rt' library (-lrt). */
 #undef HAVE_LIBRT
 
-/* Define to 1 if you have the `memcpy' function. */
-#undef HAVE_MEMCPY
-
-/* Define to 1 if you have the `memmove' function. */
-#undef HAVE_MEMMOVE
-
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
-
-/* Define to 1 if you have the `memset' function. */
-#undef HAVE_MEMSET
 
 /* Define to 1 if you have the <netdb.h> header file. */
 #undef HAVE_NETDB_H
@@ -57,8 +54,17 @@
 /* Define to 1 if you have the <poll.h> header file. */
 #undef HAVE_POLL_H
 
+/* Define to 1 if you have the `pthread_mutex_lock' function. */
+#undef HAVE_PTHREAD_MUTEX_LOCK
+
+/* Define to 1 if you have the `pthread_spin_lock' function. */
+#undef HAVE_PTHREAD_SPIN_LOCK
+
 /* Define to 1 if you have the `select' function. */
 #undef HAVE_SELECT
+
+/* Define to 1 if you have the <semaphore.h> header file. */
+#undef HAVE_SEMAPHORE_H
 
 /* Define to 1 if you have the `socket' function. */
 #undef HAVE_SOCKET
@@ -84,6 +90,9 @@
 /* Define to 1 if you have the <syslog.h> header file. */
 #undef HAVE_SYSLOG_H
 
+/* Define to 1 if you have the <sys/epoll.h> header file. */
+#undef HAVE_SYS_EPOLL_H
+
 /* Define to 1 if you have the <sys/select.h> header file. */
 #undef HAVE_SYS_SELECT_H
 
@@ -92,6 +101,9 @@
 
 /* Define to 1 if you have the <sys/stat.h> header file. */
 #undef HAVE_SYS_STAT_H
+
+/* Define to 1 if you have the <sys/time.h> header file. */
+#undef HAVE_SYS_TIME_H
 
 /* Define to 1 if you have the <sys/types.h> header file. */
 #undef HAVE_SYS_TYPES_H
@@ -132,6 +144,15 @@
 
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
+
+/* Define to 1 if poll should be used for I/O multiplexing. */
+#undef POLL_IO_MULTIPLEXING
+
+/* Define to 1 if POSIX select should be used for I/O multiplexing. */
+#undef SELECT_IO_MULTIPLEXING_POSIX
+
+/* Define to inform about available I/O multiplexing method. */
+#undef SELECT_TYPE
 
 /* The size of `char', as computed by sizeof. */
 #undef SIZEOF_CHAR
@@ -178,6 +199,9 @@
 /* The size of `u_int8_t', as computed by sizeof. */
 #undef SIZEOF_U_INT8_T
 
+/* The size of `void*', as computed by sizeof. */
+#undef SIZEOF_VOIDP
+
 /* The size of `__int64', as computed by sizeof. */
 #undef SIZEOF___INT64
 
@@ -186,6 +210,9 @@
 
 /* Version number of package */
 #undef VERSION
+
+/* Define to 1 if winsock2 should be used for I/O multiplexing. */
+#undef WINSOCK2_IO_MULTIPLEXING
 
 /* Define to `__inline__' or `__inline' if that's what the C compiler
    calls it, or to nothing if 'inline' is not supported under any name.  */

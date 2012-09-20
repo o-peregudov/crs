@@ -1,0 +1,12 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: CRS
+Description: CROSS Platform Routines (Win32+POSIX)
+Version: @VERSION@
+Requires: gsl
+Libs: @CRS_LIBS@
+Cflags: @CRS_CFLAGS@
+

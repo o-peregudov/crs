@@ -1,14 +1,25 @@
-// (c) Jan 31, 2009 Oleg N. Peregudov
-//	04/23/2009	Win/Posix defines
-//	08/26/2010	new server termination algorithm based on pipes
-//	11/30/2010	usage of the poll system call
-//	12/04/2010	checkTerminate bug fixed (pipe close)
-//	12/05/2010	buildClientList bug fixed
-//			extended error info
-//	12/09/2010	postRestart member
-//			observer for transmission flag
-//	12/12/2010	clientSendRecv now checks for wait2transmit
-//			postRestart status flag to avoid request stacking
+/*
+ *  crs/bits/posix.netpoint.cpp
+ *  Copyright (c) 2009-2012 Oleg N. Peregudov <o.peregudov@gmail.com>
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2 of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+#if defined (HAVE_CONFIG_H)
+#	include "config.h"
+#endif
+
 #include <crs/bits/posix.netpoint.h>
 #include <cstring>
 #include <cstdio>

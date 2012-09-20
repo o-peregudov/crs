@@ -1,26 +1,37 @@
-//
-// win32.timer.cpp: interface for the cTimer class (Win32 API)
-// (c) Aug 23, 2010 Oleg N. Peregudov
-//
-#include <crs/defsys.h>
+/*
+ *  crs/bits/win32.timer.cpp
+ *  Copyright (c) 2010-2012 Oleg N. Peregudov <o.peregudov@gmail.com>
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2 of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+#if defined (HAVE_CONFIG_H)
+#	include "config.h"
+#endif
 #include <crs/bits/win32.timer.h>
 
 namespace CrossClass {
 
-cWin32Timer::cWin32Timer()
-	: _tmStart()
-	, _timeFromStart( 0 )
-	, _recent()
-	, _actual()
-	, _freq()
+cWin32Timer::cWin32Timer ()
+	: _tmStart ()
+	, _recent ()
+	, _actual ()
+	, _freq ()
 {
-	if( !QueryPerformanceFrequency( &_freq ) )
-		throw noHardware();
-	reset();
-}
-
-cWin32Timer::~cWin32Timer()
-{
+	if (!QueryPerformanceFrequency (&_freq))
+		throw noHardware ();
+	reset ();
 }
 
 const cWin32Timer::host_time_type & cWin32Timer::startTime () const
@@ -28,20 +39,16 @@ const cWin32Timer::host_time_type & cWin32Timer::startTime () const
 	return _tmStart;
 }
 
-const double & cWin32Timer::getStamp ()
+double cWin32Timer::getStamp ()
 {
-	QueryPerformanceCounter( &_actual );
-	_timeFromStart +=	static_cast<double>( _actual.QuadPart - _recent.QuadPart ) / _freq.QuadPart;
-	_recent.QuadPart = _actual.QuadPart;
-	return _timeFromStart;
+	QueryPerformanceCounter (&_actual);
+	return (_actual.QuadPart - _recent.QuadPart) / static_cast<double> (_freq.QuadPart);
 }
 
-void  cWin32Timer::reset ()
+void cWin32Timer::reset ()
 {
-	QueryPerformanceCounter( &_recent );
-	GetSystemTime( &_tmStart );
-	_timeFromStart = 0;
+	QueryPerformanceCounter (&_recent);
+	GetSystemTime (&_tmStart);
 }
 
-} // namespace CrossClass
-
+} /* namespace CrossClass	*/

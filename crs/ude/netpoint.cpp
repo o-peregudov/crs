@@ -1,19 +1,16 @@
-// (c) Jan 26, 2009 Oleg N. Peregudov
-//	11/30/2010	condition variables for thread blocking
-//	12/03/2010	blocking and non-blocking send/receive packet members
-//			call-back function for incoming packets
-//	12/06/2010	extended error info
-//	12/09/2010	observer for transmission flag
-//	12/12/2010	using unsigned long instead of size_t for packet size
-//			sequential send/recv operations relying for non-blocking sockets
-//	12/19/2010	new packet structure (size field first)
-//	01/03/2011	integer types
-//
-#if defined( _MSC_VER )
-#	pragma warning( disable : 4251 )
-#	pragma warning( disable : 4275 )
-#endif
-
+/*
+ * (c) Jan 26, 2009 Oleg N. Peregudov
+ *	2010/11/30	condition variables for thread blocking
+ *	2010/12/03	blocking and non-blocking send/receive packet members
+ *			call-back function for incoming packets
+ *	2010/12/06	extended error info
+ *	2010/12/09	observer for transmission flag
+ *	2010/12/12	using unsigned long instead of size_t for packet size
+ *			sequential send/recv operations relying for non-blocking sockets
+ *	2010/12/19	new packet structure (size field first)
+ *	2011/01/03	integer types
+ *	2012/08/15	new platform specific defines
+ */
 #if defined( HAVE_CONFIG_H )
 #	include "config.h"
 #endif
@@ -25,31 +22,31 @@
 
 #define EMSGLENGTH	256
 
-#if defined( USE_WIN32_API )
+#if USE_WIN32_API
 #define HANDLE_ERROR(error_class)								\
-	switch( WSAGetLastError() )								\
+	switch (WSAGetLastError ())								\
 	{												\
 	case	WSAEWOULDBLOCK:									\
 		return;										\
 	default:											\
 		{											\
 			char msgText [ EMSGLENGTH ];						\
-			sprintf( msgText, "code: %d", WSAGetLastError() );		\
-			throw error_class( msgText );						\
+			sprintf (msgText, "code: %d", WSAGetLastError ());		\
+			throw error_class (msgText);						\
 		}											\
 	}
 #else
 #define HANDLE_ERROR(error_class)								\
 	{												\
-		if( errno == EINTR )								\
+		if (errno == EINTR)								\
 			continue;									\
-		else if( errno == EAGAIN )							\
+		else if (errno == EAGAIN)							\
 			return;									\
 		else											\
 		{											\
 			char msgText [ EMSGLENGTH ];						\
-			sprintf( msgText, "%s (%d)", strerror( errno ), errno );	\
-			throw error_class( msgText );						\
+			sprintf (msgText, "%d: %s", errno, strerror (errno));		\
+			throw error_class (msgText);						\
 		}											\
 	}
 #endif

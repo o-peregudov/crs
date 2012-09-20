@@ -1,26 +1,44 @@
 #ifndef CROSS_UDE_PACKETS_H
 #define CROSS_UDE_PACKETS_H 1
 #define UDE_SENDER_IDENTIFICATION 1
-//
-// General Hardware-to-PC interface ( UDE information classes )
-// Copyright (c) Feb 13, 2003 Oleg N. Peregudov
-// Support: op@pochta.ru
-//
-//	05/29/2006	support for __int64 data type
-//	09/04/2006	wrappers
-//	10/19/2006	IFPACKET filter macro
-//	02/06/2007	packet's sender id & header checksum
-//	06/12/2007	new data types
-//	01/21/2008	included in cross library
-//	02/12/2008	id for fast processing packet
-//	04/05/2008	rename UDE_SENDER_IDENTIFICATION macro
-//	12/03/2010	packet number field
-//	12/10/2010	using unsigned long instead of size_t for packet size
-//	12/12/2010	domainStat
-//	12/17/2010	new packet structure (size field first)
-//	12/20/2010	char type for packet contents
-//	01/17/2011	integer types
-//
+/*
+ *  crs/ude/packets.h - General Hardware-to-PC interface (UDE information classes)
+ *  Copyright (c) 2003-2012 Oleg N. Peregudov <o.peregudov@gmail.com>
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2 of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+/*
+ *	2003/02/13	first version
+ *	2006/05/29	support for __int64 data type
+ *	2006/09/04	wrappers
+ *	2006/10/19	IFPACKET filter macro
+ *	2007/02/06	packet's sender id & header checksum
+ *	2007/06/12	new data types
+ *	2008/01/21	included in cross library
+ *	2008/02/12	id for fast processing packet
+ *	2008/04/05	rename UDE_SENDER_IDENTIFICATION macro
+ *	2010/12/03	packet number field
+ *	2010/12/10	using unsigned long instead of size_t for packet size
+ *	2010/12/12	domainStat
+ *	2010/12/17	new packet structure (size field first)
+ *	2010/12/20	char type for packet contents
+ *	2011/01/02	memory leak in cTalkPacket::assign
+ *	2011/01/17	integer types
+ *	2012/09/13	cPacketHeader::id_check_bits
+ */
 
 #include <cstring>
 #include <stdexcept>
@@ -93,6 +111,11 @@ struct CROSS_EXPORT cPacketHeader
 		, domain( ph.domain )
 		, recepient( ph.recepient )
 	{}
+	
+	bool	id_check_bits ( const ushort bit_mask ) const
+	{
+		return ((id & bit_mask) == bit_mask);
+	}
 };
 #pragma pack(pop)
 
@@ -166,12 +189,12 @@ public:
 	
 	const cPacketHeader & header () const
 	{
-		return *( reinterpret_cast<const cPacketHeader *>( contents ) );
+		return *(reinterpret_cast<const cPacketHeader *> (contents));
 	}
 	
 	cPacketHeader & header ()
 	{
-		return *( reinterpret_cast<cPacketHeader *>( contents ) );
+		return *(reinterpret_cast<cPacketHeader *> (contents));
 	}
 	
 	ulong rawSize () const				{ return size; }

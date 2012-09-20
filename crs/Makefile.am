@@ -2,20 +2,26 @@ lib_LTLIBRARIES = libcrs.la
 
 INCLUDES = -I$(top_srcdir)
 
-libcrs_la_SOURCES = CRCStuff.c cmdLine.cpp parsing.cpp security.cpp timer.cpp \
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA= $(top_builddir)/crs.pc
+
+libcrs_la_SOURCES = crs-version.c \
+	CRCStuff.c cmdLine.cpp parsing.cpp security.cpp timer.cpp \
 	oio/FileVar.cpp oio/iniFile.cpp \
 	math/interpolation.cpp math/peakCenter.cpp math/stddev.c math/spectrum.cpp \
-	bits/basic.netpoint.cpp simplenetpoint.cpp \
+	tcp_peer.cpp bits/basic.netpoint.cpp simplenetpoint.cpp \
 	sc/basic.rs232port.cpp \
-	ude/packets.cpp ude/netpoint.cpp ude/server.cpp ude/client.cpp ude/pingtool.cpp \
+	ude/packets.cpp ude/net_peer.cpp ude/netpoint.cpp ude/server.cpp \
 	msdc/data_classes.cpp msdc/pools.cpp msdc/ring_pool.cpp msdc/composite_core.cpp
+#	ude/client.cpp ude/pingtool.cpp
 
 libcrs_la_LDFLAGS = -no-undefined -version-info $(CRS_LT_VERSION)
 
 pkginclude_HEADERS = cmdLine.h mutex.h handle.h parsing.h security.h \
-	thread.h timer.h socket.h netpoint.h simplenetpoint.h main myexcept.h \
+	thread.h timer.h socket.h tcp_peer.h netpoint.h simplenetpoint.h main myexcept.h \
 	regions.h mtsqueue.h charprintbuf.h CRCStuff.h libexport.h defsys.h \
-	condition_variable.hpp semaphore.hpp callback.h
+	condition_variable.hpp semaphore.hpp callback.h crs-version.h eveloop.h \
+	atomic_flag.h spinlock.h
 
 pkginclude_bitsdir = $(pkgincludedir)/bits
 pkginclude_bits_HEADERS = bits/basic.netpoint.h bits/hostsocket.hpp
@@ -30,18 +36,20 @@ pkginclude_mathdir = $(pkgincludedir)/math
 pkginclude_math_HEADERS = math/interpolation.h math/peakCenter.h math/stddev.h math/unimath.h math/unimath.cc math/spectrum.h
 
 pkginclude_udedir = $(pkgincludedir)/ude
-pkginclude_ude_HEADERS = ude/packets.h ude/netpoint.h ude/server.h ude/client.h ude/pingtool.h
+pkginclude_ude_HEADERS = ude/packets.h ude/data_core.h ude/net_peer.h ude/netpoint.h ude/server.h ude/client.h ude/pingtool.h
 
 pkginclude_msdcdir = $(pkgincludedir)/msdc
 pkginclude_msdc_HEADERS = msdc/data_classes.h msdc/pools.h msdc/ring_pool.h msdc/composite_core.h
 
-if USE_WIN32API
-libcrs_la_SOURCES += bits/win32.timer.cpp bits/win32.mutex.cpp bits/win32.thread.cpp \
+if USE_WIN32_API
+libcrs_la_SOURCES += bits/win32.mutex.cpp bits/win32.thread.cpp \
 	bits/win32.cond.cpp bits/win32.semaphore.cpp \
-	sc/win32.rs232port.cpp bits/win32.netpoint.cpp
+	bits/win32.timer.cpp bits/win32.netpoint.cpp \
+	sc/win32.rs232port.cpp
 
-pkginclude_bits_HEADERS += bits/win32.timer.h bits/win32.mutex.h bits/win32.thread.h \
-	bits/win32.cond.h bits/win32.semaphore.h bits/win32.netpoint.h
+pkginclude_bits_HEADERS += bits/win32.mutex.h bits/win32.thread.h \
+	bits/win32.cond.h bits/win32.semaphore.h bits/win32.spinlock.h \
+	bits/win32.timer.h bits/win32.netpoint.h
 
 pkginclude_sc_HEADERS += sc/win32.rs232port.h
 endif
@@ -51,22 +59,19 @@ libcrs_la_SOURCES += cross.res.rc
 pkginclude_bits_HEADERS += resource.h
 endif
 
-if USE_POSIXAPI
+if USE_POSIX_API
 libcrs_la_SOURCES += bits/posix.mutex.cpp bits/posix.thread.cpp \
-	bits/posix.cond.cpp bits/posix.semaphore.cpp \
-	bits/posix.timer.cpp sc/posix.rs232port.cpp bits/posix.netpoint.cpp
+	bits/posix.cond.cpp sc/posix.rs232port.cpp \
+	bits/posix.semaphore.cpp bits/posix.timer.cpp \
+	bits/posix.netpoint.cpp bits/posix.eveloop.cpp \
+	bits/posix.spinlock.cpp bits/posix.ipchannel.cpp
 
 pkginclude_bits_HEADERS += bits/posix.mutex.h bits/posix.thread.h \
-	bits/posix.cond.h bits/posix.semaphore.h \
-	bits/posix.timer.h bits/posix.netpoint.h
+	bits/posix.cond.h bits/posix.semaphore.h bits/posix.spinlock.h \
+	bits/posix.timer.h bits/posix.netpoint.h bits/posix.ipchannel.h
 
 pkginclude_sc_HEADERS += sc/posix.rs232port.h
 endif
 
-if USE_CPP0XAPI
-libcrs_la_SOURCES += bits/c++0x.timer.cpp
-pkginclude_bits_HEADERS += bits/c++0x.timer.h
-endif
-
 .rc.lo: 
-	$(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --tag=RC --mode=compile $(RC) $(RCFLAGS) $< -o $@ 
+	$(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --tag=RC --mode=compile $(RC) $(RCFLAGS) $< -o $@

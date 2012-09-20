@@ -1,24 +1,26 @@
-//
-// ring_pool.cpp: general mass spectrum representation data base
-// (c) Jan 8, 2008 Oleg N. Peregudov
-//	09/07/2010	conforming libcrs v1.0.x
-//	09/11/2010	thread safety revision
-//	09/14/2010	iterator observers bug fixed
-//	09/20/2010	swap thread
-//			notify validate iterators callback
-//	12/07/2010	included into libcrs
-//	01/03/2011	integer types
-//	11/17/2011	64-bit issue fixed
-//
-#if defined( _MSC_VER )
-#	pragma warning( disable : 4251 )
-#	pragma warning( disable : 4351 )
-#endif
-
+/*
+ *  General mass spectrum presentation database
+ *
+ *  crs/msdc/ring_pool.cpp
+ *  Copyright (c) 2007-2012 Oleg N. Peregudov <o.peregudov@gmail.com>
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2 of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 #if defined( HAVE_CONFIG_H )
 #	include "config.h"
 #endif
-
 #include <crs/msdc/ring_pool.h>
 #include <iostream>
 #include <iomanip>
@@ -75,7 +77,8 @@ ring_pool::bit_mask_calculator::bit_mask_calculator ( const size_t desiredPoolSi
 				}
 			}
 		}
-		rootMask = nRootSize++;
+		rootMask = nRootSize;
+		++nRootSize;
 	}
 	
 	usedBits = poolMask + ( rootMask << rootMaskShift );
@@ -122,7 +125,6 @@ ring_pool::ring_pool ( const size_t nData, const size_t nMemPools, const size_t 
 	, _callBackData( 0 )
 	, _thread( )
 	, _semaphore( )
-	
 {
 	if( _nPool2Swap2 < 2 )
 		_nPool2Swap2 = 2;
@@ -143,14 +145,14 @@ ring_pool::ring_pool ( const size_t nData, const size_t nMemPools, const size_t 
 		_root.clear();
 		throw;
 	}
-	_thread = std::auto_ptr<ring_pool_swaper>( new ring_pool_swaper ( this ) );
-	_semaphore = std::auto_ptr<CrossClass::cSemaphore>( new CrossClass::cSemaphore( _nPool2Swap2 - 1 ) );
+	_thread = new ring_pool_swaper ( this );
+	_semaphore = new CrossClass::cSemaphore (_nPool2Swap2 - 1);
 }
 
 ring_pool::~ring_pool ()
 {
-	delete _thread.release();
-	delete _semaphore.release();
+	_thread = 0;	/* this will cause deallocation */
+	_semaphore = 0;	/* this will also cause deallocation */
 	std::for_each( _root.begin(), _root.end(), poolReleaser() );
 	_root.clear();
 }
@@ -171,7 +173,8 @@ void ring_pool::_swap ()
 	{
 		size_t nBeginPos = _metrix.full_idx( _nPool2Swap2 << _metrix.rootMaskShift ),
 			 nEndPos = _metrix.full_idx( ( _nPool2Swap2 + 1 ) << _metrix.rootMaskShift );
-		iterator i ( this, nBeginPos ), e ( this, nEndPos );
+		iterator i ( this, nBeginPos ),
+			   e ( this, nEndPos );
 		for( basic_ipoint::link_type lnk = (*i)->link; i != e; ++i )
 		{
 			if( (*i)->link != lnk )
@@ -287,4 +290,4 @@ double ring_pool::getIntensityByTime ( const size_t nChannel, const basic_ipoint
 	return ( (*ub)->intensity[ nChannel ] + (*lb)->intensity[ nChannel ] ) / 2.0;
 }
 
-} // namespace msdc
+} /* namespace msdc	*/

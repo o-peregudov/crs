@@ -1,50 +1,86 @@
-// (c) Sep 18, 2010 Oleg N. Peregudov
-// Envelop for the POSIX semaphore
-//	01/17/2011	integer types
-//
+/*
+ *  crs/bits/posix.semaphore.cpp
+ *  Copyright (c) 2010-2012 Oleg N. Peregudov <o.peregudov@gmail.com>
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2 of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 
 #if defined( HAVE_CONFIG_H )
 #	include "config.h"
 #endif
-
 #include <crs/bits/posix.semaphore.h>
-#include <cstring>
-#include <cerrno>
-#include <ctime>
 
-namespace CrossClass {
-
-//
-// members of class cPosixSemaphore
-//
+namespace CrossClass
+{
 
 cPosixSemaphore::cPosixSemaphore ( unsigned value )
 	: _semaphore( )
 {
-	if( sem_init( &_semaphore, 1, value ) == -1 )
-		throw std::runtime_error( strerror( errno ) );
+	if (sem_init (&_semaphore, 0, value) == -1)
+	{
+		char msgText [ 256 ];
+		sprintf (msgText, "%d: %s in 'cPosixSemaphore::sem_init'", errno, strerror (errno));
+		throw std::runtime_error (msgText);
+	}
 }
 
 cPosixSemaphore::~cPosixSemaphore ()
 {
-	if( sem_destroy( &_semaphore ) == -1 )
-		throw std::runtime_error( strerror( errno ) );
+	int result = sem_destroy (&_semaphore);
+#if defined (DESTRUCTOR_EXCEPTIONS_ALLOWED)
+	if (result == -1)
+	{
+		char msgText [ 256 ];
+		sprintf (msgText, "%d: %s in '~cPosixSemaphore::sem_destroy'", errno, strerror (errno));
+		throw std::runtime_error (msgText);
+	}
+#endif
 }
 
 void cPosixSemaphore::lock ()
 {
-	if( sem_wait( &_semaphore ) == -1 )
-		throw std::runtime_error( strerror( errno ) );
+	int retcode = 0;
+	while (((retcode = sem_wait (&_semaphore)) == -1) && (errno == EINTR))
+		continue;			/* restart if interrupted by signal */
+	
+	/* check what happened */
+	if (retcode == -1)
+	{
+		char msgText [ 256 ];
+		sprintf (msgText, "%d: %s in 'cPosixSemaphore::sem_wait'", errno, strerror (errno));
+		throw std::runtime_error (msgText);
+	}
 }
 
 bool cPosixSemaphore::try_lock ()
 {
-	if( sem_wait( &_semaphore ) == -1 )
+	int retcode = 0;
+	while (((retcode = sem_trywait (&_semaphore)) == -1) && (errno == EINTR))
+		continue;			/* restart if interrupted by signal */
+	
+	/* check what happened */
+	if (retcode == -1)
 	{
-		if( errno == EAGAIN )	// The semaphore was already locked, so it cannot be
-			return false;	// immediately locked by the sem_trywait() operation
+		if (errno == EAGAIN)	/* The semaphore was already locked, so it cannot be */
+			return false;	/* immediately locked by the sem_trywait() operation */
 		else
-			throw std::runtime_error( strerror( errno ) );
+		{
+			char msgText [ 256 ];
+			sprintf (msgText, "%d: %s in 'cPosixSemaphore::sem_trywait'", errno, strerror (errno));
+			throw std::runtime_error (msgText);
+		}
 	}
 	else
 		return true;
@@ -52,17 +88,33 @@ bool cPosixSemaphore::try_lock ()
 
 bool cPosixSemaphore::try_lock_for ( const unsigned long dwMilliseconds )
 {
-	timespec abstime;
-	clock_gettime( CLOCK_REALTIME, &abstime );
-	crs_int64_t nanoseconds = abstime.tv_nsec + dwMilliseconds * 1000000L;
-	abstime.tv_sec += nanoseconds / 1000000000L;	// seconds
-	abstime.tv_nsec = nanoseconds % 1000000000L;	// nanoseconds
-	if( sem_timedwait( &_semaphore, &abstime ) == -1 )
+	struct timespec abstime;
+	if (clock_gettime (CLOCK_REALTIME, &abstime) == -1)
 	{
-		if( errno == ETIMEDOUT )// The semaphore could not be locked
-			return false;	// before the specified timeout expired
+		char msgText [ 256 ];
+		sprintf (msgText, "%d: %s in 'cPosixSemaphore::clock_gettime'", errno, strerror (errno));
+		throw std::runtime_error (msgText);
+	}
+	
+	crs_int64_t nanoseconds = abstime.tv_nsec + dwMilliseconds * 1000000L;
+	abstime.tv_sec += nanoseconds / 1000000000L;	/* seconds		*/
+	abstime.tv_nsec = nanoseconds % 1000000000L;	/* nanoseconds	*/
+	
+	int retcode = 0;
+	while (((retcode = sem_timedwait (&_semaphore, &abstime)) == -1) && (errno == EINTR))
+		continue;			/* restart if interrupted by signal */
+	
+	/* check what happened */
+	if (retcode == -1)
+	{
+		if (errno == ETIMEDOUT)	/* The semaphore could not be locked	*/
+			return false;	/* before the specified timeout expired	*/
 		else
-			throw std::runtime_error( strerror( errno ) );
+		{
+			char msgText [ 256 ];
+			sprintf (msgText, "%d: %s in 'cPosixSemaphore::sem_timedwait'", errno, strerror (errno));
+			throw std::runtime_error (msgText);
+		}
 	}
 	else
 		return true;
@@ -70,9 +122,12 @@ bool cPosixSemaphore::try_lock_for ( const unsigned long dwMilliseconds )
 
 void cPosixSemaphore::unlock ()
 {
-	if( sem_post( &_semaphore ) == -1 )
-		throw std::runtime_error( strerror( errno ) );
+	if (sem_post (&_semaphore) == -1)
+	{
+		char msgText [ 256 ];
+		sprintf (msgText, "%d: %s in 'cPosixSemaphore::sem_post'", errno, strerror (errno));
+		throw std::runtime_error (msgText);
+	}
 }
 
-} // namespace CrossClass
-
+} /* namespace CrossClass */

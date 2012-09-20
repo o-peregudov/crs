@@ -1,31 +1,33 @@
 #ifndef CROSS_OIO_INIFILE_H
 #define CROSS_OIO_INIFILE_H 1
-//
-//  This file is a part of Object I/O library
-//
-//  iniFile.h  - INI-file implementation
-//  Copyright (C) Jun 14, 2007 Oleg N. Peregudov <op@pochta.ru>
-//
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2 of the License, or (at your option) any later version.
-//
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
-//
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-//
-//	Aug 3, 2007 - read and write operations are for istream|ostream
-//	Nov 21, 2007 - new place for cross-compiling routines
-//	Dec 6, 2007 - new project name & DLL
-//	Jan 24, 2008 - no throw specificator for read\write members
-//	Sep 8, 2010 - C++0x compartible locks
-//
+/*
+ *  This file is a part of Object I/O library
+ *
+ *  crs/oio/iniFile.h - INI-file implementation
+ *  Copyright (C) 2004-2012 Oleg N. Peregudov <o.peregudov@gmail.com>
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2 of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+/*
+ *	2007/08/03	read and write operations are for istream|ostream
+ *	2007/11/21	new place for cross-compiling routines
+ *	2007/12/06	new project name & DLL
+ *	2008/01/24	no throw specificator for read\write members
+ *	2010/09/08	C++0x compartible locks
+ */
 
 #include <crs/oio/FileVar.h>
 #include <crs/charprintbuf.h>
@@ -243,5 +245,5 @@ public:
 
 typedef CrossClass::cHandle< cINIFile > cINIFileHandle;
 
-} // namespace ObjectIO
-#endif // CROSS_OIO_INIFILE_H
+}	/* namespace ObjectIO	*/
+#endif/* CROSS_OIO_INIFILE_H	*/

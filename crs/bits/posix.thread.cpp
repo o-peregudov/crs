@@ -1,11 +1,21 @@
-// (c) Apr 17, 2008 Oleg N. Peregudov
-//	08/23/2010	POSIX thread envelope
-//	08/27/2010	C++0x locks compartibility
-//	08/30/2010	using our condition variable wrapper
-//	01/03/2011	integer types
-//	01/05/2011	slightly changed Step
-//	01/21/2011	separate running and activation flags observers
-//
+/*
+ *  crs/bits/posix.thread.cpp
+ *  Copyright (c) 2008-2012 Oleg N. Peregudov <o.peregudov@gmail.com>
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2 of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 
 #if defined( HAVE_CONFIG_H )
 #	include "config.h"
@@ -24,58 +34,41 @@ namespace CrossClass {
 void * cPosixThread::thread_routine ( void * pParam )
 {
 	cPosixThread * pThreadClass = reinterpret_cast<cPosixThread *>( pParam );
-	_LockIt _flags_lock ( pThreadClass->_flags_mutex );
-	pThreadClass->_running_flag = true;
-	_flags_lock.unlock();
+	pThreadClass->_running_flag.store (true);
 	try
 	{
 		pThreadClass->_thread_routine_result = pThreadClass->Run ();
 	}
-	catch( std::runtime_error & e )
+	catch (std::runtime_error & e)
 	{
 		pThreadClass->_error_text = e.what();
 		pThreadClass->_thread_routine_result = reinterpret_cast<void *>( -1 );
 	}
-	catch( ... )
+	catch (...)
 	{
 		pThreadClass->_error_text = "unhandled exception in 'thread_routine'";
-		pThreadClass->_thread_routine_result = reinterpret_cast<void *>( -1 );
+		pThreadClass->_thread_routine_result = reinterpret_cast<void *>( -2 );
 	}
-	_flags_lock.lock();
-	pThreadClass->_running_flag = false;
-	_flags_lock.unlock();
+	pThreadClass->_running_flag.store (false);
 	return pThreadClass->_thread_routine_result;
 }
 
-cPosixThread::operator bool ()
+void	cPosixThread::_post_activate ()
 {
-	_LockIt _flags_lock ( _flags_mutex );
-	return _running_flag;
+	_activate_flag.store (true);
+	_wake_up ();
 }
 
-bool cPosixThread::active ()
+void	cPosixThread::_post_deactivate ()
 {
-	_LockIt _flags_lock ( _flags_mutex );
-	return _activate_flag;
+	_activate_flag.store (false);
+	_wake_up ();
 }
 
-bool cPosixThread::_check_terminate ()
+void	cPosixThread::_post_terminate ()
 {
-	_LockIt _flags_lock ( _flags_mutex );
-	return _terminate_flag;
-}
-
-bool cPosixThread::_check_terminate ( bool & activationFlag )
-{
-	_LockIt _flags_lock ( _flags_mutex );
-	activationFlag = _activate_flag;
-	return _terminate_flag;
-}
-
-bool cPosixThread::_check_activate ()
-{
-	_LockIt _flags_lock ( _flags_mutex );
-	return _activate_flag;
+	_terminate_flag.store (true);
+	_wake_up ();
 }
 
 void cPosixThread::_wake_up ()
@@ -83,54 +76,29 @@ void cPosixThread::_wake_up ()
 	// NOTE: if predictable scheduling behavior is required,
 	// then that mutex shall be locked by the thread calling
 	// pthread_cond_broadcast() or pthread_cond_signal()
-	_LockIt _condition_lock ( _condition_mutex );
-	_wake_up_flag = true;
-	_condition.notify_one();	// wake up the thread
-}
-
-void cPosixThread::_post_terminate ()
-{
-	_LockIt _flags_lock ( _flags_mutex );
-	_terminate_flag = true;
-	_flags_lock.unlock();
-	_wake_up();
-}
-
-void cPosixThread::_post_activate ()
-{
-	_LockIt _flags_lock ( _flags_mutex );
-	_activate_flag = true;
-	_flags_lock.unlock();
-	_wake_up();
-}
-
-void cPosixThread::_post_deactivate ()
-{
-	_LockIt _flags_lock ( _flags_mutex );
-	_activate_flag = false;
-	_flags_lock.unlock();
-	_wake_up();
+	_LockIt _wakeup_lock ( _wakeup_mutex );
+	_wakeup_flag = true;
+	_wakeup_condition.notify_one ();	// wake up the thread
 }
 
 void * cPosixThread::Run ()
 {
-	for( bool runStep = false;; )
+	while (!_terminate_flag.load ())
 	{
-		if( _check_terminate( runStep ) )
-			return StepResult( 0 );
-		else if( runStep )
+		if (_activate_flag.load ())
 		{
-			if( Step() )
-				return StepResult( 0 );
+			if (Step ())
+				return StepResult (0);
 		}
 		else
 		{
-			_LockIt _condition_lock ( _condition_mutex );
-			while( !_wake_up_flag )
-				_condition.wait( _condition_lock );
-			_wake_up_flag = false;
+			_LockIt _wakeup_lock ( _wakeup_mutex );
+			while (!_wakeup_flag)
+				_wakeup_condition.wait (_wakeup_lock);
+			_wakeup_flag = false;
 		}
 	}
+	return StepResult (0);
 }
 
 void * cPosixThread::StepResult ( const int errCode )
@@ -140,34 +108,34 @@ void * cPosixThread::StepResult ( const int errCode )
 
 void cPosixThread::Resume ()
 {
-	_post_activate();
+	_post_activate ();
 }
 
 void cPosixThread::Stop ()
 {
-	_post_deactivate();
+	_post_deactivate ();
 }
 
 cPosixThread::cPosixThread ( const int priority )
-	: _thread( )
-	, _condition_mutex( )
-	, _flags_mutex( )
-	, _condition( )
-	, _terminate_flag( false )
-	, _activate_flag( false )
-	, _wake_up_flag( false )
-	, _running_flag( false )
-	, _thread_routine_result( 0 )
-	, _error_text( )
+	: _thread ( )
+	, _wakeup_mutex ( )
+	, _wakeup_condition ( )
+	, _wakeup_flag (false)
+	, _terminate_flag (false)
+	, _activate_flag (false)
+	, _running_flag (false)
+	, _thread_routine_result (0)
+	, _error_text ( )
 {
-	int errCode ( 0 );
 	pthread_attr_t _thread_attributes;
-	safe_thread_attr sta ( &_thread_attributes );
-	if( ( errCode = pthread_create( &_thread, &_thread_attributes, &thread_routine, this ) ) )
+	safe_thread_attr sta (&_thread_attributes);
+	
+	int errCode = pthread_create (&_thread, &_thread_attributes, &thread_routine, this);
+	if (errCode)
 	{
 		char msgText [ 64 ];
-		sprintf( msgText, "pthread_create returns %d", errCode );
-		throw std::runtime_error( msgText );
+		sprintf (msgText, "pthread_create returns %d", errCode);
+		throw std::runtime_error (msgText);
 	}
 	/*
 	int policy;
@@ -184,10 +152,10 @@ cPosixThread::~cPosixThread ()
 
 void * cPosixThread::kill ()
 {
-	if( *this )
+	if (*this)
 	{
-		_post_terminate();
-		switch( pthread_join( _thread, NULL ) )
+		_post_terminate ();
+		switch (pthread_join (_thread, NULL))
 		{
 		case	ESRCH:
 			throw std::runtime_error(
@@ -210,16 +178,16 @@ void * cPosixThread::kill ()
 
 void sleep ( const unsigned long msDuration )
 {
-	if( msDuration == 0 )
-		sched_yield();
+	if (msDuration == 0)
+		sched_yield ();
 	else
 	{
 		timespec rqtp, rmtp;
 		rqtp.tv_sec = msDuration / 1000L;				// seconds
 		rqtp.tv_nsec = ( msDuration % 1000L ) * 1000000L;	// nanoseconds
-		while( nanosleep( &rqtp, &rmtp ) == -1 ) rqtp = rmtp;
+		while ((nanosleep (&rqtp, &rmtp) == -1) && (errno == EINTR))
+			rqtp = rmtp;
 	}
 }
 
-} // namespace CrossClass
-
+} /* namespace CrossClass */

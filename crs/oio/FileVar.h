@@ -1,34 +1,37 @@
 #ifndef CROSS_OIO_FILEVAR_H
 #define CROSS_OIO_FILEVAR_H 1
-//
-//  This file is a part of Object I/O library
-//
-//  FileVar.h  - base OIO classes and templates
-//  Copyright (C) Nov 16, 2004 Oleg N. Peregudov <op@pochta.ru>
-//
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2 of the License, or (at your option) any later version.
-//
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
-//
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-//
-//	07/13/2007	uniform locks & handles
-//	08/03/2007	default typedef for cBaseHubHandle
-//			read and write operations are for istream|ostream
-//	11/21/2007	new place for cross-compiling routines
-//	12/06/2007	new project name & DLL
-//	01/24/2008	no throw specificator for read\write members
-//	09/08/2010	C++0x compartible locks
-//	01/21/2011	bug in BaseHub::get causes a deadlock
-//
+/*
+ *  This file is a part of Object I/O library
+ *
+ *  crs/oio/FileVar.h - base OIO classes and templates
+ *  Copyright (C) 2004-2012 Oleg N. Peregudov <o.peregudov@gmail.com>
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2 of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+/*
+ *	2004/11/16	base OIO classes and templates
+ *	2007/07/13	uniform locks & handles
+ *	2007/08/03	default typedef for cBaseHubHandle
+ *			read and write operations are for istream|ostream
+ *	2007/11/21	new place for cross-compiling routines
+ *	2007/12/06	new project name & DLL
+ *	2008/01/24	no throw specificator for read\write members
+ *	2010/09/08	C++0x compartible locks
+ *	2011/01/21	bug in BaseHub::get causes a deadlock
+ */
 
 #include <algorithm>
 #include <iostream>
@@ -208,5 +211,5 @@ public:
 
 typedef CrossClass::cHandle< BaseHub > cBaseHubHandle;
 
-} // namespace ObjectIO
-#endif // CROSS_OIO_FILEVAR_H
+}	/* namespace ObjectIO	*/
+#endif/* CROSS_OIO_FILEVAR_H	*/

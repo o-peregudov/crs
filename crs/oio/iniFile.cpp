@@ -1,34 +1,26 @@
-//
-//  This file is a part of Object I/O library
-//
-//  iniFile.cpp - INI-file implementation
-//  Copyright (C) Apr 17, 2007 Oleg N. Peregudov <op@pochta.ru>
-//
-//  This library is free software; you can redistribute it and/or
-//  modify it under the terms of the GNU Lesser General Public
-//  License as published by the Free Software Foundation; either
-//  version 2 of the License, or (at your option) any later version.
-//
-//  This library is distributed in the hope that it will be useful,
-//  but WITHOUT ANY WARRANTY; without even the implied warranty of
-//  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-//  Lesser General Public License for more details.
-//
-//  You should have received a copy of the GNU Lesser General Public
-//  License along with this library; if not, write to the Free Software
-//  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-//
-//	May 23, 2007 - uniform locks & handles
-//	Aug 3, 2007 - read and write operations are for basic_istream<char>|basic_ostream<char>
-//	Nov 21, 2007 - new place for cross-compiling routines
-//	Dec 6, 2007 - new project name
-//	Jan 24, 2008 - no throw specificator for read\write members
-//	Apr 17, 2008 - suppress some warning of VC compiler
-//	Sep 8, 2010 - C++0x compartible locks
-//
+/*
+ *  This file is a part of Object I/O library
+ *
+ *  crs/oio/iniFile.h - INI-file implementation
+ *  Copyright (C) 2004-2012 Oleg N. Peregudov <o.peregudov@gmail.com>
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2 of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 
-#if defined( _MSC_VER )
-#	pragma warning( disable : 4251 )
+#if defined( HAVE_CONFIG_H )
+#	include "config.h"
 #endif
 
 #include <crs/oio/iniFile.h>
@@ -57,7 +49,7 @@ string cutfrom( std::string & line, const char * from )
 	return result;
 }
 
-// eat whitespaces from line head ...
+// eat whitespaces from the line head ...
 static
 string firstchar ( const string & buf )
 {
@@ -431,4 +423,5 @@ void	cINIFile::writevar ( Hub & hub, CrossClass::cPrintBuf & pbuf, const std::st
 	cVarHandle var ( hub.get( name, Var() ) );
 	*var = pbuf.c_str();
 }
-} // namespace ObjectIO
+
+} /* namespace ObjectIO	*/

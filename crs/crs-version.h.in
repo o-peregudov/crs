@@ -1,0 +1,26 @@
+#ifndef CROSS_VERSION_H_INCLUDED
+#define CROSS_VERSION_H_INCLUDED
+
+#include <crs/defsys.h>
+
+#define CRS_VERSION "@VERSION@"
+#define CRS_MAJOR_VERSION @CRS_MAJOR_VERSION@
+#define CRS_MINOR_VERSION @CRS_MINOR_VERSION@
+
+#undef __BEGIN_DECLS
+#undef __END_DECLS
+#ifdef __cplusplus
+# define __BEGIN_DECLS extern "C" {
+# define __END_DECLS }
+#else
+# define __BEGIN_DECLS /* empty */
+# define __END_DECLS /* empty */
+#endif
+
+__BEGIN_DECLS
+
+CROSS_VAR const char * cross_version;
+
+__END_DECLS
+
+#endif /* CROSS_VERSION_H_INCLUDED */

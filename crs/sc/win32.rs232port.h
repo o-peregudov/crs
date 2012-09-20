@@ -6,6 +6,7 @@
 // (c) Sep 4, 2010 Oleg N. Peregudov
 //	09/09/2010	baudrate constant selector
 //	09/20/2010	non-blocking postTerminate
+//	12/03/2011	advanced port open
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -32,6 +33,7 @@ protected:
 	
 public:
 	void open ( const std::string & portName = "COM1", const size_t baudRate = 115200 );
+	void open ( std::istream & );
 	
 	virtual void close ();
 	virtual void write ( const char * lpBuf, const size_t dwToWrite );
@@ -44,3 +46,4 @@ public:
 
 } // namespace sc
 #endif // CROSS_SC_WIN32RS232PORT_H_INCLUDED
+

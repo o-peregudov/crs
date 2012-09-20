@@ -1,12 +1,40 @@
 #ifndef CROSS_POSIX_NETPOINT_H_INCLUDED
 #define CROSS_POSIX_NETPOINT_H_INCLUDED 1
-// (c) Jan 28, 2009 Oleg N. Peregudov
-//	04/23/2009	Win/Posix defines
-//	08/26/2010	new server termination algorithm based on pipes
-//	11/30/2010	usage of the poll system call
-//	12/04/2010	new pipe creation concept
-//	12/09/2010	postRestart member
-//	12/12/2010	postRestart status flag to avoid request stacking
+/*
+ *  crs/bits/posix.netpoint.h
+ *  Copyright (c) 2009-2012 Oleg N. Peregudov <o.peregudov@gmail.com>
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2 of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+/*
+ *	2009-01-28
+ *	2009-04-23	Win/Posix defines
+ *	2010-08-26	new server termination algorithm based on pipes
+ *	2010-11-30	usage of the poll system call
+ *	2010-12-04	new pipe creation concept
+ *			checkTerminate bug fixed (pipe close)
+ *	2010-12-05	buildClientList bug fixed
+ *			extended error info
+ *	2010-12-09	postRestart member
+ *			observer for transmission flag
+ *	2010-08-26	new server termination algorithm based on pipes
+ *	2010-12-09	postRestart member
+ *	2010-12-12	postRestart status flag to avoid request stacking
+ *			clientSendRecv now checks for wait2transmit
+ */
 
 #include <crs/bits/basic.netpoint.h>
 #include <crs/security.h>
@@ -25,8 +53,8 @@ protected:
 	size_t	nfdsAllocated,
 			nfdsUsed;
 	
-	CrossClass::cMutex	postRestartMutex;
-	bool				postRestartFlag;
+	cMutex	postRestartMutex;
+	bool		postRestartFlag;
 	
 	void createPipe ();
 	void closePipe ();
@@ -52,6 +80,5 @@ public:
 	virtual bool serverSendRecv ();
 };
 
-} // namespace CrossClass
-#endif // CROSS_POSIX_NETPOINT_H_INCLUDED
-
+}	/* namespace CrossClass			*/
+#endif/* CROSS_POSIX_NETPOINT_H_INCLUDED	*/

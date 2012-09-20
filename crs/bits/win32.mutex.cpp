@@ -1,9 +1,25 @@
-// (c) Nov 29, 2007 Oleg N. Peregudov
-// Aug 23, 2010 - Envelope for the Win32 mutex
-//	09/09/2010	compartibility with std::mutex from C++0x standard
-//	09/18/2010	uniform error handling
-//
-#include <crs/defsys.h>
+/*
+ *  crs/bits/win32.mutex.cpp
+ *  Copyright (c) 2008-2012 Oleg N. Peregudov <o.peregudov@gmail.com>
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2 of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+#if defined( HAVE_CONFIG_H )
+#	include "config.h"
+#endif
 #include <crs/bits/win32.mutex.h>
 #include <cstdio>
 
@@ -16,59 +32,62 @@ namespace CrossClass {
 cWin32Mutex::cWin32Mutex ()
 	: _mutex( NULL )
 {
-	_mutex = CreateMutex( NULL, FALSE, NULL );
-	if( _mutex == NULL )
+	_mutex = CreateMutex (NULL, FALSE, NULL);
+	if (_mutex == NULL)
 	{
 		char msgText [ 64 ];
-		sprintf( msgText, "cWin32Mutex::cWin32Mutex (%d)", GetLastError() );
-		throw std::runtime_error( msgText );
+		sprintf (msgText, "cWin32Mutex::cWin32Mutex (%d)", GetLastError ());
+		throw std::runtime_error (msgText);
 	}
 }
 
 cWin32Mutex::~cWin32Mutex ()
 {
-	if( CloseHandle( _mutex ) == 0 )
+	BOOL result = CloseHandle (_mutex);
+#if defined (DESTRUCTOR_EXCEPTIONS_ALLOWED)
+	if (result == 0)
 	{
 		char msgText [ 64 ];
-		sprintf( msgText, "cWin32Mutex::~cWin32Mutex (%d)", GetLastError() );
-		throw std::runtime_error( msgText );
+		sprintf (msgText, "~cWin32Mutex (%d)", GetLastError ());
+		throw std::runtime_error (msgText);
 	}
+#endif
 }
 
 void cWin32Mutex::lock ()
 {
-	switch( WaitForSingleObject( _mutex, INFINITE ) )
+	switch (WaitForSingleObject (_mutex, INFINITE))
 	{
 	case	WAIT_OBJECT_0:
 		return;
 	
 	case	WAIT_ABANDONED:
-		throw std::runtime_error( "Got ownership of the abandoned mutex object" );
+		throw std::runtime_error ("Got ownership of the abandoned mutex object");
 	
 	case	WAIT_FAILED:
 		{
 			char msgText [ 64 ];
-			sprintf( msgText, "cWin32Mutex::lock (%d)", GetLastError() );
-			throw std::runtime_error( msgText );
+			sprintf (msgText, "cWin32Mutex::lock (%d)", GetLastError ());
+			throw std::runtime_error (msgText);
 		}
 	}
 }
 
 bool cWin32Mutex::try_lock ()
 {
-	switch( WaitForSingleObject( _mutex, 0 ) )
+	switch (WaitForSingleObject (_mutex, 0))
 	{
 	case	WAIT_OBJECT_0:
 		return true;
 	
 	case	WAIT_ABANDONED:
-		throw std::runtime_error( "Got ownership of the abandoned mutex object" );
+		throw std::runtime_error ("Got ownership of the abandoned mutex object");
 	
 	case	WAIT_FAILED:
 		{
 			char msgText [ 64 ];
-			sprintf( msgText, "cWin32Mutex::try_lock (%d)", GetLastError() );
-			throw std::runtime_error( msgText );
+			sprintf (msgText, "cWin32Mutex::try_lock (%d)", GetLastError ());
+			throw std::runtime_error (msgText);
 		}
 	
 	case	WAIT_TIMEOUT:
@@ -79,12 +98,12 @@ bool cWin32Mutex::try_lock ()
 
 void cWin32Mutex::unlock ()
 {
-	if( ReleaseMutex( _mutex ) == 0 )
+	if (ReleaseMutex (_mutex) == 0)
 	{
 		char msgText [ 64 ];
-		sprintf( msgText, "cWin32Mutex::unlock (%d)", GetLastError() );
-		throw std::runtime_error( msgText );
+		sprintf (msgText, "cWin32Mutex::unlock (%d)", GetLastError ());
+		throw std::runtime_error (msgText);
 	}
 }
 
-} // namespace CrossClass
+} /* namespace CrossClass	*/

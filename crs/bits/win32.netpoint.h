@@ -1,12 +1,36 @@
 #ifndef CROSS_WIN32_NETPOINT_H_INCLUDED
 #define CROSS_WIN32_NETPOINT_H_INCLUDED 1
-// (c) Jan 28, 2009 Oleg N. Peregudov
-//	04/23/2009	Win/Posix defines
-//	08/24/2010	new server termination algorithm based on events
-//	12/01/2010	new name for termination method
-//			new implementation
+/*
+ *  crs/bits/win32.netpoint.h
+ *  Copyright (c) 2009-2012 Oleg N. Peregudov <o.peregudov@gmail.com>
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2 of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 
-#include <winsock2.h>
+/*
+ *	2009/01/28
+ *	2009/04/23	Win/Posix defines
+ *	2010/08/24	new server termination algorithm based on events
+ *	2010/12/01	new name for termination method
+ *			new implementation
+ *	2010/12/10	observer for transmission flag
+ *	2010/12/12	clientSendRecv now checks for wait2transmit
+ *	2011/01/03	bug fixed in the clients' loop in serverSendRecv
+ */
+
+#include <crs/libexport.h>
 #include <crs/bits/basic.netpoint.h>
 
 namespace CrossClass {
@@ -37,6 +61,5 @@ public:
 	virtual bool serverSendRecv ();
 };
 
-} // namespace CrossClass
-#endif // CROSS_WIN32_NETPOINT_H_INCLUDED
-
+}	/* namespace CrossClass			*/
+#endif/* CROSS_WIN32_NETPOINT_H_INCLUDED	*/

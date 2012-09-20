@@ -15,9 +15,9 @@ class CROSS_EXPORT client_device_manager	: public device_manager
 {
 protected:
 	// hide parent members
-	netPoint::bindSocket;
-	netPoint::startServer;
-	netPoint::serverSendRecv;
+	using netPoint::bindSocket;
+	using netPoint::startServer;
+	using netPoint::serverSendRecv;
 	
 	virtual bool _send ( const cTalkPacket & );
 	virtual bool _recv ( cTalkPacket & );

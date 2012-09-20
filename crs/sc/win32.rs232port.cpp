@@ -6,6 +6,10 @@
 //	2011/03/13	Wine eventualy returns ERROR_TIMEOUT instead of ERROR_IO_PENDING
 //			from GetOverlappedResult
 //	2011/04/14	reset incoming buffers on open
+//	2011/12/03	advanced port open
+//			extended exception info
+//	2012/02/04	stop bit constants fixed
+//
 #if defined( _MSC_VER )
 #	pragma warning( disable : 4251 )
 #	pragma warning( disable : 4275 )
@@ -115,6 +119,52 @@ void win32RS232port::open ( const std::string & port, const size_t baud )
 	basicRS232port::synchronize( 0 );
 }
 
+void win32RS232port::open ( std::istream & connStream )
+{
+	std::string token;
+	while( connStream.good() )
+	{
+		std::getline( connStream, token, '=' );
+		if( token == "port" )
+		{
+			std::getline( connStream, token, ' ' );
+			m_cComPortName = token;
+		}
+		else if( token == "baud" )
+			connStream >> m_Baud;
+		else if( token == "dataBits" )
+			connStream >> m_DataBits;
+		else if( token == "stopBits" )
+		{
+			unsigned short stop_bits = 1;
+			connStream >> stop_bits;
+			if (stop_bits == 2)
+				m_StopBits = TWOSTOPBITS;
+			else
+				m_StopBits = ONESTOPBIT;
+		}
+		else if( token == "parity" )
+		{
+			std::getline( connStream, token, ' ' );
+			if( token == "odd" )
+				m_Parity = ODDPARITY;
+			else if( token == "even" )
+				m_Parity = EVENPARITY;
+			else if( token == "mark" )
+				m_Parity = MARKPARITY;
+			else if( token == "space" )
+				m_Parity = SPACEPARITY;
+			else
+				m_Parity = NOPARITY;
+		}
+		int ch = connStream.get();
+		if( ch != ' ' )
+			connStream.putback( ch );
+	}
+	
+	open( m_cComPortName, m_Baud );
+}
+
 void win32RS232port::UpdateConnection ()
 {
 	DCB options;
@@ -131,7 +181,7 @@ void win32RS232port::UpdateConnection ()
 	{
 		char msgText [ 64 ];
 		sprintf( msgText, "GetCommTimeouts (%d)", GetLastError() );
-		throw basicRS232port::errStatus( msgText );
+		throw basicRS232port::errReadStatus( msgText );
 	}
 	
 	//
@@ -141,7 +191,7 @@ void win32RS232port::UpdateConnection ()
 	{
 		char msgText [ 64 ];
 		sprintf( msgText, "GetCommState (%d)", GetLastError() );
-		throw basicRS232port::errStatus( msgText );
+		throw basicRS232port::errReadStatus( msgText );
 	}
 	
 	//
@@ -164,7 +214,7 @@ void win32RS232port::UpdateConnection ()
 	{
 		char msgText [ 64 ];
 		sprintf( msgText, "SetCommState (%d)", GetLastError() );
-		throw basicRS232port::errStatus( msgText );
+		throw basicRS232port::errSetStatus( msgText );
 	}
 	
 	//
@@ -180,7 +230,7 @@ void win32RS232port::UpdateConnection ()
 	{
 		char msgText [ 64 ];
 		sprintf( msgText, "SetCommTimeouts (%d)", GetLastError() );
-		throw basicRS232port::errStatus( msgText );
+		throw basicRS232port::errSetStatus( msgText );
 	}
 	
 	//
@@ -220,7 +270,7 @@ void win32RS232port::close()
 		{
 			char msgText [ 64 ];
 			sprintf( msgText, "SetCommTimeouts (Rest) (%d)", GetLastError() );
-			throw basicRS232port::errStatus( msgText );
+			throw basicRS232port::errSetStatus( msgText );
 		}
 		
 		//
@@ -249,6 +299,8 @@ void win32RS232port::write ( const char * lpBuf, const size_t dwToWrite )
 {
 	OVERLAPPED osWrite = {0};
 	osWrite.hEvent = m_evntWrite;
+	osWrite.OffsetHigh = 0;
+	osWrite.Offset = 0;
 	
 	const char * writePtr = lpBuf;
 	unsigned long nBytesWritten = 0,
@@ -261,7 +313,7 @@ void win32RS232port::write ( const char * lpBuf, const size_t dwToWrite )
 		//
 		// issue write
 		//
-		if( WriteFile( m_hCommPort, writePtr, nBytesRest, &nBytesWritten, &osWrite ) )
+		if (WriteFile (m_hCommPort, writePtr, nBytesRest, &nBytesWritten, &osWrite))
 		{
 			writePtr += nBytesWritten;
 			nBytesRest -= nBytesWritten;
@@ -269,7 +321,7 @@ void win32RS232port::write ( const char * lpBuf, const size_t dwToWrite )
 		else
 		{
 			errCode = GetLastError();
-			if( errCode != ERROR_IO_PENDING )
+			if (errCode != ERROR_IO_PENDING)
 			{
 				//
 				// writefile failed, but it isn't delayed
@@ -285,7 +337,7 @@ void win32RS232port::write ( const char * lpBuf, const size_t dwToWrite )
 			switch( WaitForMultipleObjects( sizeof( evnt2wait4 ) / sizeof( HANDLE ), evnt2wait4, FALSE, INFINITE ) )
 			{
 			case	WAIT_OBJECT_0:		// write operation completed
-				if( GetOverlappedResult( m_hCommPort, &osWrite, &nBytesWritten, FALSE ) )
+				if (GetOverlappedResult (m_hCommPort, &osWrite, &nBytesWritten, FALSE))
 				{
 					writePtr += nBytesWritten;
 					nBytesRest -= nBytesWritten;
@@ -318,6 +370,8 @@ void win32RS232port::write ( const char * lpBuf, const size_t dwToWrite )
 	}
 }
 
+struct operation_aborted { };
+
 bool win32RS232port::receive ()
 {
 	//
@@ -325,58 +379,75 @@ bool win32RS232port::receive ()
 	//
 	OVERLAPPED osRead = {0};
 	osRead.hEvent = m_evntRead;
+	osRead.OffsetHigh = 0;
+	osRead.Offset = 0;
 	
 	HANDLE evnt2wait4 [] = { m_evntRead, m_evntTerminate };
-	
 	unsigned long dwRead = 0;
-	if( ReadFile( m_hCommPort, _inBufPtr, _inBufSize - ( _inBufPtr - _inBuf ), &dwRead, &osRead ) == 0 )
+	
+	try
 	{
-		unsigned long errCode = GetLastError();
-		if( errCode != ERROR_IO_PENDING )
+		if (ReadFile (m_hCommPort, _inBufPtr, _inBufSize - ( _inBufPtr - _inBuf ), &dwRead, &osRead) == 0)
 		{
-			//
-			// readfile failed, but it isn't delayed
-			//
-			char msgText [ 64 ];
-			sprintf( msgText, "ReadFile (%d)", errCode );
-			throw basicRS232port::errRead( msgText );
-		}
-		
-		//
-		// read is delayed
-		//
-		switch( WaitForMultipleObjects( sizeof( evnt2wait4 ) / sizeof( HANDLE ), evnt2wait4, FALSE, INFINITE ) )
-		{
-		case	WAIT_OBJECT_0:		// read operation completed
-			if( GetOverlappedResult( m_hCommPort, &osRead, &dwRead, FALSE ) == 0 )
+			unsigned long errCode = GetLastError();
+			if (errCode == ERROR_OPERATION_ABORTED )
+				throw operation_aborted ();
+			else if (errCode != ERROR_IO_PENDING)
 			{
-				errCode = GetLastError();
-				if( ( errCode != ERROR_IO_PENDING ) && ( errCode != ERROR_TIMEOUT ) )
+				//
+				// readfile failed, but it isn't delayed
+				//
+				char msgText [ 64 ];
+				sprintf( msgText, "ReadFile (%d)", errCode );
+				throw basicRS232port::errRead( msgText );
+			}
+		
+			//
+			// read is delayed
+			//
+			switch( WaitForMultipleObjects( sizeof( evnt2wait4 ) / sizeof( HANDLE ), evnt2wait4, FALSE, INFINITE ) )
+			{
+			case	WAIT_OBJECT_0:		// read operation completed
+				if (GetOverlappedResult (m_hCommPort, &osRead, &dwRead, FALSE) == 0)
 				{
-					//
-					// readfile failed, but it isn't delayed
-					//
+					errCode = GetLastError();
+					if (errCode == ERROR_OPERATION_ABORTED)
+						throw operation_aborted ();
+					else if ((errCode != ERROR_IO_PENDING) && (errCode != ERROR_TIMEOUT))
+					{
+						//
+						// readfile failed, but it isn't delayed
+						//
+						char msgText [ 64 ];
+						sprintf( msgText, "GetOverlappedResult (%d)", errCode );
+						throw basicRS232port::errRead( msgText );
+					}
+				}
+				break;
+			
+			case	(WAIT_OBJECT_0+1):	// termination
+				throw operation_aborted ();
+			
+			case	WAIT_TIMEOUT:
+				break;
+			
+			case	WAIT_FAILED:
+				{
 					char msgText [ 64 ];
-					sprintf( msgText, "GetOverlappedResult (%d)", errCode );
+					sprintf( msgText, "WaitForMultipleObjects (%d)", GetLastError() );
 					throw basicRS232port::errRead( msgText );
 				}
 			}
-			break;
-		
-		case	(WAIT_OBJECT_0+1):	// termination
-			SetEvent( m_evntTerminated );
-			return false;
-		
-		case	WAIT_TIMEOUT:
-			break;
-		
-		case	WAIT_FAILED:
-			{
-				char msgText [ 64 ];
-				sprintf( msgText, "WaitForMultipleObjects (%d)", GetLastError() );
-				throw basicRS232port::errRead( msgText );
-			}
 		}
+	}
+	catch( operation_aborted )
+	{
+		SetEvent( m_evntTerminated );
+		return false;
+	}
+	catch( ... )
+	{
+		throw;
 	}
 	
 	if( dwRead )
@@ -387,9 +458,9 @@ bool win32RS232port::receive ()
 
 void win32RS232port::postTerminate ( const bool doWaitTerminate )
 {
-	SetEvent( m_evntTerminate );
+	SetEvent (m_evntTerminate);
 	if( doWaitTerminate )
-		WaitForSingleObject( m_evntTerminated, INFINITE );
+		WaitForSingleObject (m_evntTerminated, INFINITE);
 }
 
 } // namespace sc

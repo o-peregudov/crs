@@ -2,8 +2,9 @@
 //
 // basic.rs232port.cpp: bits of the implementation of the rs232port class.
 // (c) Aug 31, 2010 Oleg N. Peregudov
-//	2011-Apr-14	reset incoming buffer is a default action
+//	2011/04/14	reset incoming buffer is a default action
 //			on basicRS232port::synchronize
+//	2012/05/10	port polling is now moved to a separate class
 //
 //////////////////////////////////////////////////////////////////////
 
@@ -28,9 +29,9 @@ basicRS232port::basicRS232port( const size_t inBufSize )
 	, m_Parity( 0 )
 	, m_bConnected( false )
 	, m_dwTimeOut( 1500 )
-	//
-	// incoming buffer members
-	//
+	/*
+	 * incoming buffer members
+	 */
 	, _inBufLock( )
 	, _inBufSize( inBufSize )
 	, _inBuf( 0 )
@@ -78,8 +79,12 @@ void basicRS232port::processIncomingBytes ( const size_t dwRead )
 	{
 		size_t nBytesRest = nBytesAvailable - nBytesProcessed;
 		if( nBytesRest )
+		{
 			memcpy( _inBuf, _inBuf + nBytesProcessed, nBytesRest );
-		_inBufPtr = _inBuf;
+			_inBufPtr = _inBuf + nBytesRest;
+		}
+		else
+			_inBufPtr = _inBuf;
 	}
 }
 
@@ -115,11 +120,6 @@ void basicRS232port::setAsyncDataCallback ( asyncDataCallBackFunction func, void
 	CrossClass::_LockIt exclusive_access ( _callBackLock );
 	_callBackFunc = func;
 	_callBackData = pData;
-}
-
-bool basicRS232port::receive ()
-{
-	return false;	// terminate thread
 }
 
 void basicRS232port::swrite ( const std::string & str )

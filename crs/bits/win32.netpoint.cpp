@@ -1,12 +1,25 @@
-// (c) Jan 31, 2009 Oleg N. Peregudov
-//	04/23/2009	Win/Posix defines
-//	08/24/2010	new server termination algorithm based on events
-//	12/01/2010	new name for termination method
-//			new implementation
-//	12/10/2010	observer for transmission flag
-//	12/12/2010	clientSendRecv now checks for wait2transmit
-//	01/03/2011	bug fixed in the clients' loop in serverSendRecv
-#include <crs/defsys.h>
+/*
+ *  crs/bits/win32.netpoint.cpp
+ *  Copyright (c) 2009-2012 Oleg N. Peregudov <o.peregudov@gmail.com>
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2 of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+#if defined (HAVE_CONFIG_H)
+#	include "config.h"
+#endif
 #include <crs/bits/win32.netpoint.h>
 #include <cstdio>
 
@@ -196,4 +209,4 @@ bool win32NetPoint::serverSendRecv ()
 	}
 }
 
-} // namespace CrossClass
+} /* namespace CrossClass	*/

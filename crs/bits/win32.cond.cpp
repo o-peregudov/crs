@@ -1,10 +1,24 @@
-// (c) Aug 30, 2010 Oleg N. Peregudov
-#if defined( _MSC_VER )
-#	pragma warning( disable : 4251 )
-#	pragma warning( disable : 4275 )
-#	pragma warning( disable : 4996 )
+/*
+ *  crs/bits/win32.cond.cpp
+ *  Copyright (c) 2010-2012 Oleg N. Peregudov <o.peregudov@gmail.com>
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2 of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+#if defined( HAVE_CONFIG_H )
+#	include "config.h"
 #endif
-#include <crs/defsys.h>
 #include <crs/bits/win32.cond.h>
 
 namespace CrossClass {
@@ -13,24 +27,27 @@ namespace CrossClass {
 // members of class cWin32ConditionVariable
 //
 cWin32ConditionVariable::cWin32ConditionVariable ()
-	: _event( CreateEvent( NULL, FALSE, FALSE, NULL ) )
+	: _event (CreateEvent (NULL, FALSE, FALSE, NULL))
 {
-	if( _event == NULL )
+	if (_event == NULL)
 	{
 		char msgText [ 64 ];
-		sprintf( msgText, "CreateEvent returned 0x%X", GetLastError() );
-		throw std::runtime_error( msgText );
+		sprintf (msgText, "cWin32ConditionVariable::cWin32ConditionVariable (%d)", GetLastError ());
+		throw std::runtime_error (msgText);
 	}
 }
 
 cWin32ConditionVariable::~cWin32ConditionVariable ()
 {
-	if( CloseHandle( _event ) == 0 )
+	BOOL result = CloseHandle (_event);
+#if defined (DESTRUCTOR_EXCEPTIONS_ALLOWED)
+	if (result == 0)
 	{
 		char msgText [ 64 ];
-		sprintf( msgText, "CloseHandle returned 0x%X", GetLastError() );
-		throw std::runtime_error( msgText );
+		sprintf (msgText, "~cWin32ConditionVariable (%d)", GetLastError ());
+		throw std::runtime_error (msgText);
 	}
+#endif
 }
 
-} // namespace CrossClass
+} /* namespace CrossClass	*/

@@ -1,21 +1,45 @@
 #ifndef CROSS_MSDC_RING_POOL_H
 #define CROSS_MSDC_RING_POOL_H 1
-//
-// ring_pool.h: general mass spectrum representation data base
-// (c) Jan 8, 2008 Oleg N. Peregudov
-//	09/07/2010	conforming libcrs v1.0.x
-//	09/11/2010	thread safety revision
-//	09/14/2010	check for empty iterator in iterator::operator =
-//			iterator observers bug fixed
-//	09/20/2010	swap thread
-//			notify validate iterators callback
-//	12/07/2010	included into libcrs
-//
+/*
+ *  General mass spectrum presentation database
+ *
+ *  crs/msdc/ring_pool.h
+ *  Copyright (c) 2007-2012 Oleg N. Peregudov <o.peregudov@gmail.com>
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2 of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+/*
+ *	2008/09/07	general mass spectrum representation data base
+ *	2010/09/07	conforming libcrs v1.0.x
+ *	2010/09/11	thread safety revision
+ *	2010/09/14	check for empty iterator in iterator::operator =
+ *			iterator observers bug fixed
+ *	2010/09/20	swap thread
+ *			notify validate iterators callback
+ *	2010/12/07	included into libcrs
+ *	2011/01/03	integer types
+ *	2011/11/17	64-bit issue fixed
+ *	2012/08/18	std::auto_ptr is no longer used
+ */
 
 #include <crs/msdc/pools.h>
 #include <crs/thread.h>
 #include <crs/callback.h>
 #include <crs/semaphore.hpp>
+#include <crs/handle.h>
 #include <algorithm>
 #include <vector>
 #include <limits>
@@ -98,8 +122,8 @@ protected:
 		virtual ~ring_pool_swaper ();
 	};
 	
-	std::auto_ptr<ring_pool_swaper>		_thread;
-	std::auto_ptr<CrossClass::cSemaphore>	_semaphore;
+	CrossClass::cHandle<ring_pool_swaper>		_thread;
+	CrossClass::cHandle<CrossClass::cSemaphore>	_semaphore;
 	
 protected:
 	cIntensityPoint * allocateRecord () const
@@ -123,6 +147,10 @@ protected:
 	{
 		CrossClass::_LockIt lockIterMutex ( _iterMutex );
 		size_t nStartPool = _metrix.root_idx( _beginPos );
+		std::cout	<< "(incr)\t_beginPos = " << reinterpret_cast<void *> (_beginPos) << std::endl
+				<< "\t_nPool2Swap2 = " << _nPool2Swap2 << std::endl
+				<< "\tnStartPool = " << nStartPool << std::endl
+				<< "\t_root.size () = " << _root.size () << std::endl;
 		if( _nPool2Swap2 == nStartPool )
 		{
 			_beginPos = ( ( ( _nPool2Swap2 + 1 ) & _metrix.rootMask ) << _metrix.rootMaskShift );
@@ -415,5 +443,5 @@ public:
 	}
 };
 
-} // namespace msdc
-#endif // CROSS_MSDC_RING_POOL_H
+}	/* namespace msdc			*/
+#endif/* CROSS_MSDC_RING_POOL_H	*/

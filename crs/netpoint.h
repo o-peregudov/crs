@@ -1,23 +1,42 @@
 #ifndef CROSS_NETPOINT_H_INCLUDED
 #define CROSS_NETPOINT_H_INCLUDED 1
-// (c) Aug 24, 2010 Oleg N. Peregudov
+/*
+ *  crs/netpoint.h
+ *  Copyright (c) 2010-2012 Oleg N. Peregudov <o.peregudov@gmail.com>
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2 of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
+/*
+ *	2010-08-24	platform specific selector for netPoint
+ */
 
 #include <crs/libexport.h>
-#if defined( USE_POSIX_API )
-#	include <crs/bits/posix.netpoint.h>
-#elif defined( USE_WIN32_API )
-#	include <crs/bits/win32.netpoint.h>
-#endif
+#include <crs/socket.h>
 
+#if USE_WIN32_API
+#	include <crs/bits/win32.netpoint.h>
 namespace CrossClass
 {
-
-#if defined( USE_POSIX_API )
-	typedef posixNetPoint	netPoint;
-#elif defined( USE_WIN32_API )
-	typedef win32NetPoint	netPoint;
+	typedef win32NetPoint netPoint;
+}
+#elif USE_POSIX_API
+#	include <crs/bits/posix.netpoint.h>
+namespace CrossClass
+{
+	typedef posixNetPoint netPoint;
+}
 #endif
-
-} // namespace CrossClass
-#endif // CROSS_NETPOINT_H_INCLUDED
-
+#endif/* CROSS_NETPOINT_H_INCLUDED	*/

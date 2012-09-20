@@ -4,10 +4,10 @@
 
 #include <crs/defsys.h>
 
-#if defined( USE_POSIX_API )
+#if USE_POSIX_API
 #	define LIBCRS_DECL_DLLEXPORT
 #	define LIBCRS_DECL_DLLIMPORT
-#elif defined( USE_WIN32_API ) || defined( WIN32 )
+#elif USE_WIN32_API || defined( WIN32 )
 #	define LIBCRS_DECL_DLLEXPORT	__declspec( dllexport )
 #	define LIBCRS_DECL_DLLIMPORT	__declspec( dllimport )
 #else
@@ -24,4 +24,3 @@
 #endif
 
 #endif // CROSS_LIBEXPORT_H
-

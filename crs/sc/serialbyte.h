@@ -16,6 +16,8 @@
 #include <iomanip>
 #include <list>
 
+/*#define CRS_SAFE_MEMCPY	0*/
+
 namespace sc {
 
 //
@@ -47,7 +49,6 @@ public:
 	
 	typedef packetType hostPacketType;
 	
-#pragma pack(push, 1)
 	struct comPacket
 	{
 		union {
@@ -58,21 +59,21 @@ public:
 		unsigned char buildCRC ( ) {
 			// calculate CRC sum
 			byteArray[ sizeof( packetType ) - 1 ] = 0;
-			for( int i = 0; i < sizeof( packetType ) - 1;
-				byteArray[ sizeof( packetType ) - 1 ] -= byteArray[ i++ ] );
+			for( size_t i = 0; i < sizeof( packetType ) - 1; ++i )
+				byteArray[ sizeof( packetType ) - 1 ] -= byteArray[ i ];
 			return byteArray[ sizeof( packetType ) - 1 ];
 		}
 		
 		bool  checkIdentity ( ) const {
 			// return true if the given CRC sum is correct
 			unsigned char newCRC = 0;
-			for( int i = 0; i < sizeof( packetType ) - 1;
-				newCRC -= byteArray[ i++ ] );
+			for( size_t i = 0; i < sizeof( packetType ) - 1; ++i )
+				newCRC -= byteArray[ i ];
 			return ( newCRC == byteArray[ sizeof( packetType ) - 1 ] );
 		}
 		
 		bool  syncPacket ( ) const {
-			for( int i = 0; i < sizeof( packetType ); ++i )
+			for( size_t i = 0; i < sizeof( packetType ); ++i )
 				if( byteArray[ i ] != 0x55 )
 					return false;
 			return true;
@@ -85,27 +86,39 @@ public:
 		}
 		
 		comPacket & operator = ( const comPacket & o ) {
-			if( &o != this )
-				memcpy( byteArray, o.byteArray, sizeof( packetType ) );
+			return operator = (o.data);
+		}
+		
+		comPacket & operator = ( const packetType & o ) {
+			if( &o != &data )
+			{
+#if defined (CRS_SAFE_MEMCPY)
+				unsigned char * pDest = byteArray;
+				const unsigned char * pSrc = reinterpret_cast<const unsigned char *> (&o);
+				for (size_t nBytesRest = sizeof (packetType); nBytesRest; --nBytesRest)
+					*pDest++ = *pSrc++;
+#else
+				memcpy( byteArray, &o, sizeof( packetType ) );
+#endif
+			}
 			return *this;
 		}
 	};
-#pragma pack(pop)
 	
 protected:
+	std::list<comPacket>			_inbox;
+	comPacket					_incomingPacket,
+							_outgoingPacket;
+	bool						_waitComSection,
+							_waitSyncPacket;
+	CrossClass::LockType			_mutexSyncPacket,
+							_mutexComSection,
+							_mutexInbox;
 	CrossClass::cConditionVariable	_notifySyncPacket,
 							_notifyComSection;
-	CrossClass::LockType	_mutexSyncPacket,
-					_mutexComSection,
-					_mutexInbox;
-	comPacket			_incomingPacket,
-					_outgoingPacket;
-	std::list<comPacket>	_inbox;
-	bool				_waitComSection,
-					_waitSyncPacket;
 	
 	virtual size_t compileResponse ( const char * lpBuf, const size_t dwAvailable );
-	virtual void checkPacket ( const comPacket & );
+	virtual void comCheckPacket ( const comPacket & outPacket, const comPacket & inPacket );
 	virtual bool tracePacket ( const comPacket & );
 	
 	bool	isComSectionPacket ( comPacket & packet );
@@ -117,18 +130,11 @@ protected:
 		_waitComSection = false;
 	}
 	
-	struct directPredicate
-	{
-		bool * _flag;
-		directPredicate ( bool * flag ) : _flag( flag ) { }
-		bool operator () () { return *_flag; }
-	};
-	
 	struct inversePredicate
 	{
-		bool * _flag;
-		inversePredicate ( bool * flag ) : _flag( flag ) { }
-		bool operator () () { return !(*_flag); }
+		bool & flag;
+		inversePredicate ( bool & f ) : flag( f ) { }
+		bool operator () () { return !flag; }
 	};
 	
 public:
@@ -177,16 +183,16 @@ std::string serialByte<packetType>::comPacket::byteString () const
 template <class packetType>
 serialByte<packetType>::serialByte( const size_t inBufSize )
 	: rs232port( inBufSize )
-	, _notifySyncPacket( )
-	, _notifyComSection( )
+	, _inbox( )
+	, _incomingPacket( )
+	, _outgoingPacket( )
+	, _waitComSection( false )
+	, _waitSyncPacket( false )
 	, _mutexSyncPacket( )
 	, _mutexComSection( )
 	, _mutexInbox( )
-	, _incomingPacket( )
-	, _outgoingPacket( )
-	, _inbox( )
-	, _waitComSection( false )
-	, _waitSyncPacket( false )
+	, _notifySyncPacket( )
+	, _notifyComSection( )
 {
 }
 
@@ -209,7 +215,7 @@ bool serialByte<packetType>::peekPacket ( comPacket & packet )
 	CrossClass::_LockIt exclusive_access ( _mutexInbox );
 	if( _inbox.empty() )
 		return false;
-	memcpy( packet.byteArray, _inbox.front().byteArray, sizeof( packetType ) );
+	packet = _inbox.front();
 	return true;
 }
 
@@ -228,14 +234,14 @@ bool serialByte<packetType>::tracePacket ( const comPacket & inPacket )
 }
 
 template <class packetType>
-void serialByte<packetType>::checkPacket ( const comPacket & inPacket )
+void serialByte<packetType>::comCheckPacket ( const comPacket & outPacket, const comPacket & inPacket )
 {
 	if( inPacket.checkIdentity() )
 	{
-		if( inPacket.byteArray[ 1 ] != _outgoingPacket.byteArray[ 1 ] )
+		if( inPacket.byteArray[ 1 ] != outPacket.byteArray[ 1 ] )
 		{
 			std::string msgText = "Request: ";
-			msgText += _outgoingPacket.byteString();
+			msgText += outPacket.byteString();
 			switch( inPacket.byteArray[ 1 ] )
 			{
 			case  0xF0:
@@ -257,20 +263,6 @@ void serialByte<packetType>::checkPacket ( const comPacket & inPacket )
 }
 
 template <class packetType>
-bool serialByte<packetType>::comSection ( const comPacket & outPacket, comPacket & inPacket, const unsigned long msTimeOut )
-{
-	send( outPacket );
-	CrossClass::_LockIt lockComSection ( _mutexComSection );
-	if( _notifyComSection.wait_for( lockComSection, msTimeOut, inversePredicate( &_waitComSection ) ) )
-	{
-		checkPacket( ( inPacket = _incomingPacket ) );
-		return true;
-	}
-	else
-		return false;
-}
-
-template <class packetType>
 void serialByte<packetType>::send ( const comPacket & outPacket )
 {
 	CrossClass::_LockIt lockComSection ( _mutexComSection );
@@ -280,17 +272,37 @@ void serialByte<packetType>::send ( const comPacket & outPacket )
 }
 
 template <class packetType>
+bool serialByte<packetType>::comSection ( const comPacket & outPacket, comPacket & inPacket, const unsigned long msTimeOut )
+{
+	CrossClass::_LockIt lockComSection ( _mutexComSection );
+	write( reinterpret_cast<const char *>( outPacket.byteArray ), sizeof( packetType ) );
+	_outgoingPacket = outPacket;
+	_waitComSection = true;
+	if (_notifyComSection.wait_for (lockComSection, msTimeOut, inversePredicate (_waitComSection)))
+	{
+		inPacket = _incomingPacket;
+		lockComSection.unlock ();
+		
+		comCheckPacket (outPacket, inPacket);
+		return true;
+	}
+	else
+		return false;
+}
+
+template <class packetType>
 bool serialByte<packetType>::isComSectionPacket ( comPacket & packet )
 {
 	CrossClass::_LockIt lockComSection ( _mutexComSection );
-	if( _waitComSection && tracePacket( packet ) )
+	if (_waitComSection && tracePacket (packet))
 	{
-		_incomingPacket = packet;
 		_waitComSection = false;
+		_incomingPacket = packet;
 		_notifyComSection.notify_one();
 		return true;
 	}
-	return false;
+	else
+		return false;
 }
 
 template <class packetType>
@@ -315,7 +327,7 @@ size_t serialByte<packetType>::compileResponse ( const char * lpBuf, const size_
 	size_t nBytesProcessed = 0;
 	while( ( dwAvailable - nBytesProcessed ) >= sizeof( packetType ) )
 	{
-		memcpy( packet.byteArray, lpBuf + nBytesProcessed, sizeof( packetType ) );
+		packet = *reinterpret_cast<const packetType *>( lpBuf + nBytesProcessed );
 		nBytesProcessed += sizeof( packetType );
 		if( isComSectionPacket( packet ) || isSyncPacket( packet ) )
 			continue;
@@ -338,10 +350,11 @@ bool serialByte<packetType>::synchronize ( const unsigned long msTimeOut )
 		msBitTimeOut = 10;
 	
 	resetWaitComSection();
-	CrossClass::_LockIt lockSyncPacket ( _mutexSyncPacket );
-	inversePredicate pred ( &_waitSyncPacket );
+	
+	CrossClass::_LockIt lockSyncPacket (_mutexSyncPacket);
+	inversePredicate pred (_waitSyncPacket);
 	_waitSyncPacket = true;
-	for( int i = 0; i < 15; ++i )
+	for (int i = 0; i < 15; ++i)
 	{
 		write( "U", 1 );
 		if( _notifySyncPacket.wait_for( lockSyncPacket, msBitTimeOut, pred ) )
