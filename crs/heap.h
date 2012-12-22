@@ -106,9 +106,6 @@ protected:
 	}
 	
 public:
-	template <class Tp>
-	friend std::ostream & operator << (std::ostream & os, const heap<Tp> & hp);
-	
 	heap () : _container (), _comp () {}
 	
 	void reserve ( const size_t sz )	{ _container.reserve (sz); }
