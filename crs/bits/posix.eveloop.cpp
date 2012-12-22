@@ -29,6 +29,7 @@
 #	include <sys/select.h>
 #endif
 #include <unistd.h>
+#include <fcntl.h>
 
 #include <cerrno>
 #include <cstdio>
@@ -39,6 +40,22 @@
 #include <crs/atomic_flag.h>
 
 namespace CrossClass {
+
+template <class ExceptionType, bool fromDestructor>
+void throw_exception (const char * place, const int errcode, const char * errtext)
+{
+#if defined (DESTRUCTORS_EXCEPTIONS_ALLOWED)
+	const bool can_throw = true;
+#else
+	const bool can_throw = !fromDestructor;
+#endif
+	if (can_throw)
+	{
+		char msgText [ 256 ];
+		sprintf (msgText, "%d: '%s' in %s", errcode, errtext, place);
+		throw ExceptionType (msgText);
+	}
+}
 
 struct poll_records
 {
@@ -57,6 +74,7 @@ struct poll_records
 	poll_records ( const size_t ExpectedNumberOfDescriptors )
 		: control_pipe ()
 		, control_buffer ()
+		, restart_flag ()
 #if defined (EPOLL_IO_MULTIPLEXING)
 		, epollfd (-1)
 		, prepare_list ()
@@ -66,14 +84,21 @@ struct poll_records
 		, events ()
 	{
 		/*
-		 * create an interprocess communication pipe for the read end
+		 * create an inter process communication pipe for the read end
 		 */
 		if (pipe (control_pipe) == -1)
-		{
-			char msgText [ 256 ];
-			sprintf (msgText, "%d: '%s' in pipe", errno, strerror (errno));
-			throw event_loop::errCreate (msgText);
-		}
+			throw_exception<event_loop::errCreate, false> ("pipe", errno, strerror (errno));
+		
+		/*
+		 * the read pipe end should be in non-blocked mode
+		 */
+		long flags = fcntl (control_pipe [ 0 ], F_GETFL);
+		if (flags == -1)
+			throw_exception<event_loop::errControl, false> ("F_GETFL for pipe", errno, strerror (errno));
+		
+		flags |= O_NONBLOCK;
+		if (fcntl (control_pipe [ 0 ], F_SETFL, flags) == -1)
+			throw_exception<event_loop::errControl, false> ("F_SETFL for pipe", errno, strerror (errno));
 		
 		/*
 		 * allocate memory for the descriptors lists
@@ -93,24 +118,11 @@ struct poll_records
 		/*
 		 * close termination pipe
 		 */
-		int errCode = close (control_pipe[ 1 ]);
-#if defined (DESTRUCTOR_EXCEPTIONS_ALLOWED)
-		if (errCode == -1)
-		{
-			char msgText [ 256 ];
-			sprintf (msgText, "%d: '%s' in close(1)", errno, strerror (errno));
-			throw event_loop::errClose (msgText);
-		}
-#endif
-		errCode = close (control_pipe[ 0 ]);
-#if defined (DESTRUCTOR_EXCEPTIONS_ALLOWED)
-		if (errCode == -1)
-		{
-			char msgText [ 256 ];
-			sprintf (msgText, "%d: '%s' in close(0)", errno, strerror (errno));
-			throw event_loop::errClose (msgText);
-		}
-#endif
+		if (close (control_pipe[ 1 ]) == -1)
+			throw_exception<event_loop::errClose, true> ("close(1)", errno, strerror (errno));
+		
+		if (close (control_pipe[ 0 ]) == -1)
+			throw_exception<event_loop::errClose, true> ("close(0)", errno, strerror (errno));
 	}
 	
 	bool check_terminate ()
@@ -123,41 +135,24 @@ struct poll_records
 			{
 				if (errno == EINTR)
 					continue;
-				else if (errno == EAGAIN)
+				else if ((errno == EAGAIN) || (errno == EWOULDBLOCK))
 					break;
 				else
-				{
-					char msgText [ 256 ];
-					sprintf (msgText, "%d: '%s' in read", errno, strerror (errno));
-					throw event_loop::errControl (msgText);
-				}
+					throw_exception<event_loop::errControl, false> ("read", errno, strerror (errno));
 			}
-			else if ((nBytesRead == 0) || (memchr (control_buffer, 'T', nBytesRead)))
+			else if ((nBytesRead == 0) || (memchr (control_buffer, 'T', nBytesRead) != 0))
 				return true;
-			else if (nBytesRead < nBufSize)
-				break;
 		}
 		return false;
 	}
 	
 	void pipe_out ( const char c )
 	{
-		for (ssize_t nBytesWritten = 0;;)
+		for (ssize_t nBytesWritten = 0; nBytesWritten != sizeof (char); )
 		{
-			nBytesWritten = write (control_pipe[ 1 ], &c, 1);
-			if (nBytesWritten == -1)
-			{
-				if (errno == EINTR)
-					continue;
-				else
-				{
-					char msgText [ 256 ];
-					sprintf (msgText, "%d: '%s' in write", errno, strerror (errno));
-					throw event_loop::errControl (msgText);
-				}
-			}
-			else if (nBytesWritten == 1)
-				break;
+			nBytesWritten = write (control_pipe[ 1 ], &c, sizeof (char));
+			if ((nBytesWritten == -1) && (errno != EINTR))
+				throw_exception<event_loop::errControl, false> ("pipe_out", errno, strerror (errno));
 		}
 	}
 };
@@ -186,24 +181,17 @@ event_loop::event_loop ( const size_t ExpectedNumberOfDescriptors )
 	 */
 	recs->epollfd = epoll_create (ExpectedNumberOfDescriptors + 1);
 	if (recs->epollfd == -1)
-	{
-		char msgText [ 256 ];
-		sprintf (msgText, "%d: '%s' in epoll_create", errno, strerror (errno));
-		throw errCreate (msgText);
-	}
+		throw_exception<errCreate, false> ("epoll_create", errno, strerror (errno));
 	
 	/*
 	 * add read pipe end descriptor into the epoll descriptors list
 	 */
 	epoll_event ev;
 	ev.events = EPOLLIN|EPOLLET;
+	ev.data.u64 = 0;
 	ev.data.fd = recs->control_pipe[ 0 ]; /* read end */
 	if (epoll_ctl (recs->epollfd, EPOLL_CTL_ADD, ev.data.fd, &ev) == -1)
-	{
-		char msgText [ 256 ];
-		sprintf (msgText, "%d: '%s' in EPOLL_CTL_ADD", errno, strerror (errno));
-		throw errControl (msgText);
-	}
+		throw_exception<errControl, false> ("EPOLL_CTL_ADD", errno, strerror (errno));
 	
 	/*
 	 * track the number of descriptors
@@ -223,16 +211,11 @@ event_loop::~event_loop ()
 	 * remove read pipe end from the epoll descriptors list
 	 */
 	epoll_event ev;
+	ev.data.u64 = 0;
 	ev.data.fd = recs->control_pipe[ 0 ];
 	errCode = epoll_ctl (recs->epollfd, EPOLL_CTL_DEL, ev.data.fd, &ev);
-#if defined (DESTRUCTOR_EXCEPTIONS_ALLOWED)
 	if (errCode == -1)
-	{
-		char msgText [ 256 ];
-		sprintf (msgText, "%d: '%s' in EPOLL_CTL_DEL(1)", errno, strerror (errno));
-		throw errControl (msgText);
-	}
-#endif
+		throw_exception<errControl, true> ("EPOLL_CTL_DEL(1)", errno, strerror (errno));
 #endif
 	
 	/*
@@ -244,16 +227,11 @@ event_loop::~event_loop ()
 		{
 #if defined (EPOLL_IO_MULTIPLEXING)
 			/* here we do trust on the previously allocated ev object */
+			ev.data.u64 = 0;
 			ev.data.fd = descriptors_list[ i ]->get_descriptor ();
 			errCode = epoll_ctl (recs->epollfd, EPOLL_CTL_DEL, ev.data.fd, &ev);
-#if defined (DESTRUCTOR_EXCEPTIONS_ALLOWED)
 			if (errCode == -1)
-			{
-				char msgText [ 256 ];
-				sprintf (msgText, "%d: '%s' in EPOLL_CTL_DEL(2)", errno, strerror (errno));
-				throw errControl (msgText);
-			}
-#endif
+				throw_exception<errControl, true> ("EPOLL_CTL_DEL(2)", errno, strerror (errno));
 #endif
 			if (descriptors_list[ i ]->auto_destroy ())
 				delete descriptors_list[ i ];
@@ -266,14 +244,8 @@ event_loop::~event_loop ()
 	 * close epoll file descriptor
 	 */
 	errCode = close (recs->epollfd);
-#if defined (DESTRUCTOR_EXCEPTIONS_ALLOWED)
 	if (errCode == -1)
-	{
-		char msgText [ 256 ];
-		sprintf (msgText, "%d: '%s' in close", errno, strerror (errno));
-		throw errClose (msgText);
-	}
-#endif
+		throw_exception<errClose, true> ("close", errno, strerror (errno));
 #endif
 	
 	/*
@@ -297,13 +269,8 @@ int event_loop::do_poll ( const int timeout )
 #endif
 		if (nfds == -1)
 		{
-			if (errno != EINTR)
-			{
-				/* any error but not the signal interrupt */
-				char msgText [ 256 ];
-				sprintf (msgText, "%d: '%s' in event_loop::do_poll", errno, strerror (errno));
-				throw errPoll (msgText);
-			}
+			if (errno != EINTR)/* any error but not the signal interrupt	*/
+				throw_exception<errPoll, false> ("event_loop::do_poll", errno, strerror (errno));
 		}
 		else
 			return nfds;	/* a value of 0 indicates that the call timed	*/
@@ -333,13 +300,10 @@ void event_loop::add_descriptor ( event_descriptor * d )
 	 */
 	epoll_event ev;
 	ev.events = EPOLLIN;
+	ev.data.u64 = 0;
 	ev.data.fd = d->get_descriptor ();
 	if (epoll_ctl (recs->epollfd, EPOLL_CTL_ADD, d->get_descriptor (), &ev) == -1)
-	{
-		char msgText [ 256 ];
-		sprintf (msgText, "%d: '%s' in EPOLL_CTL_ADD", errno, strerror (errno));
-		throw errControl (msgText);
-	}
+		throw_exception<errPoll, false> ("EPOLL_CTL_ADD", errno, strerror (errno));
 	
 	/*
 	 * track the number of descriptors
@@ -365,13 +329,10 @@ void event_loop::remove_descriptor ( event_descriptor * d )
 	 * remove descriptor from the epoll's internal list
 	 */
 	epoll_event ev;
+	ev.data.u64 = 0;
 	ev.data.fd = d->get_descriptor ();
 	if (epoll_ctl (recs->epollfd, EPOLL_CTL_DEL, ev.data.fd, &ev) == -1)
-	{
-		char msgText [ 256 ];
-		sprintf (msgText, "%d: '%s' in EPOLL_CTL_DEL(2)", errno, strerror (errno));
-		throw errControl (msgText);
-	}
+		throw_exception<errControl, false> ("EPOLL_CTL_DEL(2)", errno, strerror (errno));
 	
 	/*
 	 * remove descriptor from the prepare_list
@@ -412,16 +373,13 @@ void event_loop::prepare ()
 	epoll_event ev;
 	for (size_t i = 0; i < recs->prepare_list.size (); )
 	{
+		ev.data.u64 = 0;
 		ev.data.fd = recs->prepare_list[ i ]->get_descriptor ();
 		if (descriptors_list[ ev.data.fd ] == 0)
 		{
 			/* remove file descriptor from the epoll descriptors list */
 			if (epoll_ctl (recs->epollfd, EPOLL_CTL_DEL, ev.data.fd, &ev) == -1)
-			{
-				char msgText [ 256 ];
-				sprintf (msgText, "%d: '%s' in EPOLL_CTL_DEL", errno, strerror (errno));
-				throw errControl (msgText);
-			}
+				throw_exception<errControl, false> ("EPOLL_CTL_DEL", errno, strerror (errno));
 			
 			/* keep track the number of descriptors */
 			recs->events.pop_back ();
@@ -448,11 +406,7 @@ void event_loop::prepare ()
 			 * modify file descriptor in the epoll descriptors list
 			 */
 			if (epoll_ctl (recs->epollfd, EPOLL_CTL_MOD, ev.data.fd, &ev) == -1)
-			{
-				char msgText [ 256 ];
-				sprintf (msgText, "%d: '%s' in EPOLL_CTL_MOD", errno, strerror (errno));
-				throw errControl (msgText);
-			}
+				throw_exception<errControl, false> ("EPOLL_CTL_MOD", errno, strerror (errno));
 			
 			++i;
 		}
@@ -517,6 +471,7 @@ bool event_loop::handle_events ( const int nfds )
 	/*
 	 * check and process ready descriptors
 	 */
+	bool we_got_terminate_signal = false;
 	CrossClass::_LockIt descriptors_list_lock ( descriptors_list_mutex );
 #if defined (EPOLL_IO_MULTIPLEXING)
 	for (int n = 0; n < nfds; ++n)
@@ -530,13 +485,8 @@ bool event_loop::handle_events ( const int nfds )
 			{
 				if (recs->events[ n ].data.fd == recs->control_pipe[ 0 ])
 				{
-					if (recs->check_terminate ())
-					{
-						notify_terminate ();
-						return false;
-					}
-					else
-						continue;
+					we_got_terminate_signal = recs->check_terminate ();
+					continue;
 				}
 				else
 					descriptors_list[ recs->events[ n ].data.fd ]->handle_read ();
@@ -561,11 +511,7 @@ bool event_loop::handle_events ( const int nfds )
 	if (recs->events[ 0 ].revents & POLLIN)
 	{
 		--nfds_last;
-		if (recs->check_terminate ())
-		{
-			notify_terminate ();
-			return false;
-		}
+		we_got_terminate_signal = recs->check_terminate ();
 	}
 	
 	for (int n = 1; (n < recs->events.size ()) && (0 < nfds_last); ++n)
@@ -592,7 +538,13 @@ bool event_loop::handle_events ( const int nfds )
 	}
 #elif defined (SELECT_IO_MULTIPLEXING)
 #endif
-	return true;
+	if (we_got_terminate_signal)
+	{
+		notify_terminate ();
+		return false;
+	}
+	else
+		return true;
 }
 
 void event_loop::restart ( const bool fHardRestart )

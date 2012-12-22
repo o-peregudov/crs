@@ -59,4 +59,4 @@ namespace CrossClass
 	typedef cPosixConditionVariable	cConditionVariable;
 }
 #endif
-#endif // CROSS_CONDITION_VARIABLE_HPP_INCLUDED
+#endif /* CROSS_CONDITION_VARIABLE_HPP_INCLUDED	*/

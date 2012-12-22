@@ -22,6 +22,7 @@
 /*
  *	2012/08/19	event loop service class (a-la GMainLoop)
  *	2012/08/29	remove method for several descriptors
+ *	2012/09/21	template method for exception throw
  */
 
 #include <crs/condition_variable.hpp>

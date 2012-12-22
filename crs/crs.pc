@@ -1,0 +1,12 @@
+prefix=/usr/local
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: CRS
+Description: CROSS Platform Routines (Win32+POSIX)
+Version: 2.0.0
+Requires: gsl
+Libs:  -L${exec_prefix}/lib -lcrs
+Cflags:  -I${prefix}/include
+

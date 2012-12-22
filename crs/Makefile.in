@@ -108,10 +108,10 @@ am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(pkgconfigdir)" \
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libcrs_la_LIBADD =
 am__libcrs_la_SOURCES_DIST = crs-version.c CRCStuff.c cmdLine.cpp \
-	parsing.cpp security.cpp timer.cpp oio/FileVar.cpp \
-	oio/iniFile.cpp math/interpolation.cpp math/peakCenter.cpp \
-	math/stddev.c math/spectrum.cpp tcp_peer.cpp \
-	bits/basic.netpoint.cpp simplenetpoint.cpp \
+	parsing.cpp security.cpp timer.cpp bits/basic.ipchannel.cpp \
+	bits/basic.netpoint.cpp oio/FileVar.cpp oio/iniFile.cpp \
+	math/interpolation.cpp math/peakCenter.cpp math/stddev.c \
+	math/spectrum.cpp tcp_peer.cpp simplenetpoint.cpp \
 	sc/basic.rs232port.cpp ude/packets.cpp ude/net_peer.cpp \
 	ude/netpoint.cpp ude/server.cpp msdc/data_classes.cpp \
 	msdc/pools.cpp msdc/ring_pool.cpp msdc/composite_core.cpp \
@@ -134,11 +134,11 @@ am__libcrs_la_SOURCES_DIST = crs-version.c CRCStuff.c cmdLine.cpp \
 @USE_POSIX_API_TRUE@	posix.netpoint.lo posix.eveloop.lo \
 @USE_POSIX_API_TRUE@	posix.spinlock.lo posix.ipchannel.lo
 am_libcrs_la_OBJECTS = crs-version.lo CRCStuff.lo cmdLine.lo \
-	parsing.lo security.lo timer.lo FileVar.lo iniFile.lo \
-	interpolation.lo peakCenter.lo stddev.lo spectrum.lo \
-	tcp_peer.lo basic.netpoint.lo simplenetpoint.lo \
-	basic.rs232port.lo packets.lo net_peer.lo netpoint.lo \
-	server.lo data_classes.lo pools.lo ring_pool.lo \
+	parsing.lo security.lo timer.lo basic.ipchannel.lo \
+	basic.netpoint.lo FileVar.lo iniFile.lo interpolation.lo \
+	peakCenter.lo stddev.lo spectrum.lo tcp_peer.lo \
+	simplenetpoint.lo basic.rs232port.lo packets.lo net_peer.lo \
+	netpoint.lo server.lo data_classes.lo pools.lo ring_pool.lo \
 	composite_core.lo $(am__objects_1) $(am__objects_2) \
 	$(am__objects_3)
 libcrs_la_OBJECTS = $(am_libcrs_la_OBJECTS)
@@ -194,11 +194,11 @@ SOURCES = $(libcrs_la_SOURCES)
 DIST_SOURCES = $(am__libcrs_la_SOURCES_DIST)
 DATA = $(pkgconfig_DATA)
 am__pkginclude_bits_HEADERS_DIST = bits/basic.netpoint.h \
-	bits/hostsocket.hpp bits/win32.mutex.h bits/win32.thread.h \
-	bits/win32.cond.h bits/win32.semaphore.h bits/win32.spinlock.h \
-	bits/win32.timer.h bits/win32.netpoint.h resource.h \
-	bits/posix.mutex.h bits/posix.thread.h bits/posix.cond.h \
-	bits/posix.semaphore.h bits/posix.spinlock.h \
+	bits/hostsocket.hpp bits/basic.ipchannel.h bits/win32.mutex.h \
+	bits/win32.thread.h bits/win32.cond.h bits/win32.semaphore.h \
+	bits/win32.spinlock.h bits/win32.timer.h bits/win32.netpoint.h \
+	resource.h bits/posix.mutex.h bits/posix.thread.h \
+	bits/posix.cond.h bits/posix.semaphore.h bits/posix.spinlock.h \
 	bits/posix.timer.h bits/posix.netpoint.h \
 	bits/posix.ipchannel.h
 am__pkginclude_sc_HEADERS_DIST = sc/basic.rs232port.h sc/rs232port.h \
@@ -371,25 +371,26 @@ INCLUDES = -I$(top_srcdir)
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = $(top_builddir)/crs.pc
 libcrs_la_SOURCES = crs-version.c CRCStuff.c cmdLine.cpp parsing.cpp \
-	security.cpp timer.cpp oio/FileVar.cpp oio/iniFile.cpp \
+	security.cpp timer.cpp bits/basic.ipchannel.cpp \
+	bits/basic.netpoint.cpp oio/FileVar.cpp oio/iniFile.cpp \
 	math/interpolation.cpp math/peakCenter.cpp math/stddev.c \
-	math/spectrum.cpp tcp_peer.cpp bits/basic.netpoint.cpp \
-	simplenetpoint.cpp sc/basic.rs232port.cpp ude/packets.cpp \
-	ude/net_peer.cpp ude/netpoint.cpp ude/server.cpp \
-	msdc/data_classes.cpp msdc/pools.cpp msdc/ring_pool.cpp \
-	msdc/composite_core.cpp $(am__append_1) $(am__append_4) \
-	$(am__append_6)
+	math/spectrum.cpp tcp_peer.cpp simplenetpoint.cpp \
+	sc/basic.rs232port.cpp ude/packets.cpp ude/net_peer.cpp \
+	ude/netpoint.cpp ude/server.cpp msdc/data_classes.cpp \
+	msdc/pools.cpp msdc/ring_pool.cpp msdc/composite_core.cpp \
+	$(am__append_1) $(am__append_4) $(am__append_6)
 #	ude/client.cpp ude/pingtool.cpp
 libcrs_la_LDFLAGS = -no-undefined -version-info $(CRS_LT_VERSION)
 pkginclude_HEADERS = cmdLine.h mutex.h handle.h parsing.h security.h \
 	thread.h timer.h socket.h tcp_peer.h netpoint.h simplenetpoint.h main myexcept.h \
 	regions.h mtsqueue.h charprintbuf.h CRCStuff.h libexport.h defsys.h \
 	condition_variable.hpp semaphore.hpp callback.h crs-version.h eveloop.h \
-	atomic_flag.h spinlock.h
+	atomic_flag.h spinlock.h ipchannel.h heap.h
 
 pkginclude_bitsdir = $(pkgincludedir)/bits
 pkginclude_bits_HEADERS = bits/basic.netpoint.h bits/hostsocket.hpp \
-	$(am__append_2) $(am__append_5) $(am__append_7)
+	bits/basic.ipchannel.h $(am__append_2) $(am__append_5) \
+	$(am__append_7)
 pkginclude_scdir = $(pkgincludedir)/sc
 pkginclude_sc_HEADERS = sc/basic.rs232port.h sc/rs232port.h \
 	sc/serialbyte.h sc/i41serial.h sc/twelvebyte.h $(am__append_3) \
@@ -482,6 +483,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CRCStuff.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FileVar.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/basic.ipchannel.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/basic.netpoint.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/basic.rs232port.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cmdLine.Plo@am__quote@
@@ -578,6 +580,22 @@ stddev.lo: math/stddev.c
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LTCXXCOMPILE) -c -o $@ $<
 
+basic.ipchannel.lo: bits/basic.ipchannel.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT basic.ipchannel.lo -MD -MP -MF $(DEPDIR)/basic.ipchannel.Tpo -c -o basic.ipchannel.lo `test -f 'bits/basic.ipchannel.cpp' || echo '$(srcdir)/'`bits/basic.ipchannel.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/basic.ipchannel.Tpo $(DEPDIR)/basic.ipchannel.Plo
+@am__fastdepCXX_FALSE@	$(AM_V_CXX) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='bits/basic.ipchannel.cpp' object='basic.ipchannel.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o basic.ipchannel.lo `test -f 'bits/basic.ipchannel.cpp' || echo '$(srcdir)/'`bits/basic.ipchannel.cpp
+
+basic.netpoint.lo: bits/basic.netpoint.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT basic.netpoint.lo -MD -MP -MF $(DEPDIR)/basic.netpoint.Tpo -c -o basic.netpoint.lo `test -f 'bits/basic.netpoint.cpp' || echo '$(srcdir)/'`bits/basic.netpoint.cpp
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/basic.netpoint.Tpo $(DEPDIR)/basic.netpoint.Plo
+@am__fastdepCXX_FALSE@	$(AM_V_CXX) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='bits/basic.netpoint.cpp' object='basic.netpoint.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o basic.netpoint.lo `test -f 'bits/basic.netpoint.cpp' || echo '$(srcdir)/'`bits/basic.netpoint.cpp
+
 FileVar.lo: oio/FileVar.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT FileVar.lo -MD -MP -MF $(DEPDIR)/FileVar.Tpo -c -o FileVar.lo `test -f 'oio/FileVar.cpp' || echo '$(srcdir)/'`oio/FileVar.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/FileVar.Tpo $(DEPDIR)/FileVar.Plo
@@ -617,14 +635,6 @@ spectrum.lo: math/spectrum.cpp
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='math/spectrum.cpp' object='spectrum.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o spectrum.lo `test -f 'math/spectrum.cpp' || echo '$(srcdir)/'`math/spectrum.cpp
-
-basic.netpoint.lo: bits/basic.netpoint.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT basic.netpoint.lo -MD -MP -MF $(DEPDIR)/basic.netpoint.Tpo -c -o basic.netpoint.lo `test -f 'bits/basic.netpoint.cpp' || echo '$(srcdir)/'`bits/basic.netpoint.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/basic.netpoint.Tpo $(DEPDIR)/basic.netpoint.Plo
-@am__fastdepCXX_FALSE@	$(AM_V_CXX) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	source='bits/basic.netpoint.cpp' object='basic.netpoint.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o basic.netpoint.lo `test -f 'bits/basic.netpoint.cpp' || echo '$(srcdir)/'`bits/basic.netpoint.cpp
 
 basic.rs232port.lo: sc/basic.rs232port.cpp
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT basic.rs232port.lo -MD -MP -MF $(DEPDIR)/basic.rs232port.Tpo -c -o basic.rs232port.lo `test -f 'sc/basic.rs232port.cpp' || echo '$(srcdir)/'`sc/basic.rs232port.cpp

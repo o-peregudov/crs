@@ -7,9 +7,10 @@ pkgconfig_DATA= $(top_builddir)/crs.pc
 
 libcrs_la_SOURCES = crs-version.c \
 	CRCStuff.c cmdLine.cpp parsing.cpp security.cpp timer.cpp \
+	bits/basic.ipchannel.cpp bits/basic.netpoint.cpp \
 	oio/FileVar.cpp oio/iniFile.cpp \
 	math/interpolation.cpp math/peakCenter.cpp math/stddev.c math/spectrum.cpp \
-	tcp_peer.cpp bits/basic.netpoint.cpp simplenetpoint.cpp \
+	tcp_peer.cpp simplenetpoint.cpp \
 	sc/basic.rs232port.cpp \
 	ude/packets.cpp ude/net_peer.cpp ude/netpoint.cpp ude/server.cpp \
 	msdc/data_classes.cpp msdc/pools.cpp msdc/ring_pool.cpp msdc/composite_core.cpp
@@ -21,10 +22,10 @@ pkginclude_HEADERS = cmdLine.h mutex.h handle.h parsing.h security.h \
 	thread.h timer.h socket.h tcp_peer.h netpoint.h simplenetpoint.h main myexcept.h \
 	regions.h mtsqueue.h charprintbuf.h CRCStuff.h libexport.h defsys.h \
 	condition_variable.hpp semaphore.hpp callback.h crs-version.h eveloop.h \
-	atomic_flag.h spinlock.h
+	atomic_flag.h spinlock.h ipchannel.h heap.h
 
 pkginclude_bitsdir = $(pkgincludedir)/bits
-pkginclude_bits_HEADERS = bits/basic.netpoint.h bits/hostsocket.hpp
+pkginclude_bits_HEADERS = bits/basic.netpoint.h bits/hostsocket.hpp bits/basic.ipchannel.h
 
 pkginclude_scdir = $(pkgincludedir)/sc
 pkginclude_sc_HEADERS = sc/basic.rs232port.h sc/rs232port.h sc/serialbyte.h sc/i41serial.h sc/twelvebyte.h
