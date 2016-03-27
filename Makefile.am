@@ -1,4 +1,4 @@
 SUBDIRS = crs test
-INCLUDES = -I$(top_srcdir)
+AM_CPPFLAGS = -I$(top_srcdir)
 ACLOCAL_AMFLAGS = -I m4
 

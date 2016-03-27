@@ -2,7 +2,7 @@
 #define CROSS_WIN32_COND_H_INCLUDED 1
 /*
  *  crs/bits/win32.cond.h
- *  Copyright (c) 2010-2012 Oleg N. Peregudov <o.peregudov@gmail.com>
+ *  Copyright (c) 2010-2013 Oleg N. Peregudov <o.peregudov@gmail.com>
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -22,66 +22,72 @@
 /*
  *	2010/08/30	emulation of condition variable for Win32 API
  *			NOTE: functionality is not complete, because
- *				of absence of the notify_all () member and
- *				not fully atomic mutex lock/unlock
+ *			      of absence of the notify_all () member and
+ *			      not fully atomic mutex lock/unlock
  *	2012/08/19	follows to the general destructor exceptions macro
+ *	2013/03/02	new implementation which includes 'notify_all'
  */
 
 #include <crs/libexport.h>
 #include <crs/security.h>
+#include <crs/spinlock.h>
 #include <stdexcept>
 #include <cstdio>
 #include <ctime>
 
 namespace CrossClass
 {
-	class CROSS_EXPORT cWin32ConditionVariable
-	{
-		struct dummyPredicate
-		{
-			bool operator () ()
-			{
-				return false;
-			}
-		};
-		
-	protected:
-		HANDLE _event;
-		
-	public:
-		cWin32ConditionVariable ();
-		~cWin32ConditionVariable ();
-		
-		template <class Predicate>
-		bool wait_for ( _LockIt & lock, const unsigned long msTimeOut, Predicate pred )
-		{
-			lock.unlock ();
-			int waitRes = WaitForSingleObject (_event, msTimeOut);
-			lock.lock ();
-			switch (waitRes)
-			{
-			case	WAIT_OBJECT_0:	// wait successfull
-			case	WAIT_TIMEOUT:	// the time-out interval elapsed
-				break;
-			case	WAIT_FAILED:
-				{
-					char msgText [ 64 ];
-					sprintf (msgText, "WaitForSingleObject returned 0x%X", GetLastError ());
-					throw std::runtime_error (msgText);
-				}
-			}
-			return pred();
-		}
-		
-		void notify_one ()
-		{
-			SetEvent (_event);
-		}
-		
-		void wait ( _LockIt & lock )
-		{
-			wait_for (lock, INFINITE, dummyPredicate ());
-		}
-	};
-}	/* namespace CrossClass			*/
-#endif/* CROSS_WIN32_COND_H_INCLUDED	*/
+  class CROSS_EXPORT cWin32ConditionVariable
+  {
+    struct dummyPredicate
+    {
+      bool operator () ()
+      {
+	return false;
+      }
+    };
+    
+  protected:
+    HANDLE	_semaphore;
+    long	_num_waiters;
+    cSpinLock	_spinlock;
+    
+  public:
+    cWin32ConditionVariable ();
+    ~cWin32ConditionVariable ();
+    
+    template <class Predicate>
+      bool wait_for ( _LockIt & lock, const unsigned long msTimeOut, Predicate pred )
+      {
+	_spinlock.lock ();
+	++_num_waiters;
+	_spinlock.unlock ();
+	
+	lock.unlock ();
+	int waitRes = WaitForSingleObject (_semaphore, msTimeOut);
+	lock.lock ();
+	
+	_spinlock.lock ();
+	--num_waiters;
+	_spinlock.unlock ();
+	
+	if (waitRes == WAIT_FAILED)
+	  {
+	    char msgText [ 64 ];
+	    sprintf (msgText, "WaitForSingleObject returned 0x%X", GetLastError ());
+	    throw std::runtime_error (msgText);
+	  }
+	
+	return pred ();
+      }
+    
+    void notify_one ();
+    void notify_all ();
+    
+    void wait ( _LockIt & lock )
+    {
+      wait_for (lock, INFINITE, dummyPredicate ());
+    }
+  };
+}	/* namespace CrossClass		*/
+#endif	/* CROSS_WIN32_COND_H_INCLUDED	*/

@@ -21,121 +21,186 @@
 
 /*
  *	2012-12-22	added to library
+ *	2013/09/22	ver. 2.0.0 refactoring
  */
 
 #include <vector>
 #include <algorithm>
 
-namespace CrossClass {
-
-template <class Type, class Compare = std::less<Type> >
-class heap
+namespace CrossClass
 {
-protected:
-	std::vector<Type>	_container;
-	Compare		_comp;
-	
-	size_t num_nodes ( const size_t level ) const
-	{
-		return (1 << level);
-	}
-	
-	size_t level_index ( const size_t level ) const
-	{
-		return (num_nodes (level) - 1);
-	}
-	
-	size_t num_levels ( size_t num_items ) const
-	{
-		size_t result = 0;
-		while (num_items > 0)
-		{
-			++result;
-			if (num_items > 1)
-				num_items >>= 1;
-			else
-				break;
-		}
-		return result;
-	}
-	
-	size_t ancestor_index ( const size_t node_index ) const
-	{
-		if (node_index == 0)
-			return 0;
-		if (node_index & static_cast<const size_t> (1))
-			return (node_index >> 1);
-		else
-			return ((node_index - 1) >> 1);
-	}
-	
-	size_t descendant_index ( const size_t node_index ) const
-	{
-		return ((node_index << 1) + 1);
-	}
-	
-	size_t invariant ( size_t node_index )
-	{
-		size_t neighbour_index = ancestor_index (node_index);
-		while ((node_index > 0) && (_comp (_container [node_index], _container [neighbour_index])))
-		{
-			std::swap (_container [node_index], _container [neighbour_index]);
-			node_index = neighbour_index;
-			neighbour_index = ancestor_index (node_index);
-		}
-		
-		neighbour_index = descendant_index (node_index);
-		while (neighbour_index < _container.size ())
-		{
-			if ((neighbour_index + 1) < _container.size ())
-			{
-				if (_comp (_container [neighbour_index + 1], _container [neighbour_index]))
-					++neighbour_index;
-			}
-			if (_comp (_container [neighbour_index], _container [node_index]))
-			{
-				std::swap (_container [node_index], _container [neighbour_index]);
-				node_index = neighbour_index;
-				neighbour_index = descendant_index (node_index);
-			}
-			else
-				break;
-		}
-		
-		return node_index;
-	}
-	
-public:
-	heap () : _container (), _comp () {}
-	
-	void reserve ( const size_t sz )	{ _container.reserve (sz); }
-	
-	bool empty () const			{ return _container.empty (); }
-	size_t size () const			{ return _container.size (); }
-	size_t capacity () const		{ return _container.capacity (); }
-	
-	const Type & peek () const		{ return _container.front (); }
-	
-	Type get ()
-	{
-		Type r = peek ();
-		if (_container.size () == 1)
-			_container.pop_back ();
-		else
-		{
-			std::swap (_container.front (), _container.back ());
-			_container.pop_back ();
-			invariant (0);
-		}
-		return r;
-	}
-	
-	size_t insert ( const Type value )
-	{
-		_container.push_back (value);
-		return invariant (_container.size () - 1);
-	}
-};
+  template <class Type, class Comp>
+  class heap : protected std::vector<Type>
+  {
+  protected:
+    Comp _comp;
+    
+    size_t _ancestor_index (const size_t node_index) const;
+    size_t _descendant_index (const size_t node_index) const;
+    
+    size_t _bubleup_heap (size_t node_index);
+    void _bubledown_heap (size_t node_index, const size_t sz);
+    
+  public:
+    using std::vector<Type>::size;
+    using std::vector<Type>::empty;
+    using std::vector<Type>::clear;
+    using std::vector<Type>::reserve;
+    using std::vector<Type>::capacity;
+    
+    heap (const size_t sz = 0);
+    heap (const size_t sz, const Comp & cmp);
+    
+    size_t insert (const Type & val);
+    void remove (const size_t node_index);
+    
+    const Type & at (const size_t node_index) const;
+    const Type & peek () const;
+    Type get ();
+    
+    void swap (heap & h);
+  };
+  
+  /*
+   *
+   * members of class heap <>
+   *
+   */
+  template <class Type, class Comp>
+  heap<Type, Comp>::heap (const size_t sz)
+    : std::vector<Type> ()
+    , _comp ()
+  {
+    reserve (sz);
+  }
+  
+  template <class Type, class Comp>
+  heap<Type, Comp>::heap (const size_t sz, const Comp & cmp)
+    : std::vector<Type> ()
+    , _comp (cmp)
+  {
+    reserve (sz);
+  }
+  
+  template <class Type, class Comp>
+  size_t
+  heap<Type, Comp>::_ancestor_index (const size_t node_index) const
+  {
+    if (node_index == 0)
+      {
+	return 0;
+      }
+    
+    if (node_index & static_cast<const size_t> (1))
+      {
+	return (node_index >> 1);
+      }
+    
+    return ((node_index - 1) >> 1);
+  }
+  
+  template <class Type, class Comp>
+  size_t
+  heap<Type, Comp>::_descendant_index (const size_t node_index) const
+  {
+    return ((node_index << 1) + 1);
+  }
+  
+  template <class Type, class Comp>
+  size_t
+  heap<Type, Comp>::_bubleup_heap (size_t node_index)
+  {
+    size_t ancr_index = _ancestor_index (node_index);
+    while ((ancr_index < node_index) &&
+	   _comp ((*this)[node_index], (*this)[ancr_index]))
+      {
+	std::swap ((*this)[node_index], (*this)[ancr_index]);
+	node_index = ancr_index;
+	ancr_index = _ancestor_index (node_index);
+      }
+    return node_index;
+  }
 
+  template <class Type, class Comp>
+  void
+  heap<Type, Comp>::_bubledown_heap (size_t node_index, const size_t sz)
+  {
+    size_t desc_index = _descendant_index (node_index);
+    while (desc_index < sz)
+      {
+	if (((desc_index + 1) < sz) &&
+	    _comp ((*this)[desc_index + 1], (*this)[desc_index]))
+	  {
+	    ++desc_index;
+	  }
+	
+	if (_comp ((*this)[desc_index], (*this)[node_index]))
+	  {
+	    std::swap ((*this)[node_index], (*this)[desc_index]);
+	    node_index = desc_index;
+	    desc_index = _descendant_index (node_index);
+	  }
+	else
+	  {
+	    break;
+	  }
+      }
+  }
+  
+  template <class Type, class Comp>
+  size_t
+  heap<Type, Comp>::insert (const Type & val)
+  {
+    std::vector<Type>::push_back (val);
+    return _bubleup_heap (size () - 1);
+  }
+  
+  template <class Type, class Comp>
+  void
+  heap<Type, Comp>::remove (const size_t node_index)
+  {
+    if ((node_index < size ()) && (node_index != (size () - 1)))
+      {
+	std::swap ((*this)[node_index], (*this)[size () - 1]);
+	_bubleup_heap (node_index);
+	_bubledown_heap (node_index, size () - 1);
+      }
+    std::vector<Type>::pop_back ();
+  }
+  
+  template <class Type, class Comp>
+  const Type &
+  heap<Type, Comp>::peek () const
+  {
+    return std::vector<Type>::front ();
+  }
+  
+  template <class Type, class Comp>
+  Type
+  heap<Type, Comp>::get ()
+  {
+    Type r = peek ();
+    if (1 < size ())
+      {
+	std::swap ((*this)[0], (*this)[size () - 1]);
+	_bubledown_heap (0, size () - 1);
+      }
+    std::vector<Type>::pop_back ();
+    return r;
+  }
+  
+  template <class Type, class Comp>
+  const Type &
+  heap<Type, Comp>::at (const size_t node_index) const
+  {
+    return std::vector<Type>::operator [] (node_index);
+  }
+  
+  template <class Type, class Comp>
+  void
+  heap<Type, Comp>::swap (heap<Type, Comp> & h)
+  {
+    std::vector<Type>::swap (h);
+  }
 }	/* namespace CrossClass	*/
-#endif/* CROSS_HEAP_H		*/
+#endif	/* CROSS_HEAP_H		*/

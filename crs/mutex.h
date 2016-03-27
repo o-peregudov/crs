@@ -2,7 +2,7 @@
 #define CROSS_MUTEX_H_INCLUDED 1
 /*
  *  crs/mutex.h
- *  Copyright (c) 2008-2012 Oleg N. Peregudov <o.peregudov@gmail.com>
+ *  Copyright (c) 2008-2013 Oleg N. Peregudov <o.peregudov@gmail.com>
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -24,28 +24,70 @@
  *	2010/08/26	separate versions for each API
  *	2010/08/28	compartibility with std::mutex from C++0x standard
  *	2012/08/18	new host class selection
+ *	2013/09/21	ver. 2.0.0 refactoring
  */
 
 #include <crs/libexport.h>
 
 #if USE_CXX11_MUTEX
-#	include <mutex>
-namespace CrossClass
-{
-	typedef std::mutex	cMutex;
-}
-#elif USE_WIN32_API
-#	include <crs/bits/win32.mutex.h>
-namespace CrossClass
-{
-	typedef cWin32Mutex	cMutex;
-}
-#elif USE_POSIX_API
-#	include <crs/bits/posix.mutex.h>
-namespace CrossClass
-{
-	typedef cPosixMutex	cMutex;
-}
-#endif
+#  include <mutex>
+#  define LIBCRS_DEFINE_LOCKS 0
 
-#endif/* CROSS_MUTEX_H_INCLUDED	*/
+#elif PLATFORM_MINGW
+#  include <crs/bits/win32.mutex.h>
+#  define LIBCRS_DEFINE_LOCKS 1
+namespace std
+{
+  typedef CrossClass::cWin32Mutex mutex;
+}
+
+#else
+#  include <crs/bits/posix.mutex.h>
+#  define LIBCRS_DEFINE_LOCKS 1
+namespace std
+{
+  typedef CrossClass::cPosixMutex mutex;
+}
+#endif	/* USE_CXX11_MUTEX	*/
+
+#if LIBCRS_DEFINE_LOCKS
+namespace std
+{
+  struct defer_lock_t { };
+  struct adopt_lock_t { };
+  struct try_to_lock_t { };
+  
+  template <class Mutex>
+  class lock_guard
+  {
+    lock_guard (const lock_guard &);
+    lock_guard & operator = (const lock_guard &);
+    
+  public:
+    typedef Mutex mutex_type;
+    
+    lock_guard (mutex_type & m)
+      : pm (m)
+    {
+      pm.lock ();
+    }
+    
+    lock_guard (mutex_type & m, adopt_lock_t)
+      : pm (m)
+    {
+    }
+    
+    ~lock_guard ()
+    {
+      pm.unlock ();
+    }
+    
+  private:
+    mutex_type & pm;
+  };
+}	/* namespace std	*/
+
+#endif	/* LIBCRS_DEFINE_LOCKS	*/
+#undef LIBCRS_DEFINE_LOCKS
+
+#endif	/* CROSS_MUTEX_H_INCLUDED	*/

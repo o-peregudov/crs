@@ -1,6 +1,6 @@
 /*
  *  crs/bits/posix.mutex.cpp
- *  Copyright (c) 2008-2012 Oleg N. Peregudov <o.peregudov@gmail.com>
+ *  Copyright (c) 2008-2013 Oleg N. Peregudov <o.peregudov@gmail.com>
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -21,89 +21,131 @@
 #include <cstdio>
 #include <cerrno>
 
-namespace CrossClass {
-
-/*
- * members of class cPosixMutex
- */
-
-cPosixMutex::cPosixMutex ()
-	: _mutex( )
-	, _attr( )
+namespace CrossClass
 {
-	int errCode = pthread_mutexattr_init (&_attr);
-	if (errCode)
-	{
-		char msgText [ 64 ];
-		sprintf (msgText, "pthread_mutexattr_init returns 0x%X", errCode);
-		throw std::runtime_error (msgText);
-	}
-	
-	errCode = pthread_mutexattr_settype (&_attr, PTHREAD_MUTEX_NORMAL);
-	if (errCode)
-	{
-		char msgText [ 64 ];
-		sprintf (msgText, "pthread_mutexattr_settype returns 0x%X", errCode);
-		throw std::runtime_error (msgText);
-	}
-	
-	errCode = pthread_mutex_init (&_mutex, &_attr);
-	if (errCode)
-	{
-		char msgText [ 64 ];
-		sprintf (msgText, "pthread_mutex_init returns 0x%X", errCode);
-		throw std::runtime_error (msgText);
-	}
-}
-
-cPosixMutex::~cPosixMutex ()
-{
+  
+  /*
+   * members of class cPosixMutex
+   */
+  
+  cPosixMutex::cPosixMutex ()
+    : _mutex( )
+    , _attr( )
+  {
+    int errCode = pthread_mutexattr_init (&_attr);
+    if (errCode)
+      {
+	char msgText [ 64 ];
+	snprintf (msgText,
+		  sizeof (msgText) / sizeof (char),
+		  "pthread_mutexattr_init returns 0x%X",
+		  errCode);
+	throw std::runtime_error (msgText);
+      }
+    
+    errCode = pthread_mutexattr_settype (&_attr, PTHREAD_MUTEX_NORMAL);
+    if (errCode)
+      {
+	char msgText [ 64 ];
+	snprintf (msgText,
+		  sizeof (msgText) / sizeof (char),
+		  "pthread_mutexattr_settype returns 0x%X",
+		  errCode);
+	throw std::runtime_error (msgText);
+      }
+    
+    errCode = pthread_mutex_init (&_mutex, &_attr);
+    if (errCode)
+      {
+	char msgText [ 64 ];
+	snprintf (msgText,
+		  sizeof (msgText) / sizeof (char),
+		  "pthread_mutex_init returns 0x%X",
+		  errCode);
+	throw std::runtime_error (msgText);
+      }
+  }
+  
+  cPosixMutex::~cPosixMutex ()
+  {
+    try
+      {
 	int errCode = pthread_mutex_destroy (&_mutex);
-#if defined (DESTRUCTOR_EXCEPTIONS_ALLOWED)
 	if (errCode)
-	{
-		char msgText [ 64 ];
-		sprintf( msgText, "pthread_mutex_destroy returns 0x%X", errCode );
-		throw std::runtime_error( msgText );
-	}
-#endif
+	  {
+	    char msgText [ 64 ];
+	    snprintf (msgText,
+		      sizeof (msgText) / sizeof (char),
+		      "pthread_mutex_destroy returns 0x%X",
+		      errCode);
+	    throw std::runtime_error (msgText);
+	  }
 	
 	errCode = pthread_mutexattr_destroy (&_attr);
-#if defined (DESTRUCTOR_EXCEPTIONS_ALLOWED)
 	if (errCode)
-	{
-		char msgText [ 64 ];
-		sprintf( msgText, "pthread_mutexattr_destroy returns 0x%X", errCode );
-		throw std::runtime_error( msgText );
-	}
+	  {
+	    char msgText [ 64 ];
+	    snprintf (msgText,
+		      sizeof (msgText) / sizeof (char),
+		      "pthread_mutexattr_destroy returns 0x%X",
+		      errCode);
+	    throw std::runtime_error (msgText);
+	  }
+      }
+    catch (...)
+      {
+#if DESTRUCTOR_EXCEPTIONS_ALLOWED
+	throw;
 #endif
-}
-
-void cPosixMutex::lock ()
-{
-	int errCode = pthread_mutex_lock (&_mutex);
-	if (errCode)
-	{
-		char msgText [ 64 ];
-		sprintf (msgText, "pthread_mutex_lock returns 0x%X", errCode);
-		throw std::runtime_error (msgText);
-	}
-}
-
-bool cPosixMutex::try_lock ()
-{
-	return ( pthread_mutex_trylock (&_mutex) == 0 );
-}
-
-void cPosixMutex::unlock ()
-{
-	int errCode = pthread_mutex_unlock (&_mutex);
-	if (errCode)
-	{
-		char msgText [ 64 ];
-		sprintf (msgText, "pthread_mutex_unlock returns 0x%X", errCode);
-		throw std::runtime_error (msgText);
-	}
-}
-
+      }
+  }
+  
+  void cPosixMutex::lock ()
+  {
+    int errCode = pthread_mutex_lock (&_mutex);
+    if (errCode)
+      {
+	char msgText [ 64 ];
+	snprintf (msgText,
+		  sizeof (msgText) / sizeof (char),
+		  "pthread_mutex_lock returns 0x%X",
+		  errCode);
+	throw std::runtime_error (msgText);
+      }
+  }
+  
+  bool cPosixMutex::try_lock ()
+  {
+    int errCode = pthread_mutex_trylock (&_mutex);
+    if (errCode == 0)
+      {
+	return true;
+      }
+    else if ((errCode != EAGAIN) && (errCode != EBUSY))
+      {
+	char msgText [ 64 ];
+	snprintf (msgText,
+		  sizeof (msgText) / sizeof (char),
+		  "pthread_mutex_trylock returns 0x%X",
+		  errCode);
+	throw std::runtime_error (msgText);
+      }
+    
+    return false;
+  }
+  
+  void cPosixMutex::unlock ()
+  {
+    int errCode = pthread_mutex_unlock (&_mutex);
+    if (errCode)
+      {
+	char msgText [ 64 ];
+	snprintf (msgText,
+		  sizeof (msgText) / sizeof (char),
+		  "pthread_mutex_unlock returns 0x%X",
+		  errCode);
+	throw std::runtime_error (msgText);
+      }
+  }
+  
 } /* namespace CrossClass */

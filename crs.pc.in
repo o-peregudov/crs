@@ -4,7 +4,7 @@ libdir=@libdir@
 includedir=@includedir@
 
 Name: CRS
-Description: CROSS Platform Routines (Win32+POSIX)
+Description: CROSS Platform Routines & Algorithms
 Version: @VERSION@
 Requires: gsl
 Libs: @CRS_LIBS@

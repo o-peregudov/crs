@@ -2,7 +2,7 @@
 #define CROSS_WIN32_LOCK_H_INCLUDED 1
 /*
  *  crs/bits/win32.mutex.h
- *  Copyright (c) 2008-2012 Oleg N. Peregudov <o.peregudov@gmail.com>
+ *  Copyright (c) 2008-2013 Oleg N. Peregudov <o.peregudov@gmail.com>
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -25,6 +25,7 @@
  *	2010/09/18	uniform error handling
  *	2012/08/19	cWin32Mutex::native_handle method
  *			follows to the general destructor exceptions macro
+ *	2013/09/21	ver. 2.0.0 refactoring
  */
 
 #include <crs/libexport.h>
@@ -32,25 +33,25 @@
 
 namespace CrossClass
 {
-	class CROSS_EXPORT cWin32Mutex
-	{
-	protected:
-		HANDLE _mutex;
-	
-	public:
-		typedef HANDLE native_handle_type;
-		
-		cWin32Mutex ();
-		~cWin32Mutex ();
-		
-		void lock ();
-		bool try_lock ();
-		void unlock ();
-		
-		native_handle_type native_handle ()
-		{
-			return _mutex;
-		}
-	};
-}	/* namespace CrossClass			*/
-#endif/* CROSS_WIN32_LOCK_H_INCLUDED	*/
+  class CROSS_EXPORT cWin32Mutex
+  {
+  protected:
+    HANDLE _mutex;
+    
+  public:
+    typedef HANDLE native_handle_type;
+    
+    cWin32Mutex ();
+    ~cWin32Mutex ();
+    
+    void lock ();
+    bool try_lock ();
+    void unlock ();
+    
+    native_handle_type native_handle ()
+    {
+      return _mutex;
+    }
+  };
+}	/* namespace CrossClass		*/
+#endif	/* CROSS_WIN32_LOCK_H_INCLUDED	*/

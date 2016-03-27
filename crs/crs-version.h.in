@@ -1,5 +1,5 @@
 #ifndef CROSS_VERSION_H_INCLUDED
-#define CROSS_VERSION_H_INCLUDED
+#define CROSS_VERSION_H_INCLUDED 1
 
 #include <crs/defsys.h>
 
@@ -19,7 +19,7 @@
 
 __BEGIN_DECLS
 
-CROSS_VAR const char * cross_version;
+CROSS_EXPORT const char * cross_version;
 
 __END_DECLS
 

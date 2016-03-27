@@ -2,7 +2,7 @@
 #define CROSS_DEFSYS_H_INCLUDED 1
 /*
  *  crs/defsys.h
- *  Copyright (c) 2010-2012 Oleg N. Peregudov <o.peregudov@gmail.com>
+ *  Copyright (c) 2010-2013 Oleg N. Peregudov <o.peregudov@gmail.com>
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -30,114 +30,136 @@
  *	2012/08/14	C++11 <mutex>, <atomic>, <chrono>, <condition_variable>
  *	2012/08/19	winsock2 conditional define
  *	2012/09/17	GLIB 2.0 conditional define
+ *	2013/09/21	ver. 2.0.0 - refactoring
  */
 
-#define USE_WIN32_API @HAVE_WIN32_API@
-#define USE_POSIX_API @HAVE_POSIX_API@
-#define USE_WINSOCK2_API @USE_WINSOCK2_API@
+#define PLATFORM_LINUX @PLATFORM_LINUX@
+#define PLATFORM_MINGW @PLATFORM_MINGW@
+#define PLATFORM_CYGWIN @PLATFORM_CYGWIN@
+
+#define DEFINE_CROSS_EXPORT @DEFINE_CROSS_EXPORT@
+#if (DEFINE_CROSS_EXPORT)
+#  define CROSS_EXPORT
+#endif
+
+#if !defined (CROSS_EXPORT)
+#  if (PLATFORM_MINGW) && (WINDOWS_RESOURCE)
+#    if defined (DLL_EXPORT)
+#      	define CROSS_EXPORT extern __declspec(dllexport)
+#    else
+#       define CROSS_EXPORT extern __declspec(dllimport)
+#    endif
+#  else
+#    define CROSS_EXPORT extern
+#  endif
+#endif
 
 #define HAVE_STDINT_H @HAVE_STDINT_H@
 #define HAVE_INTTYPES_H @HAVE_INTTYPES_H@
 #define HAVE_SYS_TYPES_H @HAVE_SYS_TYPES_H@
+
+#define HAVE_TIME_H @HAVE_TIME_H@
+#define HAVE_SIGNAL_H @HAVE_SIGNAL_H@
+#define HAVE_PTHREAD_H @HAVE_PTHREAD_H@
+
 #define HAVE_LIBGSL @HAVE_LIBGSL@
-#define HAVE_GLIB_2_0 @HAVE_GLIB_2_0@
 
-#define DEFINE_CROSS_EXPORT @DEFINE_CROSS_EXPORT@
-#if DEFINE_CROSS_EXPORT
-#	define CROSS_EXPORT
+#define HAVE_POSIX_DLOPEN_API @HAVE_POSIX_DLOPEN_API@
+#define HAVE_POSIX_SYSLOG_API @HAVE_POSIX_SYSLOG_API@
+#define HAVE_POSIX_TIMER_API @HAVE_POSIX_TIMER_API@
+
+#define WINDOWS_RESOURCE @WINDOWS_RESOURCE@
+#define HAVE_WINSOCK2_API @HAVE_WINSOCK2_API@
+#define HAVE_WINDOWS_H @HAVE_WINDOWS_H@
+
+#if (PLATFORM_MINGW) || (PLATFORM_CYGWIN)
+#  if !defined (WINVER)
+/*
+ * Allow use of features specific to Windows Server 2003 or later
+ */
+#    define WINVER 0x0502
+#  endif
+#  if !defined (_WIN32_WINNT)
+/*
+ * Allow use of features specific to Windows Server 2003 or later
+ */
+#    define _WIN32_WINNT 0x0502
+#  endif
+#  if !defined (_WIN32_WINDOWS)
+/*
+ * Allow use of features specific to Windows 98 or later
+ */
+#    define _WIN32_WINDOWS 0x0410
+#  endif
+#  if !defined (_WIN32_IE)
+/*
+ * Allow use of features specific to IE 6.0 or later
+ */
+#    define _WIN32_IE 0x0600
+#  endif
+#  if (HAVE_WINSOCK2_API)
+#    include <winsock2.h>
+#  elif (HAVE_WINDOWS_H)
+#    include <windows.h>
+#  endif
 #endif
 
-#define CROSS_MAKE_DLL @CROSS_MAKE_DLL@
-#ifndef CROSS_VAR
-#	if CROSS_MAKE_DLL
-#		ifdef DLL_EXPORT
-#			define CROSS_VAR extern __declspec(dllexport)
-#		else
-#			define CROSS_VAR extern __declspec(dllimport)
-#		endif
-#	else
-#		define CROSS_VAR extern
-#	endif
+#if (HAVE_STDINT_H)
+#  include <stdint.h>
 #endif
 
-#if USE_WIN32_API
-#	ifndef WINVER
-#		define WINVER 0x0502		// Allow use of features specific to Windows Server 2003 or later.
-#	endif
-#	ifndef _WIN32_WINNT
-#		define _WIN32_WINNT 0x0502	// Allow use of features specific to Windows Server 2003 or later.
-#	endif
-#	ifndef _WIN32_WINDOWS
-#		define _WIN32_WINDOWS 0x0410	// Allow use of features specific to Windows 98 or later.
-#	endif
-#	ifndef _WIN32_IE
-#		define _WIN32_IE 0x0600		// Allow use of features specific to IE 6.0 or later.
-#	endif
+#if (HAVE_INTTYPES_H)
+#  include <inttypes.h>
 #endif
 
-#if USE_WINSOCK2_API
-#	include <winsock2.h>
-#elif USE_WIN32_API
-#	include <windows.h>
+#if (HAVE_SYS_TYPES_H)
+#  include <sys/types.h>
 #endif
 
-#if HAVE_STDINT_H
-#	include <stdint.h>
-#endif
-
-#if HAVE_INTTYPES_H
-#	include <inttypes.h>
-#endif
-
-#if HAVE_SYS_TYPES_H
-#	include <sys/types.h>
-#endif
-
-#if STDC_HEADERS
-#	include <stdlib.h>
-#	include <stddef.h>
+#if (STDC_HEADERS)
+#  include <stdlib.h>
+#  include <stddef.h>
 #endif
 
 #if defined (_MSC_VER)
-	typedef CHAR crs_int8_t;
-	typedef SHORT crs_int16_t;
-	typedef INT32 crs_int32_t;
-	typedef INT64 crs_int64_t;
-	
-	typedef BYTE crs_uint8_t;
-	typedef WORD crs_uint16_t;
-	typedef DWORD crs_uint32_t;
-	
-	typedef HANDLE crs_fd_t;
-	
-#	pragma warning (disable : 4251)
-#	pragma warning (disable : 4275)
-#	pragma warning (disable : 4996)
+typedef CHAR crs_int8_t;
+typedef SHORT crs_int16_t;
+typedef INT32 crs_int32_t;
+typedef INT64 crs_int64_t;
 
-#	define USE_WINSOCK2_API 1
-#	define USE_WIN32_API 1
-#	define USE_POSIX_API 0
-	
-#	define USE_CXX11_MUTEX 0
-#	define USE_CXX11_CHRONO 0
-#	define USE_CXX11_CONDITION_VARIABLE 0
-#	define USE_CXX11_ATOMIC 0
+typedef BYTE crs_uint8_t;
+typedef WORD crs_uint16_t;
+typedef DWORD crs_uint32_t;
+
+typedef HANDLE crs_fd_t;
+
+#pragma warning (disable : 4251)
+#pragma warning (disable : 4275)
+#pragma warning (disable : 4996)
+
+#define PLATFORM_MINGW 1
+#define USE_CXX11_MUTEX 0
+#define USE_CXX11_CHRONO 0
+#define USE_CXX11_CONDITION_VARIABLE 0
+#define USE_CXX11_ATOMIC 0
+
 #else
-	typedef @SIZE8@ crs_int8_t;
-	typedef @SIZE16@ crs_int16_t;
-	typedef @SIZE32@ crs_int32_t;
-	typedef @SIZE64@ crs_int64_t;
-	
-	typedef @USIZE8@ crs_uint8_t;
-	typedef @USIZE16@ crs_uint16_t;
-	typedef @USIZE32@ crs_uint32_t;
-	
-	typedef int crs_fd_t;
-	
-#	define USE_CXX11_MUTEX @USE_CXX11_MUTEX@
-#	define USE_CXX11_CHRONO @USE_CXX11_CHRONO@
-#	define USE_CXX11_CONDITION_VARIABLE @USE_CXX11_CONDITION_VARIABLE@
-#	define USE_CXX11_ATOMIC @USE_CXX11_ATOMIC@
+
+typedef @SIZE8@ crs_int8_t;
+typedef @SIZE16@ crs_int16_t;
+typedef @SIZE32@ crs_int32_t;
+typedef @SIZE64@ crs_int64_t;
+
+typedef @USIZE8@ crs_uint8_t;
+typedef @USIZE16@ crs_uint16_t;
+typedef @USIZE32@ crs_uint32_t;
+
+typedef int crs_fd_t;
+
+#define USE_CXX11_MUTEX @USE_CXX11_MUTEX@
+#define USE_CXX11_CHRONO @USE_CXX11_CHRONO@
+#define USE_CXX11_CONDITION_VARIABLE @USE_CXX11_CONDITION_VARIABLE@
+#define USE_CXX11_ATOMIC @USE_CXX11_ATOMIC@
 #endif
 
-#endif /* CROSS_DEFSYS_H_INCLUDED */
+#endif	/* CROSS_DEFSYS_H_INCLUDED	*/

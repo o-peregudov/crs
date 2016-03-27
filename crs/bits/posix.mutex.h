@@ -2,7 +2,7 @@
 #define CROSS_POSIX_MUTEX_H_INCLUDED 1
 /*
  *  crs/bits/posix.mutex.h
- *  Copyright (c) 2008-2012 Oleg N. Peregudov <o.peregudov@gmail.com>
+ *  Copyright (c) 2008-2013 Oleg N. Peregudov <o.peregudov@gmail.com>
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -23,6 +23,7 @@
  *	2008/01/22	wrapper for POSIX mutex
  *	2010/08/30	compartibility with std::mutex from C++0x standard
  *	2012/08/16	fixed cPosixMutex::native_handle_type
+ *	2013/09/21	ver. 2.0.0 refactoring
  */
 
 #include <crs/libexport.h>
@@ -31,26 +32,26 @@
 
 namespace CrossClass
 {
-	class CROSS_EXPORT cPosixMutex
-	{
-	protected:
-		pthread_mutex_t _mutex;
-		pthread_mutexattr_t _attr;
-		
-	public:
-		typedef pthread_mutex_t * native_handle_type;
-		
-		cPosixMutex ();
-		~cPosixMutex ();
-		
-		void lock ();
-		bool try_lock ();
-		void unlock ();
-		
-		native_handle_type native_handle ()
-		{
-			return &_mutex;
-		}
-	};
+  class CROSS_EXPORT cPosixMutex
+  {
+  protected:
+    pthread_mutex_t _mutex;
+    pthread_mutexattr_t _attr;
+    
+  public:
+    typedef pthread_mutex_t * native_handle_type;
+    
+    cPosixMutex ();
+    ~cPosixMutex ();
+    
+    void lock ();
+    bool try_lock ();
+    void unlock ();
+    
+    native_handle_type native_handle ()
+    {
+      return &_mutex;
+    }
+  };
 }	/* namespace CrossClass			*/
-#endif/* CROSS_POSIX_MUTEX_H_INCLUDED	*/
+#endif	/* CROSS_POSIX_MUTEX_H_INCLUDED		*/
