@@ -505,14 +505,6 @@ AM_CPPFLAGS = -I$(top_builddir) -I$(top_srcdir)
 lib_LTLIBRARIES = libcrs.la
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = $(top_builddir)/crs.pc
-
-# if CODE_COVERAGE_ENABLED
-#   AM_CPPFLAGS += $(CODE_COVERAGE_CPPFLAGS)
-
-#   AM_LDFLAGS = $(CODE_COVERAGE_LDFLAGS)
-#   AM_CXXFLAGS = $(CODE_COVERAGE_CFLAGS)
-#   AM_CFLAGS = $(CODE_COVERAGE_CFLAGS)
-# endif
 libcrs_la_LDFLAGS = -no-undefined -version-info $(CRS_LT_VERSION)
 libcrs_la_SOURCES = crs-version.c CRCStuff.c disjoint_set.cpp \
 	$(am__append_1) $(am__append_3) $(am__append_5) \
@@ -1176,10 +1168,10 @@ uninstall-am: uninstall-libLTLIBRARIES uninstall-pkgconfigDATA \
 #pkginclude_sc_HEADERS +=	\
 #	sc/posix.rs232port.h
 
+@CODE_COVERAGE_RULES@
+
 .rc.lo: 
 	$(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --tag=RC --mode=compile $(RC) $(RCFLAGS) $< -o $@
-
-@CODE_COVERAGE_RULES@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

@@ -1,3 +1,6 @@
+#if defined (NDEBUG)
+#  undef NDEBUG
+#endif
 #include <crs/heap.h>
 #include <cassert>
 #include <cstdlib>
@@ -15,11 +18,6 @@ int main (int argc, char * argv [])
 {
   const size_t nPoints = 10000;
   CrossClass::heap<int, int_compare> heap (nPoints);
-  
-  if (1 < argc)
-    {
-      srand (atoi (argv[1]));
-    }
   
   /*
    * heap sort

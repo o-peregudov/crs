@@ -1,3 +1,6 @@
+#if defined (NDEBUG)
+#  undef NDEBUG
+#endif
 #include <iostream>
 #include <crs/interval_map.h>
 #include <cassert>

@@ -1050,14 +1050,6 @@ uninstall-am:
 .PRECIOUS: Makefile
 
 
-# if CODE_COVERAGE_ENABLED
-#   AM_CPPFLAGS += $(CODE_COVERAGE_CPPFLAGS)
-#   LDADD += $(CODE_COVERAGE_LDFLAGS)
-
-#   AM_CFLAGS = $(CODE_COVERAGE_CFLAGS)
-#   AM_CXXFLAGS = $(CODE_COVERAGE_CFLAGS)
-# endif
-
 #handle_SOURCES = handle.cpp
 #condition_SOURCES = condition.cpp
 #server_SOURCES = server.cpp
@@ -1072,10 +1064,10 @@ uninstall-am:
 #i41_loop_SOURCES += loop.rc
 #endif
 
+@CODE_COVERAGE_RULES@
+
 .rc.lo: 
 	$(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --tag=RC --mode=compile $(RC) $(RCFLAGS) $< -o $@
-
-@CODE_COVERAGE_RULES@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
