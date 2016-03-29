@@ -318,13 +318,13 @@ case "$host_os" in
     AC_CACHE_CHECK(for winsock2, ac_cv_winsock2_works,
       AC_LINK_IFELSE([AC_LANG_SOURCE([[
         #include <winsock2.h>
-      	int main (int argc, char * argv [])
-      	{
-	  socket (0, 0, 0);
-	  select (0, NULL, NULL, NULL, NULL);
-	  closesocket (0);
-	  gethostname (NULL, 0);
-	  return 0;
+        int main (int argc, char ** argv)
+        {
+          socket (0, 0, 0);
+          select (0, NULL, NULL, NULL, NULL);
+          closesocket (0);
+          gethostname (NULL, 0);
+          return 0;
         }
       ]])],[ac_cv_winsock2_works=yes],[ac_cv_winsock2_works=no]))
     LIBS="$save_LIBS"
@@ -375,7 +375,7 @@ if (test x$ac_cv_header_signal_h = xyes) && (test x$ac_cv_header_time_h = xyes);
     AC_LINK_IFELSE([AC_LANG_SOURCE([[
       #include <signal.h>
       #include <time.h>
-      int main (int argc, char * argv [])
+      int main (int argc, char ** argv)
       {
         timer_t tid;
       	struct itimerspec its;
@@ -411,7 +411,7 @@ if test x$ac_cv_header_syslog_h = xyes; then
   AC_CACHE_CHECK(for POSIX syslog API, ac_cv_posix_syslog_works,
     AC_LINK_IFELSE([AC_LANG_SOURCE([[
       #include <syslog.h>
-      int main (int argc, char * argv [])
+      int main (int argc, char ** argv)
       {
         openlog (0, LOG_NDELAY, LOG_USER);
 	syslog (LOG_ERR, "error message");
@@ -465,7 +465,7 @@ if (test $PLATFORM_LINUX = 1) && (test x$disable_epoll = xno); then
       AC_RUN_IFELSE([AC_LANG_SOURCE([[
         #include <sys/epoll.h>
 	#include <unistd.h>
-	int main(int argc, char * argv [])
+	int main(int argc, char ** argv)
 	{
 	  int fd = epoll_create (256);
 	  if (fd < 0)
@@ -503,7 +503,7 @@ if (test $PLATFORM_LINUX = 1) || (test $PLATFORM_CYGWIN = 1); then
     AC_CACHE_CHECK(if poll works, ac_cv_poll_works,
       AC_RUN_IFELSE([AC_LANG_SOURCE([[
         #include <poll.h>
-	int main(int argc, char * argv [])
+	int main(int argc, char ** argv)
 	{
 	  return poll (0, 0, 1);
 	}
@@ -538,7 +538,7 @@ if (test $PLATFORM_LINUX = 1) || (test $PLATFORM_CYGWIN = 1); then
 	#include <sys/time.h>
 	#include <sys/types.h>
 	#include <unistd.h>
-	int main(int argc, char * argv [])
+	int main(int argc, char ** argv)
 	{
 	  struct timeval tv;
 	  tv.tv_sec = 0;
@@ -569,6 +569,27 @@ fi
 AC_DEFINE_UNQUOTED(SELECT_TYPE, "$SELECT_TYPE", [Define to inform about available I/O multiplexing method])
 
 dnl
+dnl auto-detect and verify <atomic> header present and really works
+dnl
+AC_LANG_PUSH([C++])
+AC_CACHE_CHECK(whether <atomic> is usable, ac_cv_std_atomic_works,
+  AC_RUN_IFELSE([AC_LANG_SOURCE([[
+    #include <atomic>
+    int main (int argc, char ** argv)
+    {
+      std::atomic<bool> flag_bool (false);
+      return (flag_bool.is_lock_free () ? 0 : 1);
+    }
+  ]])],[ac_cv_std_atomic_works=yes],[ac_cv_std_atomic_works=no],[:]))
+AC_LANG_POP([C++])
+if test x$ac_cv_std_atomic_works = xyes ; then
+  USE_CXX11_ATOMIC=1
+else
+  USE_CXX11_ATOMIC=0
+fi
+AC_SUBST(USE_CXX11_ATOMIC)
+
+dnl
 dnl Enable STL's <chrono>
 dnl
 AC_ARG_ENABLE(chrono, AS_HELP_STRING([--disable-chrono], [Disable C++11 <chrono> support]),
@@ -593,7 +614,7 @@ if test x$disable_chrono = xno ; then
   AC_CACHE_CHECK(whether <chrono> is usable, ac_cv_std_chrono_works,
     AC_LINK_IFELSE([AC_LANG_SOURCE([[
       #include <chrono>
-      int main (int argc, char * argv [])
+      int main (int argc, char ** argv)
       {
         std::chrono::time_point<std::chrono::high_resolution_clock> startTime = std::chrono::high_resolution_clock::now ();
         std::chrono::high_resolution_clock::duration usExeTime = std::chrono::high_resolution_clock::now () - startTime;
@@ -614,7 +635,7 @@ AC_LANG_PUSH([C++])
 AC_CACHE_CHECK(whether <mutex> is usable, ac_cv_std_mutex_works,
   AC_RUN_IFELSE([AC_LANG_SOURCE([[
     #include <mutex>
-    int main (int argc, char * argv [])
+    int main (int argc, char ** argv)
     {
       std::mutex mutex;
       std::unique_lock<std::mutex> lock (mutex);
@@ -633,15 +654,13 @@ if test x$ac_cv_std_mutex_works = xyes ; then
     AC_RUN_IFELSE([AC_LANG_SOURCE([[
       #include <mutex>
       #include <condition_variable>
-      int main (int argc, char * argv [])
+      int main (int argc, char ** argv)
       {
         std::mutex mutex;
-	std::condition_variable condition;
-	bool flag = false;
-	std::unique_lock<std::mutex> lock (mutex);
-	flag = true;
-	condition.notify_one ();
-	return 0;
+        std::condition_variable condition;
+        std::unique_lock<std::mutex> lock (mutex);
+        condition.notify_one ();
+        return 0;
       }
     ]])],[ac_cv_std_condition_variable_works=yes],[ac_cv_std_condition_variable_works=no],[:]))
   AC_LANG_POP([C++])
@@ -656,27 +675,6 @@ else
 fi
 AC_SUBST(USE_CXX11_MUTEX)
 AC_SUBST(USE_CXX11_CONDITION_VARIABLE)
-
-dnl
-dnl auto-detect and verify <atomic> header present and really works
-dnl
-AC_LANG_PUSH([C++])
-AC_CACHE_CHECK(whether <atomic> is usable, ac_cv_std_atomic_works,
-  AC_RUN_IFELSE([AC_LANG_SOURCE([[
-    #include <atomic>
-    int main (int argc, char * argv [])
-    {
-      std::atomic<bool> flag_bool (false);
-      return (flag_bool.is_lock_free () ? 0 : 1);
-    }
-  ]])],[ac_cv_std_atomic_works=yes],[ac_cv_std_atomic_works=no],[:]))
-AC_LANG_POP([C++])
-if test x$ac_cv_std_atomic_works = xyes ; then
-  USE_CXX11_ATOMIC=1
-else
-  USE_CXX11_ATOMIC=0
-fi
-AC_SUBST(USE_CXX11_ATOMIC)
 
 dnl
 dnl libcrs flags

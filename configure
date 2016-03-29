@@ -655,10 +655,10 @@ CODE_COVERAGE_ENABLED_TRUE
 CRS_LIBS
 CRS_CXXFLAGS
 CRS_CFLAGS
-USE_CXX11_ATOMIC
 USE_CXX11_CONDITION_VARIABLE
 USE_CXX11_MUTEX
 USE_CXX11_CHRONO
+USE_CXX11_ATOMIC
 HAVE_POSIX_SYSLOG_API
 USE_POSIX_TIMER_API_FALSE
 USE_POSIX_TIMER_API_TRUE
@@ -20099,13 +20099,13 @@ else
 /* end confdefs.h.  */
 
         #include <winsock2.h>
-      	int main (int argc, char * argv )
-      	{
-	  socket (0, 0, 0);
-	  select (0, NULL, NULL, NULL, NULL);
-	  closesocket (0);
-	  gethostname (NULL, 0);
-	  return 0;
+        int main (int argc, char ** argv)
+        {
+          socket (0, 0, 0);
+          select (0, NULL, NULL, NULL, NULL);
+          closesocket (0);
+          gethostname (NULL, 0);
+          return 0;
         }
 
 _ACEOF
@@ -20466,7 +20466,7 @@ else
 
       #include <signal.h>
       #include <time.h>
-      int main (int argc, char * argv )
+      int main (int argc, char ** argv)
       {
         timer_t tid;
       	struct itimerspec its;
@@ -20531,7 +20531,7 @@ else
 /* end confdefs.h.  */
 
       #include <syslog.h>
-      int main (int argc, char * argv )
+      int main (int argc, char ** argv)
       {
         openlog (0, LOG_NDELAY, LOG_USER);
 	syslog (LOG_ERR, "error message");
@@ -20622,7 +20622,7 @@ else
 
         #include <sys/epoll.h>
 	#include <unistd.h>
-	int main(int argc, char * argv )
+	int main(int argc, char ** argv)
 	{
 	  int fd = epoll_create (256);
 	  if (fd < 0)
@@ -20694,7 +20694,7 @@ else
 /* end confdefs.h.  */
 
         #include <poll.h>
-	int main(int argc, char * argv )
+	int main(int argc, char ** argv)
 	{
 	  return poll (0, 0, 1);
 	}
@@ -20764,7 +20764,7 @@ else
 	#include <sys/time.h>
 	#include <sys/types.h>
 	#include <unistd.h>
-	int main(int argc, char * argv )
+	int main(int argc, char ** argv)
 	{
 	  struct timeval tv;
 	  tv.tv_sec = 0;
@@ -20819,79 +20819,15 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
-# Check whether --enable-chrono was given.
-if test "${enable_chrono+set}" = set; then :
-  enableval=$enable_chrono;
-  case "$enableval" in
-    yes)
-      disable_chrono=no
-      ;;
-    no)
-      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Forcing C++11 <chrono> to be disabled" >&5
-$as_echo "$as_me: WARNING: Forcing C++11 <chrono> to be disabled" >&2;}
-      disable_chrono=yes
-      ;;
-  esac
-
-fi
-
-
-USE_CXX11_CHRONO=0
-if test x$disable_chrono = xno ; then
-        ac_ext=cpp
-ac_cpp='$CXXCPP $CPPFLAGS'
-ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether <chrono> is usable" >&5
-$as_echo_n "checking whether <chrono> is usable... " >&6; }
-if ${ac_cv_std_chrono_works+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-      #include <chrono>
-      int main (int argc, char * argv )
-      {
-        std::chrono::time_point<std::chrono::high_resolution_clock> startTime = std::chrono::high_resolution_clock::now ();
-        std::chrono::high_resolution_clock::duration usExeTime = std::chrono::high_resolution_clock::now () - startTime;
-        return 0;
-      }
-
-_ACEOF
-if ac_fn_cxx_try_link "$LINENO"; then :
-  ac_cv_std_chrono_works=yes
-else
-  ac_cv_std_chrono_works=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_std_chrono_works" >&5
-$as_echo "$ac_cv_std_chrono_works" >&6; }
-  ac_ext=c
-ac_cpp='$CPP $CPPFLAGS'
-ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
-  if test x$ac_cv_std_chrono_works = xyes ; then
-    USE_CXX11_CHRONO=1
-  fi
-fi
-
-
 ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
 ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether <mutex> is usable" >&5
-$as_echo_n "checking whether <mutex> is usable... " >&6; }
-if ${ac_cv_std_mutex_works+:} false; then :
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether <atomic> is usable" >&5
+$as_echo_n "checking whether <atomic> is usable... " >&6; }
+if ${ac_cv_std_atomic_works+:} false; then :
   $as_echo_n "(cached) " >&6
 else
   if test "$cross_compiling" = yes; then :
@@ -20942,8 +20878,122 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
+    #include <atomic>
+    int main (int argc, char ** argv)
+    {
+      std::atomic<bool> flag_bool (false);
+      return (flag_bool.is_lock_free () ? 0 : 1);
+    }
+
+_ACEOF
+if ac_fn_cxx_try_run "$LINENO"; then :
+  ac_cv_std_atomic_works=yes
+else
+  ac_cv_std_atomic_works=no
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_std_atomic_works" >&5
+$as_echo "$ac_cv_std_atomic_works" >&6; }
+ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+if test x$ac_cv_std_atomic_works = xyes ; then
+  USE_CXX11_ATOMIC=1
+else
+  USE_CXX11_ATOMIC=0
+fi
+
+
+# Check whether --enable-chrono was given.
+if test "${enable_chrono+set}" = set; then :
+  enableval=$enable_chrono;
+  case "$enableval" in
+    yes)
+      disable_chrono=no
+      ;;
+    no)
+      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Forcing C++11 <chrono> to be disabled" >&5
+$as_echo "$as_me: WARNING: Forcing C++11 <chrono> to be disabled" >&2;}
+      disable_chrono=yes
+      ;;
+  esac
+
+fi
+
+
+USE_CXX11_CHRONO=0
+if test x$disable_chrono = xno ; then
+        ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether <chrono> is usable" >&5
+$as_echo_n "checking whether <chrono> is usable... " >&6; }
+if ${ac_cv_std_chrono_works+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+      #include <chrono>
+      int main (int argc, char ** argv)
+      {
+        std::chrono::time_point<std::chrono::high_resolution_clock> startTime = std::chrono::high_resolution_clock::now ();
+        std::chrono::high_resolution_clock::duration usExeTime = std::chrono::high_resolution_clock::now () - startTime;
+        return 0;
+      }
+
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  ac_cv_std_chrono_works=yes
+else
+  ac_cv_std_chrono_works=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_std_chrono_works" >&5
+$as_echo "$ac_cv_std_chrono_works" >&6; }
+  ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+  if test x$ac_cv_std_chrono_works = xyes ; then
+    USE_CXX11_CHRONO=1
+  fi
+fi
+
+
+ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether <mutex> is usable" >&5
+$as_echo_n "checking whether <mutex> is usable... " >&6; }
+if ${ac_cv_std_mutex_works+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test "$cross_compiling" = yes; then :
+  :
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
     #include <mutex>
-    int main (int argc, char * argv )
+    int main (int argc, char ** argv)
     {
       std::mutex mutex;
       std::unique_lock<std::mutex> lock (mutex);
@@ -20991,15 +21041,13 @@ else
 
       #include <mutex>
       #include <condition_variable>
-      int main (int argc, char * argv )
+      int main (int argc, char ** argv)
       {
         std::mutex mutex;
-	std::condition_variable condition;
-	bool flag = false;
-	std::unique_lock<std::mutex> lock (mutex);
-	flag = true;
-	condition.notify_one ();
-	return 0;
+        std::condition_variable condition;
+        std::unique_lock<std::mutex> lock (mutex);
+        condition.notify_one ();
+        return 0;
       }
 
 _ACEOF
@@ -21031,56 +21079,6 @@ else
   USE_CXX11_CONDITION_VARIABLE=0
 fi
 
-
-
-ac_ext=cpp
-ac_cpp='$CXXCPP $CPPFLAGS'
-ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether <atomic> is usable" >&5
-$as_echo_n "checking whether <atomic> is usable... " >&6; }
-if ${ac_cv_std_atomic_works+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test "$cross_compiling" = yes; then :
-  :
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-    #include <atomic>
-    int main (int argc, char * argv )
-    {
-      std::atomic<bool> flag_bool (false);
-      return (flag_bool.is_lock_free () ? 0 : 1);
-    }
-
-_ACEOF
-if ac_fn_cxx_try_run "$LINENO"; then :
-  ac_cv_std_atomic_works=yes
-else
-  ac_cv_std_atomic_works=no
-fi
-rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
-  conftest.$ac_objext conftest.beam conftest.$ac_ext
-fi
-
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_std_atomic_works" >&5
-$as_echo "$ac_cv_std_atomic_works" >&6; }
-ac_ext=c
-ac_cpp='$CPP $CPPFLAGS'
-ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
-if test x$ac_cv_std_atomic_works = xyes ; then
-  USE_CXX11_ATOMIC=1
-else
-  USE_CXX11_ATOMIC=0
-fi
 
 
 CRS_CFLAGS="$CRS_CFLAGS -I$includedir"
