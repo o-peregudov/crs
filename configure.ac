@@ -75,6 +75,17 @@ AC_PROG_INSTALL
 
 LT_INIT([dlopen])
 
+dnl
+dnl gcov/lcov stuff
+dnl
+AX_CODE_COVERAGE
+if test $CODE_COVERAGE_ENABLED = yes; then
+  CFLAGS="$CODE_COVERAGE_CFLAGS"
+  CXXFLAGS="$CODE_COVERAGE_CFLAGS"
+  CPPFLAGS="$CODE_COVERAGE_CPPFLAGS"
+  LIBS="$CODE_COVERAGE_LDFLAGS"
+fi
+
 dnl ------------------------------------------------------------
 dnl
 dnl Check for host platform
@@ -111,7 +122,7 @@ dnl check if compiler can be pedantic
 dnl
 AC_MSG_CHECKING([if $CXX supports -pedantic])
 ac_pedantic_supported=no
-save_CXXFLAGS=$CXXFLAGS
+save_CXXFLAGS="$CXXFLAGS"
 CXXFLAGS="$CXXFLAGS -pedantic"
 AC_LANG_PUSH([C++])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
@@ -157,22 +168,9 @@ AC_SUBST(HAVE_CXX14)
 AC_SUBST(HAVE_CXX11)
 
 dnl
-dnl Whether we need to build only static library
+dnl We need special define to build static library only
 dnl
-LIBCRS_DISABLE_SHARED=no
-AC_ARG_ENABLE(shared, AS_HELP_STRING([--disable-shared], [by default libcrs is compiled as a shared library, but this flag disables the behavior]), [
-  case "${enableval}" in
-    yes)
-      ;;
-    no)
-      LIBCRS_DISABLE_SHARED=yes
-      ;;
-    *)
-      AC_MSG_ERROR(bad value ${enableval} for --disable-shared)
-      ;;
-  esac
-])
-if test x$LIBCRS_DISABLE_SHARED = xyes; then
+if test "$enable_shared" = "yes"; then
   DEFINE_CROSS_EXPORT=0
 else
   DEFINE_CROSS_EXPORT=1
@@ -182,7 +180,7 @@ AC_SUBST(DEFINE_CROSS_EXPORT)
 dnl
 dnl Check whether we have to compile Windows' resource file
 dnl
-if ((test $PLATFORM_MINGW = 1) || (test $PLATFORM_CYGWIN = 1)) && (test x$LIBCRS_DISABLE_SHARED = xno); then
+if ((test $PLATFORM_MINGW = 1) || (test $PLATFORM_CYGWIN = 1)) && (test $enable_shared = yes); then
   LT_INIT([win32-dll])
   LT_LANG([Windows Resource])
   WINDOWS_RESOURCE=1
@@ -685,11 +683,6 @@ CRS_LIBS="$CRS_LIBS -L$libdir -lcrs"
 AC_SUBST(CRS_CFLAGS)
 AC_SUBST(CRS_CXXFLAGS)
 AC_SUBST(CRS_LIBS)
-
-dnl
-dnl gcov/lcov stuff
-dnl
-AX_CODE_COVERAGE
 
 dnl
 dnl Check for types

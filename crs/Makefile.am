@@ -208,5 +208,7 @@ pkginclude_bits_HEADERS +=	\
 	sc/posix.rs232port.h
 endif
 
+@CODE_COVERAGE_RULES@
+
 .rc.lo: 
 	$(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --tag=RC --mode=compile $(RC) $(RCFLAGS) $< -o $@

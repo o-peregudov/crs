@@ -5,8 +5,6 @@ LDADD = $(top_builddir)/crs/libcrs.la
 AM_TESTS_ENVIRONMENT = LD_LIBRARY_PATH=$(top_builddir)/test/.libs:$(top_builddir)/test:$$LD_LIBRARY_PATH
 AM_DEFAULT_SOURCE_EXT = .cpp
 
-@CODE_COVERAGE_RULES@
-
 TESTS =	test_mutex		\
 	test_heap		\
 	test_interval_map
@@ -29,6 +27,8 @@ check_PROGRAMS =		\
 #if WINDOWS_RESOURCE
 #i41_loop_SOURCES += loop.rc
 #endif
+
+@CODE_COVERAGE_RULES@
 
 .rc.lo: 
 	$(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --tag=RC --mode=compile $(RC) $(RCFLAGS) $< -o $@

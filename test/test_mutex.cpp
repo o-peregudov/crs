@@ -1,3 +1,6 @@
+#if defined (NDEBUG)
+#  undef NDEBUG
+#endif
 #include <crs/mutex.h>
 #include <cassert>
 #include <cstdio>
