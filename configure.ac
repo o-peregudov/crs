@@ -1,5 +1,7 @@
-AC_PREREQ([2.69])
 AC_INIT([crs], [2.0.0], [o.peregudov@gmail.com])
+
+AM_INIT_AUTOMAKE([-Wall -Werror foreign subdir-objects])
+AM_SILENT_RULES([yes])
 
 dnl  Here are a set of rules to help you update your library version information:
 dnl 1. Start with version information of '0:0:0' for each libtool library.
@@ -19,9 +21,6 @@ CRS_AGE=0
 
 CRS_LT_VERSION="${CRS_CURRENT}:${CRS_REVISION}:${CRS_AGE}"
 AC_SUBST(CRS_LT_VERSION)
-
-AM_INIT_AUTOMAKE([subdir-objects])
-AM_SILENT_RULES([yes])
 
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
@@ -69,11 +68,11 @@ fi
 dnl
 dnl Checks for programs
 dnl
+AM_PROG_AR
 AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_INSTALL
 
-LT_PREREQ([2.4.2])
 LT_INIT([dlopen])
 
 dnl ------------------------------------------------------------
@@ -106,6 +105,56 @@ AC_SUBST(PLATFORM_CYGWIN)
 AM_CONDITIONAL([PLATFORM_LINUX], [test $PLATFORM_LINUX = 1] )
 AM_CONDITIONAL([PLATFORM_MINGW], [test $PLATFORM_MINGW = 1] )
 AM_CONDITIONAL([PLATFORM_CYGWIN], [test $PLATFORM_CYGWIN = 1] )
+
+dnl
+dnl check if compiler can be pedantic
+dnl
+AC_MSG_CHECKING([if $CXX supports -pedantic])
+ac_pedantic_supported=no
+save_CXXFLAGS=$CXXFLAGS
+CXXFLAGS="$CXXFLAGS -pedantic"
+AC_LANG_PUSH([C++])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
+  [ac_pedantic_supported=yes],
+  [ac_pedantic_supported=no])
+AC_LANG_POP([C++])
+CXXFLAGS="$save_CXXFLAGS"
+AC_MSG_RESULT([$ac_pedantic_supported])
+if test $ac_pedantic_supported = yes; then
+  CXXFLAGS="$CXXFLAGS -pedantic"
+fi
+
+dnl
+dnl check if compiler supports -Wall -Werror switches
+dnl
+AC_MSG_CHECKING([if $CXX supports -Wall -Werror])
+ac_report_all_warnings_supported=no
+save_CXXFLAGS="$CXXFLAGS"
+CXXFLAGS="$CXXFLAGS -Wall -Werror"
+AC_LANG_PUSH([C++])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
+  [ac_report_all_warnings_supported=yes],
+  [ac_report_all_warnings_supported=no])
+AC_LANG_POP([C++])
+CXXFLAGS="$save_CXXFLAGS"
+AC_MSG_RESULT([$ac_report_all_warnings_supported])
+if test $ac_report_all_warnings_supported = yes; then
+  CXXFLAGS="$CXXFLAGS -Wall -Werror"
+fi
+
+dnl
+dnl Check for supported C++ standard
+dnl
+HAVE_CXX14=0
+HAVE_CXX11=0
+AX_CXX_COMPILE_STDCXX([14], [noext], [optional])
+if test $HAVE_CXX14 -ne 1; then
+  AX_CXX_COMPILE_STDCXX([11], [noext], [optional])
+else
+  HAVE_CXX11=1
+fi
+AC_SUBST(HAVE_CXX14)
+AC_SUBST(HAVE_CXX11)
 
 dnl
 dnl Whether we need to build only static library
@@ -200,6 +249,14 @@ else
 fi
 AC_SUBST(HAVE_WINDOWS_H)
 
+AX_PTHREAD([ac_pthread_lib_found=yes],
+           [ac_pthread_lib_found=no])
+if test $ac_pthread_lib_found = yes; then
+  CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
+  CXXFLAGS="$CXXFLAGS $PTHREAD_CFLAGS"
+  LIBS="$PTHREAD_LIBS $LIBS"
+fi
+
 HAVE_PTHREAD_SPIN_LOCK=0
 if test x$ac_cv_header_pthread_h = xyes; then
   HAVE_PTHREAD_H=1
@@ -215,16 +272,6 @@ fi
 AC_SUBST(HAVE_PTHREAD_H)
 AC_SUBST(HAVE_PTHREAD_SPIN_LOCK)
 AM_CONDITIONAL([HAVE_PTHREAD_SPIN_LOCK], [test $HAVE_PTHREAD_SPIN_LOCK = 1])
-
-dnl
-dnl Check for supported C++ standard
-dnl
-AX_CXX_COMPILE_STDCXX([14], [noext], [optional])
-if test $HAVE_CXX14 -ne 1; then
-  AX_CXX_COMPILE_STDCXX([11], [noext], [optional])
-fi
-AC_SUBST(HAVE_CXX14)
-AC_SUBST(HAVE_CXX11)
 
 dnl
 dnl Check for OpenMP functionality
@@ -524,7 +571,7 @@ AC_DEFINE_UNQUOTED(SELECT_TYPE, "$SELECT_TYPE", [Define to inform about availabl
 dnl
 dnl Enable STL's <chrono>
 dnl
-AC_ARG_ENABLE(chrono, AS_HELP_STRING([--disable-chrono], [disable C++11 <chrono> support]),
+AC_ARG_ENABLE(chrono, AS_HELP_STRING([--disable-chrono], [Disable C++11 <chrono> support]),
 [
   case "$enableval" in
     yes)
@@ -642,6 +689,11 @@ AC_SUBST(CRS_CXXFLAGS)
 AC_SUBST(CRS_LIBS)
 
 dnl
+dnl gcov/lcov stuff
+dnl
+AX_CODE_COVERAGE
+
+dnl
 dnl Check for types
 dnl
 AC_CHECK_SIZEOF(char)
@@ -751,12 +803,13 @@ if test x$enable_destructor_exceptions != xno; then
   AC_DEFINE(DESTRUCTOR_EXCEPTIONS_ALLOWED, 1, [Define to 1 if you want to get all exceptions (even from destructors).])
 fi
 
-AC_MSG_NOTICE([will use ${SELECT_TYPE} for the internal I/O loops])
-AC_CONFIG_FILES([Makefile	\
-		 crs.pc		\
-		 crs/Makefile	\
-		 crs/defsys.h	\
-		 crs/crs-version.h \
-		 test/Makefile
+AC_MSG_NOTICE(["${SELECT_TYPE}" will be used for the internal I/O loops])
+AC_CONFIG_FILES([
+	Makefile
+	crs.pc
+	crs/defsys.h
+	crs/crs-version.h
+	crs/Makefile
+	test/Makefile
 ])
 AC_OUTPUT

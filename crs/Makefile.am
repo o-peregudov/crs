@@ -1,5 +1,4 @@
-ACLOCAL_AMFLAGS = -I m4
-AM_CPPFLAGS = -I$(top_srcdir) -I$(top_builddir)
+AM_CPPFLAGS = -I$(top_builddir) -I$(top_srcdir)
 
 lib_LTLIBRARIES = libcrs.la
 
@@ -7,9 +6,6 @@ pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA= $(top_builddir)/crs.pc
 
 libcrs_la_LDFLAGS = -no-undefined -version-info $(CRS_LT_VERSION)
-
-libcrs_la_CPPFLAGS = @OPENMP_CFLAGS@ -I$(top_builddir)/..
-libcrs_la_CFLAGS = @OPENMP_CFLAGS@
 
 libcrs_la_SOURCES =		\
 	crs-version.c		\

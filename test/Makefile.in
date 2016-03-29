@@ -93,8 +93,9 @@ check_PROGRAMS = test_mutex$(EXEEXT) test_heap$(EXEEXT) \
 	test_interval_map$(EXEEXT)
 subdir = test
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/ax_cxx_compile_stdcxx.m4 \
-	$(top_srcdir)/m4/gsl.m4 $(top_srcdir)/m4/libtool.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/m4/ax_code_coverage.m4 \
+	$(top_srcdir)/m4/ax_cxx_compile_stdcxx.m4 \
+	$(top_srcdir)/m4/ax_pthread.m4 $(top_srcdir)/m4/libtool.m4 \
 	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
 	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
 	$(top_srcdir)/configure.ac
@@ -105,20 +106,20 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-am_test_heap_OBJECTS = test_heap.$(OBJEXT)
-test_heap_OBJECTS = $(am_test_heap_OBJECTS)
+test_heap_SOURCES = test_heap.cpp
+test_heap_OBJECTS = test_heap.$(OBJEXT)
 test_heap_LDADD = $(LDADD)
 test_heap_DEPENDENCIES = $(top_builddir)/crs/libcrs.la
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
-am_test_interval_map_OBJECTS = test_interval_map.$(OBJEXT)
-test_interval_map_OBJECTS = $(am_test_interval_map_OBJECTS)
+test_interval_map_SOURCES = test_interval_map.cpp
+test_interval_map_OBJECTS = test_interval_map.$(OBJEXT)
 test_interval_map_LDADD = $(LDADD)
 test_interval_map_DEPENDENCIES = $(top_builddir)/crs/libcrs.la
-am_test_mutex_OBJECTS = test_mutex.$(OBJEXT)
-test_mutex_OBJECTS = $(am_test_mutex_OBJECTS)
+test_mutex_SOURCES = test_mutex.cpp
+test_mutex_OBJECTS = test_mutex.$(OBJEXT)
 test_mutex_LDADD = $(LDADD)
 test_mutex_DEPENDENCIES = $(top_builddir)/crs/libcrs.la
 AM_V_P = $(am__v_P_@AM_V@)
@@ -155,10 +156,8 @@ AM_V_CXXLD = $(am__v_CXXLD_@AM_V@)
 am__v_CXXLD_ = $(am__v_CXXLD_@AM_DEFAULT_V@)
 am__v_CXXLD_0 = @echo "  CXXLD   " $@;
 am__v_CXXLD_1 = 
-SOURCES = $(test_heap_SOURCES) $(test_interval_map_SOURCES) \
-	$(test_mutex_SOURCES)
-DIST_SOURCES = $(test_heap_SOURCES) $(test_interval_map_SOURCES) \
-	$(test_mutex_SOURCES)
+SOURCES = test_heap.cpp test_interval_map.cpp test_mutex.cpp
+DIST_SOURCES = test_heap.cpp test_interval_map.cpp test_mutex.cpp
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -401,6 +400,10 @@ AWK = @AWK@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CODE_COVERAGE_CFLAGS = @CODE_COVERAGE_CFLAGS@
+CODE_COVERAGE_CPPFLAGS = @CODE_COVERAGE_CPPFLAGS@
+CODE_COVERAGE_ENABLED = @CODE_COVERAGE_ENABLED@
+CODE_COVERAGE_LDFLAGS = @CODE_COVERAGE_LDFLAGS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CRS_CFLAGS = @CRS_CFLAGS@
@@ -426,6 +429,8 @@ ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
+GCOV = @GCOV@
+GENHTML = @GENHTML@
 GREP = @GREP@
 GSL_CFLAGS = @GSL_CFLAGS@
 GSL_CONFIG = @GSL_CONFIG@
@@ -450,6 +455,7 @@ INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
+LCOV = @LCOV@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBOBJS = @LIBOBJS@
@@ -480,6 +486,9 @@ PATH_SEPARATOR = @PATH_SEPARATOR@
 PLATFORM_CYGWIN = @PLATFORM_CYGWIN@
 PLATFORM_LINUX = @PLATFORM_LINUX@
 PLATFORM_MINGW = @PLATFORM_MINGW@
+PTHREAD_CC = @PTHREAD_CC@
+PTHREAD_CFLAGS = @PTHREAD_CFLAGS@
+PTHREAD_LIBS = @PTHREAD_LIBS@
 RANLIB = @RANLIB@
 RC = @RC@
 SED = @SED@
@@ -512,6 +521,7 @@ am__leading_dot = @am__leading_dot@
 am__quote = @am__quote@
 am__tar = @am__tar@
 am__untar = @am__untar@
+ax_pthread_config = @ax_pthread_config@
 bindir = @bindir@
 build = @build@
 build_alias = @build_alias@
@@ -553,15 +563,10 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-ACLOCAL_AMFLAGS = -I m4
-AM_CPPFLAGS = -I$(top_srcdir) -I$(top_builddir)
+AM_CPPFLAGS = -I$(top_builddir) -I$(top_srcdir)
 LDADD = $(top_builddir)/crs/libcrs.la
-AM_CFLAGS = @OPENMP_CFLAGS@
-AM_CXXFLAGS = @OPENMP_CFLAGS@
-TESTS_ENVIRONMENT = LD_LIBRARY_PATH=$(top_builddir)/test/.libs:$(top_builddir)/test:$$LD_LIBRARY_PATH
-test_heap_SOURCES = test_heap.cpp
-test_mutex_SOURCES = test_mutex.cpp
-test_interval_map_SOURCES = test_interval_map.cpp
+AM_TESTS_ENVIRONMENT = LD_LIBRARY_PATH=$(top_builddir)/test/.libs:$(top_builddir)/test:$$LD_LIBRARY_PATH
+AM_DEFAULT_SOURCE_EXT = .cpp
 all: all-am
 
 .SUFFIXES:
@@ -575,9 +580,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu test/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign test/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu test/Makefile
+	  $(AUTOMAKE) --foreign test/Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
 	  *config.status*) \
@@ -1044,6 +1049,8 @@ uninstall-am:
 
 .PRECIOUS: Makefile
 
+
+@CODE_COVERAGE_RULES@
 
 #handle_SOURCES = handle.cpp
 #condition_SOURCES = condition.cpp

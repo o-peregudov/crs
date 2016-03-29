@@ -168,8 +168,9 @@ host_triplet = @host@
 
 subdir = crs
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/ax_cxx_compile_stdcxx.m4 \
-	$(top_srcdir)/m4/gsl.m4 $(top_srcdir)/m4/libtool.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/m4/ax_code_coverage.m4 \
+	$(top_srcdir)/m4/ax_cxx_compile_stdcxx.m4 \
+	$(top_srcdir)/m4/ax_pthread.m4 $(top_srcdir)/m4/libtool.m4 \
 	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
 	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
 	$(top_srcdir)/configure.ac
@@ -223,13 +224,13 @@ libcrs_la_LIBADD =
 am__libcrs_la_SOURCES_DIST = crs-version.c CRCStuff.c disjoint_set.cpp \
 	bits/win32.mutex.cpp cross.res.rc bits/posix.mutex.cpp
 am__dirstamp = $(am__leading_dot)dirstamp
-@PLATFORM_MINGW_TRUE@am__objects_1 = bits/libcrs_la-win32.mutex.lo
+@PLATFORM_MINGW_TRUE@am__objects_1 = bits/win32.mutex.lo
 @WINDOWS_RESOURCE_TRUE@am__objects_2 = cross.res.lo
-@PLATFORM_LINUX_TRUE@am__objects_3 = bits/libcrs_la-posix.mutex.lo
-@PLATFORM_CYGWIN_TRUE@am__objects_4 = bits/libcrs_la-posix.mutex.lo
-am_libcrs_la_OBJECTS = libcrs_la-crs-version.lo libcrs_la-CRCStuff.lo \
-	libcrs_la-disjoint_set.lo $(am__objects_1) $(am__objects_2) \
-	$(am__objects_3) $(am__objects_4)
+@PLATFORM_LINUX_TRUE@am__objects_3 = bits/posix.mutex.lo
+@PLATFORM_CYGWIN_TRUE@am__objects_4 = bits/posix.mutex.lo
+am_libcrs_la_OBJECTS = crs-version.lo CRCStuff.lo disjoint_set.lo \
+	$(am__objects_1) $(am__objects_2) $(am__objects_3) \
+	$(am__objects_4)
 libcrs_la_OBJECTS = $(am_libcrs_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -337,6 +338,10 @@ AWK = @AWK@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CODE_COVERAGE_CFLAGS = @CODE_COVERAGE_CFLAGS@
+CODE_COVERAGE_CPPFLAGS = @CODE_COVERAGE_CPPFLAGS@
+CODE_COVERAGE_ENABLED = @CODE_COVERAGE_ENABLED@
+CODE_COVERAGE_LDFLAGS = @CODE_COVERAGE_LDFLAGS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CRS_CFLAGS = @CRS_CFLAGS@
@@ -362,6 +367,8 @@ ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
+GCOV = @GCOV@
+GENHTML = @GENHTML@
 GREP = @GREP@
 GSL_CFLAGS = @GSL_CFLAGS@
 GSL_CONFIG = @GSL_CONFIG@
@@ -386,6 +393,7 @@ INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
+LCOV = @LCOV@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBOBJS = @LIBOBJS@
@@ -416,6 +424,9 @@ PATH_SEPARATOR = @PATH_SEPARATOR@
 PLATFORM_CYGWIN = @PLATFORM_CYGWIN@
 PLATFORM_LINUX = @PLATFORM_LINUX@
 PLATFORM_MINGW = @PLATFORM_MINGW@
+PTHREAD_CC = @PTHREAD_CC@
+PTHREAD_CFLAGS = @PTHREAD_CFLAGS@
+PTHREAD_LIBS = @PTHREAD_LIBS@
 RANLIB = @RANLIB@
 RC = @RC@
 SED = @SED@
@@ -448,6 +459,7 @@ am__leading_dot = @am__leading_dot@
 am__quote = @am__quote@
 am__tar = @am__tar@
 am__untar = @am__untar@
+ax_pthread_config = @ax_pthread_config@
 bindir = @bindir@
 build = @build@
 build_alias = @build_alias@
@@ -489,14 +501,11 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-ACLOCAL_AMFLAGS = -I m4
-AM_CPPFLAGS = -I$(top_srcdir) -I$(top_builddir)
+AM_CPPFLAGS = -I$(top_builddir) -I$(top_srcdir)
 lib_LTLIBRARIES = libcrs.la
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = $(top_builddir)/crs.pc
 libcrs_la_LDFLAGS = -no-undefined -version-info $(CRS_LT_VERSION)
-libcrs_la_CPPFLAGS = @OPENMP_CFLAGS@ -I$(top_builddir)/..
-libcrs_la_CFLAGS = @OPENMP_CFLAGS@
 libcrs_la_SOURCES = crs-version.c CRCStuff.c disjoint_set.cpp \
 	$(am__append_1) $(am__append_3) $(am__append_5) \
 	$(am__append_7)
@@ -609,9 +618,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am  $(am__configure_deps)
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu crs/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign crs/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu crs/Makefile
+	  $(AUTOMAKE) --foreign crs/Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
 	  *config.status*) \
@@ -674,9 +683,9 @@ bits/$(am__dirstamp):
 bits/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) bits/$(DEPDIR)
 	@: > bits/$(DEPDIR)/$(am__dirstamp)
-bits/libcrs_la-win32.mutex.lo: bits/$(am__dirstamp) \
+bits/win32.mutex.lo: bits/$(am__dirstamp) \
 	bits/$(DEPDIR)/$(am__dirstamp)
-bits/libcrs_la-posix.mutex.lo: bits/$(am__dirstamp) \
+bits/posix.mutex.lo: bits/$(am__dirstamp) \
 	bits/$(DEPDIR)/$(am__dirstamp)
 
 libcrs.la: $(libcrs_la_OBJECTS) $(libcrs_la_DEPENDENCIES) $(EXTRA_libcrs_la_DEPENDENCIES) 
@@ -690,11 +699,11 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcrs_la-CRCStuff.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcrs_la-crs-version.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcrs_la-disjoint_set.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@bits/$(DEPDIR)/libcrs_la-posix.mutex.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@bits/$(DEPDIR)/libcrs_la-win32.mutex.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CRCStuff.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/crs-version.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/disjoint_set.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@bits/$(DEPDIR)/posix.mutex.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@bits/$(DEPDIR)/win32.mutex.Plo@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
@@ -720,20 +729,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
 
-libcrs_la-crs-version.lo: crs-version.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrs_la_CPPFLAGS) $(CPPFLAGS) $(libcrs_la_CFLAGS) $(CFLAGS) -MT libcrs_la-crs-version.lo -MD -MP -MF $(DEPDIR)/libcrs_la-crs-version.Tpo -c -o libcrs_la-crs-version.lo `test -f 'crs-version.c' || echo '$(srcdir)/'`crs-version.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libcrs_la-crs-version.Tpo $(DEPDIR)/libcrs_la-crs-version.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='crs-version.c' object='libcrs_la-crs-version.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrs_la_CPPFLAGS) $(CPPFLAGS) $(libcrs_la_CFLAGS) $(CFLAGS) -c -o libcrs_la-crs-version.lo `test -f 'crs-version.c' || echo '$(srcdir)/'`crs-version.c
-
-libcrs_la-CRCStuff.lo: CRCStuff.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrs_la_CPPFLAGS) $(CPPFLAGS) $(libcrs_la_CFLAGS) $(CFLAGS) -MT libcrs_la-CRCStuff.lo -MD -MP -MF $(DEPDIR)/libcrs_la-CRCStuff.Tpo -c -o libcrs_la-CRCStuff.lo `test -f 'CRCStuff.c' || echo '$(srcdir)/'`CRCStuff.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libcrs_la-CRCStuff.Tpo $(DEPDIR)/libcrs_la-CRCStuff.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='CRCStuff.c' object='libcrs_la-CRCStuff.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrs_la_CPPFLAGS) $(CPPFLAGS) $(libcrs_la_CFLAGS) $(CFLAGS) -c -o libcrs_la-CRCStuff.lo `test -f 'CRCStuff.c' || echo '$(srcdir)/'`CRCStuff.c
-
 .cpp.o:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
 @am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
@@ -757,27 +752,6 @@ libcrs_la-CRCStuff.lo: CRCStuff.c
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LTCXXCOMPILE) -c -o $@ $<
-
-libcrs_la-disjoint_set.lo: disjoint_set.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrs_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT libcrs_la-disjoint_set.lo -MD -MP -MF $(DEPDIR)/libcrs_la-disjoint_set.Tpo -c -o libcrs_la-disjoint_set.lo `test -f 'disjoint_set.cpp' || echo '$(srcdir)/'`disjoint_set.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libcrs_la-disjoint_set.Tpo $(DEPDIR)/libcrs_la-disjoint_set.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='disjoint_set.cpp' object='libcrs_la-disjoint_set.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrs_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o libcrs_la-disjoint_set.lo `test -f 'disjoint_set.cpp' || echo '$(srcdir)/'`disjoint_set.cpp
-
-bits/libcrs_la-win32.mutex.lo: bits/win32.mutex.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrs_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT bits/libcrs_la-win32.mutex.lo -MD -MP -MF bits/$(DEPDIR)/libcrs_la-win32.mutex.Tpo -c -o bits/libcrs_la-win32.mutex.lo `test -f 'bits/win32.mutex.cpp' || echo '$(srcdir)/'`bits/win32.mutex.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) bits/$(DEPDIR)/libcrs_la-win32.mutex.Tpo bits/$(DEPDIR)/libcrs_la-win32.mutex.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='bits/win32.mutex.cpp' object='bits/libcrs_la-win32.mutex.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrs_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o bits/libcrs_la-win32.mutex.lo `test -f 'bits/win32.mutex.cpp' || echo '$(srcdir)/'`bits/win32.mutex.cpp
-
-bits/libcrs_la-posix.mutex.lo: bits/posix.mutex.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrs_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT bits/libcrs_la-posix.mutex.lo -MD -MP -MF bits/$(DEPDIR)/libcrs_la-posix.mutex.Tpo -c -o bits/libcrs_la-posix.mutex.lo `test -f 'bits/posix.mutex.cpp' || echo '$(srcdir)/'`bits/posix.mutex.cpp
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) bits/$(DEPDIR)/libcrs_la-posix.mutex.Tpo bits/$(DEPDIR)/libcrs_la-posix.mutex.Plo
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='bits/posix.mutex.cpp' object='bits/libcrs_la-posix.mutex.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libcrs_la_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o bits/libcrs_la-posix.mutex.lo `test -f 'bits/posix.mutex.cpp' || echo '$(srcdir)/'`bits/posix.mutex.cpp
 
 mostlyclean-libtool:
 	-rm -f *.lo

@@ -2,7 +2,7 @@
 #define CROSS_DEFSYS_H_INCLUDED 1
 /*
  *  crs/defsys.h
- *  Copyright (c) 2010-2013 Oleg N. Peregudov <o.peregudov@gmail.com>
+ *  Copyright (c) 2010-2016 Oleg N. Peregudov <o.peregudov@gmail.com>
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -31,6 +31,7 @@
  *	2012/08/19	winsock2 conditional define
  *	2012/09/17	GLIB 2.0 conditional define
  *	2013/09/21	ver. 2.0.0 - refactoring
+ *	2016/03/29	C++ 11/14 defines
  */
 
 #define PLATFORM_LINUX @PLATFORM_LINUX@
@@ -120,6 +121,9 @@
 #  include <stdlib.h>
 #  include <stddef.h>
 #endif
+
+#define HAVE_CXX14 @HAVE_CXX14@
+#define HAVE_CXX11 @HAVE_CXX11@
 
 #if defined (_MSC_VER)
 typedef CHAR crs_int8_t;

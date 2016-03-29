@@ -1,15 +1,13 @@
-ACLOCAL_AMFLAGS = -I m4
-AM_CPPFLAGS = -I$(top_srcdir) -I$(top_builddir)
+AM_CPPFLAGS = -I$(top_builddir) -I$(top_srcdir)
 
 LDADD = $(top_builddir)/crs/libcrs.la
 
-AM_CFLAGS = @OPENMP_CFLAGS@
-AM_CXXFLAGS = @OPENMP_CFLAGS@
+AM_TESTS_ENVIRONMENT = LD_LIBRARY_PATH=$(top_builddir)/test/.libs:$(top_builddir)/test:$$LD_LIBRARY_PATH
+AM_DEFAULT_SOURCE_EXT = .cpp
 
-TESTS_ENVIRONMENT = LD_LIBRARY_PATH=$(top_builddir)/test/.libs:$(top_builddir)/test:$$LD_LIBRARY_PATH
+@CODE_COVERAGE_RULES@
 
-TESTS = 			\
-	test_mutex		\
+TESTS =	test_mutex		\
 	test_heap		\
 	test_interval_map
 
@@ -17,10 +15,6 @@ check_PROGRAMS =		\
 	test_mutex		\
 	test_heap		\
 	test_interval_map
-
-test_heap_SOURCES = test_heap.cpp
-test_mutex_SOURCES = test_mutex.cpp
-test_interval_map_SOURCES = test_interval_map.cpp
 
 #handle_SOURCES = handle.cpp
 #condition_SOURCES = condition.cpp
