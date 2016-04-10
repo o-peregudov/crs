@@ -63,7 +63,6 @@ pkginclude_HEADERS =		\
 	main			\
 	myexcept.h		\
 	regions.h		\
-	mtsqueue.h		\
 	charprintbuf.h		\
 	condition_variable.hpp	\
 	semaphore.hpp		\

@@ -56,32 +56,32 @@ namespace std
   struct defer_lock_t { };
   struct adopt_lock_t { };
   struct try_to_lock_t { };
-  
+
   template <class Mutex>
   class lock_guard
   {
     lock_guard (const lock_guard &);
     lock_guard & operator = (const lock_guard &);
-    
+
   public:
     typedef Mutex mutex_type;
-    
+
     lock_guard (mutex_type & m)
       : pm (m)
     {
       pm.lock ();
     }
-    
+
     lock_guard (mutex_type & m, adopt_lock_t)
       : pm (m)
     {
     }
-    
+
     ~lock_guard ()
     {
       pm.unlock ();
     }
-    
+
   private:
     mutex_type & pm;
   };

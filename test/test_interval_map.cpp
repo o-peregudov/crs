@@ -5,12 +5,8 @@
 #include <crs/interval_map.h>
 #include <iostream>
 
-void right_margin_similar_value_test ();
-
 int main (int argc, char * argv [])
 {
-  right_margin_similar_value_test ();
-
   CrossClass::interval_map<unsigned int, char> m ('A');
   unsigned int ix = 0;
 
@@ -400,25 +396,5 @@ int main (int argc, char * argv [])
 
   std::cout << "passed"
 	    << std::endl;
-
   return 0;
-}
-
-void right_margin_similar_value_test ()
-{
-  CrossClass::interval_map<unsigned int, char> m ('A');
-
-  assert (m[std::numeric_limits<unsigned int>::min ()] == 'A');
-  assert (m[std::numeric_limits<unsigned int>::max ()] == 'A');
-  assert (m.size () == 1);
-
-  m.assign (5, 10, 'B');
-  assert (m.size () == 3);
-  assert (m[0] == 'A');
-  assert (m[5] == 'B');
-  assert (m[5] == 'B');
-  assert (m[10] == 'A');
-
-  m.assign (2, 7, 'B');
-  assert (m.size () == 3);
 }

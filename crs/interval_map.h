@@ -71,11 +71,10 @@ namespace CrossClass
   template<class K, class V>
   class interval_map
   {
-  public:
+  private:
     typedef std::map<K, V>                    container_type;
     typedef typename container_type::iterator iterator;
-    
-  private:
+
     container_type _map;
 
   public:
@@ -107,11 +106,12 @@ namespace CrossClass
 	  return false;
 	}
 
+      iterator it;
       std::pair<iterator, bool> right = _map.insert (std::make_pair (keyEnd, val));
       if (right.second == true)
 	{
-	  iterator it = right.first;
-	  if (!((--it)->second == right.first->second))
+	  --(it = right.first);
+	  if (!(it->second == right.first->second))
 	    {
 	      right.first->second = it->second;
 	    }
@@ -123,7 +123,7 @@ namespace CrossClass
 	  left.first->second = val;
 	}
 
-      iterator it = left.first;
+      it = left.first;
       if (it != _map.begin ())
 	{
 	  if (!((--it)->second == left.first->second))
