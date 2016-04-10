@@ -20942,25 +20942,16 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 fi
 
 
-disable_epoll=no
+USE_EPOLL=0
+do_check_epoll=no
 # Check whether --enable-epoll was given.
 if test "${enable_epoll+set}" = set; then :
-  enableval=$enable_epoll;
-  case "$enableval" in
-    yes)
-      ;;
-    no)
-      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Forcing epoll() to be disabled" >&5
-$as_echo "$as_me: WARNING: Forcing epoll() to be disabled" >&2;}
-      disable_epoll=yes
-      ;;
-    esac
-
+  enableval=$enable_epoll; do_check_epoll=$enable_epoll
+else
+  do_check_epoll=yes
 fi
 
-
-USE_EPOLL=0
-if (test $PLATFORM_LINUX = 1) && (test x$disable_epoll = xno); then
+if (test $PLATFORM_LINUX = 1) && (test "$do_check_epoll" = "yes"); then
 
     for ac_func in epoll_create
 do :
@@ -21290,25 +21281,15 @@ else
 fi
 
 
+USE_CXX11_CHRONO=0
 # Check whether --enable-chrono was given.
 if test "${enable_chrono+set}" = set; then :
-  enableval=$enable_chrono;
-  case "$enableval" in
-    yes)
-      disable_chrono=no
-      ;;
-    no)
-      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Forcing C++11 <chrono> to be disabled" >&5
-$as_echo "$as_me: WARNING: Forcing C++11 <chrono> to be disabled" >&2;}
-      disable_chrono=yes
-      ;;
-  esac
-
+  enableval=$enable_chrono; do_check_chrono=$enable_chrono
+else
+  do_check_chrono=yes
 fi
 
-
-USE_CXX11_CHRONO=0
-if test x$disable_chrono = xno ; then
+if test "$do_check_chrono" = "yes" ; then
         ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
 ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -21326,8 +21307,9 @@ else
       #include <chrono>
       int main (int argc, char ** argv)
       {
-        std::chrono::time_point<std::chrono::high_resolution_clock> startTime = std::chrono::high_resolution_clock::now ();
-        std::chrono::high_resolution_clock::duration usExeTime = std::chrono::high_resolution_clock::now () - startTime;
+        typedef std::chrono::high_resolution_clock clock_type;
+        std::chrono::time_point<clock_type> startTime = clock_type::now ();
+        clock_type::duration usExeTime = clock_type::now () - startTime;
         return 0;
       }
 

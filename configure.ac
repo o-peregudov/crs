@@ -364,7 +364,7 @@ if (test x$ac_cv_header_signal_h = xyes) && (test x$ac_cv_header_time_h = xyes);
   AC_SEARCH_LIBS([timer_gettime], [rt])
   AC_SEARCH_LIBS([timer_create], [rt])
   AC_SEARCH_LIBS([timer_delete], [rt])
-  
+
   dnl
   dnl [POSIX Timer] auto-detect and verify that POSIX timer API is supported
   dnl
@@ -426,37 +426,25 @@ fi
 AC_SUBST(HAVE_POSIX_SYSLOG_API)
 
 dnl
-dnl Check whether we have to disable epoll () support
-dnl
-disable_epoll=no
-AC_ARG_ENABLE(epoll, AS_HELP_STRING([--disable-epoll], [Disable Linux epoll(2) support.]),
-[
-  case "$enableval" in
-    yes)
-      ;;
-    no)
-      AC_MSG_WARN([Forcing epoll() to be disabled])
-      disable_epoll=yes
-      ;;
-    esac
-])
-
-dnl
-dnl Check for epoll () on POSIX systems
+dnl Check whether we have to disable epoll () support on Linux
 dnl
 USE_EPOLL=0
-if (test $PLATFORM_LINUX = 1) && (test x$disable_epoll = xno); then
+do_check_epoll=no
+AC_ARG_ENABLE(epoll,
+              AS_HELP_STRING([--disable-epoll], [Disable Linux epoll(2) support.]),
+	      [do_check_epoll=$enable_epoll], [do_check_epoll=yes])
+if (test $PLATFORM_LINUX = 1) && (test "$do_check_epoll" = "yes"); then
   dnl
   dnl auto-detect and verify sys/epoll.h header and library present and working
   dnl (some parts were borrowed from the squid-cache project)
   dnl
-  
+
   dnl Check for epoll_create
   AC_CHECK_FUNCS([epoll_create])
-  
+
   dnl epoll requires sys/epoll.h
   AC_CHECK_HEADERS([sys/epoll.h])
-  
+
   dnl Verify that epoll really works
   if test x$ac_cv_func_epoll_create = xyes; then
     AC_CACHE_CHECK(if epoll works, ac_cv_epoll_works,
@@ -473,7 +461,7 @@ if (test $PLATFORM_LINUX = 1) && (test x$disable_epoll = xno); then
 	}
       ]])],[ac_cv_epoll_works=yes],[ac_cv_epoll_works=no],[:]))
   fi
-  
+
   if test x$ac_cv_epoll_works = xyes; then
     USE_EPOLL=1
   fi
@@ -489,13 +477,13 @@ if (test $PLATFORM_LINUX = 1) || (test $PLATFORM_CYGWIN = 1); then
   dnl
   dnl auto-detect and verify poll.h header and library present and working
   dnl
-  
+
   dnl Check for poll
   AC_CHECK_FUNCS([poll])
-  
+
   dnl epoll requires poll.h
   AC_CHECK_HEADERS([poll.h])
-  
+
   dnl Verify that poll really works
   if test x$ac_cv_func_poll = xyes; then
     AC_CACHE_CHECK(if poll works, ac_cv_poll_works,
@@ -507,7 +495,7 @@ if (test $PLATFORM_LINUX = 1) || (test $PLATFORM_CYGWIN = 1); then
 	}
       ]])],[ac_cv_poll_works=yes],[ac_cv_poll_works=no],[:]))
   fi
-  
+
   if test x$ac_cv_poll_works = xyes; then
     USE_POLL=1
   fi
@@ -521,13 +509,13 @@ if (test $PLATFORM_LINUX = 1) || (test $PLATFORM_CYGWIN = 1); then
   dnl
   dnl auto-detect and verify sys/select.h header and library present and working
   dnl
-  
+
   dnl Check for select
   AC_CHECK_FUNCS([select])
-  
+
   dnl select requires sys/select.h
   AC_CHECK_HEADERS([sys/select.h sys/time.h sys/types.h unistd.h])
-  
+
   dnl Verify that select really works
   if test x$ac_cv_func_select = xyes; then
     AC_CACHE_CHECK(if select works, ac_cv_select_works,
@@ -545,7 +533,7 @@ if (test $PLATFORM_LINUX = 1) || (test $PLATFORM_CYGWIN = 1); then
 	}
       ]])],[ac_cv_select_works=yes],[ac_cv_select_works=no],[:]))
   fi
-  
+
   if test x$ac_cv_select_works = xyes; then
     USE_SELECT=1
   fi
@@ -590,21 +578,11 @@ AC_SUBST(USE_CXX11_ATOMIC)
 dnl
 dnl Enable STL's <chrono>
 dnl
-AC_ARG_ENABLE(chrono, AS_HELP_STRING([--disable-chrono], [Disable C++11 <chrono> support]),
-[
-  case "$enableval" in
-    yes)
-      disable_chrono=no
-      ;;
-    no)
-      AC_MSG_WARN([Forcing C++11 <chrono> to be disabled])
-      disable_chrono=yes
-      ;;
-  esac
-])
-
 USE_CXX11_CHRONO=0
-if test x$disable_chrono = xno ; then
+AC_ARG_ENABLE(chrono,
+              AS_HELP_STRING([--disable-chrono], [Disable C++11 <chrono> support]),
+	      [do_check_chrono=$enable_chrono], [do_check_chrono=yes])
+if test "$do_check_chrono" = "yes" ; then
   dnl
   dnl auto-detect and verify <chrono> header present and really works
   dnl
@@ -614,8 +592,9 @@ if test x$disable_chrono = xno ; then
       #include <chrono>
       int main (int argc, char ** argv)
       {
-        std::chrono::time_point<std::chrono::high_resolution_clock> startTime = std::chrono::high_resolution_clock::now ();
-        std::chrono::high_resolution_clock::duration usExeTime = std::chrono::high_resolution_clock::now () - startTime;
+        typedef std::chrono::high_resolution_clock clock_type;
+        std::chrono::time_point<clock_type> startTime = clock_type::now ();
+        clock_type::duration usExeTime = clock_type::now () - startTime;
         return 0;
       }
     ]])],[ac_cv_std_chrono_works=yes],[ac_cv_std_chrono_works=no],[:]))
@@ -643,7 +622,7 @@ AC_CACHE_CHECK(whether <mutex> is usable, ac_cv_std_mutex_works,
 AC_LANG_POP([C++])
 if test x$ac_cv_std_mutex_works = xyes ; then
   USE_CXX11_MUTEX=1
-  
+
   dnl
   dnl auto-detect and verify <condition_variable> header present and really works
   dnl

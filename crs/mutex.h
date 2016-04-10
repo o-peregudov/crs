@@ -48,7 +48,7 @@ namespace std
 {
   typedef CrossClass::cPosixMutex mutex;
 }
-#endif	/* USE_CXX11_MUTEX	*/
+#endif /* USE_CXX11_MUTEX */
 
 #if LIBCRS_DEFINE_LOCKS
 namespace std
@@ -85,9 +85,9 @@ namespace std
   private:
     mutex_type & pm;
   };
-}	/* namespace std	*/
+} /* namespace std */
 
-#endif	/* LIBCRS_DEFINE_LOCKS	*/
+#endif /* LIBCRS_DEFINE_LOCKS */
 #undef LIBCRS_DEFINE_LOCKS
 
-#endif	/* CROSS_MUTEX_H_INCLUDED	*/
+#endif /* CROSS_MUTEX_H_INCLUDED */
