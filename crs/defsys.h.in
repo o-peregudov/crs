@@ -32,28 +32,12 @@
  *	2012/09/17	GLIB 2.0 conditional define
  *	2013/09/21	ver. 2.0.0 - refactoring
  *	2016/03/29	C++ 11/14 defines
+ *	2016/04/10	missing define WINDOWS_RESOURCE
  */
 
 #define PLATFORM_LINUX @PLATFORM_LINUX@
 #define PLATFORM_MINGW @PLATFORM_MINGW@
 #define PLATFORM_CYGWIN @PLATFORM_CYGWIN@
-
-#define DEFINE_CROSS_EXPORT @DEFINE_CROSS_EXPORT@
-#if (DEFINE_CROSS_EXPORT)
-#  define CROSS_EXPORT
-#endif
-
-#if !defined (CROSS_EXPORT)
-#  if (PLATFORM_MINGW) && (WINDOWS_RESOURCE)
-#    if defined (DLL_EXPORT)
-#      	define CROSS_EXPORT extern __declspec(dllexport)
-#    else
-#       define CROSS_EXPORT extern __declspec(dllimport)
-#    endif
-#  else
-#    define CROSS_EXPORT extern
-#  endif
-#endif
 
 #define HAVE_STDINT_H @HAVE_STDINT_H@
 #define HAVE_INTTYPES_H @HAVE_INTTYPES_H@
@@ -72,6 +56,23 @@
 #define WINDOWS_RESOURCE @WINDOWS_RESOURCE@
 #define HAVE_WINSOCK2_API @HAVE_WINSOCK2_API@
 #define HAVE_WINDOWS_H @HAVE_WINDOWS_H@
+
+#define DEFINE_CROSS_EXPORT @DEFINE_CROSS_EXPORT@
+#if (DEFINE_CROSS_EXPORT)
+#  define CROSS_EXPORT
+#endif
+
+#if !defined (CROSS_EXPORT)
+#  if (PLATFORM_MINGW) && (WINDOWS_RESOURCE)
+#    if defined (DLL_EXPORT)
+#      	define CROSS_EXPORT __declspec(dllexport)
+#    else
+#       define CROSS_EXPORT __declspec(dllimport)
+#    endif
+#  else
+#    define CROSS_EXPORT extern
+#  endif
+#endif
 
 #if (PLATFORM_MINGW) || (PLATFORM_CYGWIN)
 #  if !defined (WINVER)
@@ -143,9 +144,9 @@ typedef HANDLE crs_fd_t;
 
 #define PLATFORM_MINGW 1
 #define USE_CXX11_MUTEX 0
+#define USE_CXX11_ATOMIC 0
 #define USE_CXX11_CHRONO 0
 #define USE_CXX11_CONDITION_VARIABLE 0
-#define USE_CXX11_ATOMIC 0
 
 #else
 
@@ -161,9 +162,9 @@ typedef @USIZE32@ crs_uint32_t;
 typedef int crs_fd_t;
 
 #define USE_CXX11_MUTEX @USE_CXX11_MUTEX@
+#define USE_CXX11_ATOMIC @USE_CXX11_ATOMIC@
 #define USE_CXX11_CHRONO @USE_CXX11_CHRONO@
 #define USE_CXX11_CONDITION_VARIABLE @USE_CXX11_CONDITION_VARIABLE@
-#define USE_CXX11_ATOMIC @USE_CXX11_ATOMIC@
 #endif
 
-#endif	/* CROSS_DEFSYS_H_INCLUDED	*/
+#endif /* CROSS_DEFSYS_H_INCLUDED */

@@ -1,6 +1,6 @@
 /*
  *  crs/bits/posix.mutex.cpp
- *  Copyright (c) 2008-2013 Oleg N. Peregudov <o.peregudov@gmail.com>
+ *  Copyright (c) 2008-2016 Oleg N. Peregudov <o.peregudov@gmail.com>
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -23,12 +23,12 @@
 
 namespace CrossClass
 {
-  
+
   /*
-   * members of class cPosixMutex
+   * members of class posix_mutex
    */
-  
-  cPosixMutex::cPosixMutex ()
+
+  posix_mutex::posix_mutex ()
     : _mutex( )
     , _attr( )
   {
@@ -42,7 +42,7 @@ namespace CrossClass
 		  errCode);
 	throw std::runtime_error (msgText);
       }
-    
+
     errCode = pthread_mutexattr_settype (&_attr, PTHREAD_MUTEX_NORMAL);
     if (errCode)
       {
@@ -53,7 +53,7 @@ namespace CrossClass
 		  errCode);
 	throw std::runtime_error (msgText);
       }
-    
+
     errCode = pthread_mutex_init (&_mutex, &_attr);
     if (errCode)
       {
@@ -65,8 +65,8 @@ namespace CrossClass
 	throw std::runtime_error (msgText);
       }
   }
-  
-  cPosixMutex::~cPosixMutex ()
+
+  posix_mutex::~posix_mutex ()
   {
     try
       {
@@ -80,7 +80,7 @@ namespace CrossClass
 		      errCode);
 	    throw std::runtime_error (msgText);
 	  }
-	
+
 	errCode = pthread_mutexattr_destroy (&_attr);
 	if (errCode)
 	  {
@@ -99,8 +99,8 @@ namespace CrossClass
 #endif
       }
   }
-  
-  void cPosixMutex::lock ()
+
+  void posix_mutex::lock ()
   {
     int errCode = pthread_mutex_lock (&_mutex);
     if (errCode)
@@ -113,15 +113,16 @@ namespace CrossClass
 	throw std::runtime_error (msgText);
       }
   }
-  
-  bool cPosixMutex::try_lock ()
+
+  bool posix_mutex::try_lock ()
   {
     int errCode = pthread_mutex_trylock (&_mutex);
     if (errCode == 0)
       {
 	return true;
       }
-    else if ((errCode != EAGAIN) && (errCode != EBUSY))
+
+    if ((errCode != EAGAIN) && (errCode != EBUSY))
       {
 	char msgText [ 64 ];
 	snprintf (msgText,
@@ -130,11 +131,11 @@ namespace CrossClass
 		  errCode);
 	throw std::runtime_error (msgText);
       }
-    
+
     return false;
   }
-  
-  void cPosixMutex::unlock ()
+
+  void posix_mutex::unlock ()
   {
     int errCode = pthread_mutex_unlock (&_mutex);
     if (errCode)
@@ -147,5 +148,5 @@ namespace CrossClass
 	throw std::runtime_error (msgText);
       }
   }
-  
+
 } /* namespace CrossClass */

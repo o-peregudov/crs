@@ -2,7 +2,7 @@
 #define CROSS_MUTEX_H_INCLUDED 1
 /*
  *  crs/mutex.h
- *  Copyright (c) 2008-2013 Oleg N. Peregudov <o.peregudov@gmail.com>
+ *  Copyright (c) 2008-2016 Oleg N. Peregudov <o.peregudov@gmail.com>
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -25,6 +25,7 @@
  *	2010/08/28	compartibility with std::mutex from C++0x standard
  *	2012/08/18	new host class selection
  *	2013/09/21	ver. 2.0.0 refactoring
+ *	2016/04/10	ver. 2.0.0 refactoring
  */
 
 #include <crs/libexport.h>
@@ -38,7 +39,7 @@
 #  define LIBCRS_DEFINE_LOCKS 1
 namespace std
 {
-  typedef CrossClass::cWin32Mutex mutex;
+  typedef CrossClass::win32_mutex mutex;
 }
 
 #else
@@ -46,7 +47,7 @@ namespace std
 #  define LIBCRS_DEFINE_LOCKS 1
 namespace std
 {
-  typedef CrossClass::cPosixMutex mutex;
+  typedef CrossClass::posix_mutex mutex;
 }
 #endif /* USE_CXX11_MUTEX */
 
