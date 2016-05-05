@@ -94,20 +94,14 @@ host_triplet = @host@
 #	msdc/pools.h		\
 #	msdc/ring_pool.h	\
 #	msdc/composite_core.h
-@PLATFORM_MINGW_TRUE@am__append_1 = \
-@PLATFORM_MINGW_TRUE@	./bits/win32.mutex.cpp
-
-
+@PLATFORM_MINGW_TRUE@am__append_1 = 
 #	bits/win32.thread.cpp	\
 #	bits/win32.cond.cpp	\
 #	bits/win32.semaphore.cpp \
 #	bits/win32.timer.cpp	\
 #	bits/win32.netpoint.cpp	\
 #	sc/win32.rs232port.cpp
-@PLATFORM_MINGW_TRUE@am__append_2 = \
-@PLATFORM_MINGW_TRUE@	./bits/win32.mutex.h
-
-
+@PLATFORM_MINGW_TRUE@am__append_2 = 
 #	bits/win32.thread.h	\
 #	bits/win32.cond.h	\
 #	bits/win32.semaphore.h	\
@@ -117,16 +111,7 @@ host_triplet = @host@
 
 #pkginclude_sc_HEADERS +=	\
 #	sc/win32.rs232port.h
-@WINDOWS_RESOURCE_TRUE@am__append_3 = \
-@WINDOWS_RESOURCE_TRUE@	cross.res.rc
-
-@WINDOWS_RESOURCE_TRUE@am__append_4 = \
-@WINDOWS_RESOURCE_TRUE@	resource.h
-
-@PLATFORM_LINUX_TRUE@am__append_5 = \
-@PLATFORM_LINUX_TRUE@	./bits/posix.mutex.cpp
-
-
+@PLATFORM_LINUX_TRUE@am__append_3 = 
 #	bits/posix.thread.cpp	\
 #	bits/posix.cond.cpp	\
 #	sc/posix.rs232port.cpp	\
@@ -136,10 +121,7 @@ host_triplet = @host@
 #	bits/posix.eveloop.cpp	\
 #	bits/posix.spinlock.cpp	\
 #	bits/posix.ipchannel.cpp
-@PLATFORM_LINUX_TRUE@am__append_6 = \
-@PLATFORM_LINUX_TRUE@	./bits/posix.mutex.h
-
-
+@PLATFORM_LINUX_TRUE@am__append_4 = 
 #	bits/posix.thread.h	\
 #	bits/posix.cond.h	\
 #	bits/posix.semaphore.h	\
@@ -150,10 +132,7 @@ host_triplet = @host@
 
 #pkginclude_sc_HEADERS +=	\
 #	sc/posix.rs232port.h
-@PLATFORM_CYGWIN_TRUE@am__append_7 = \
-@PLATFORM_CYGWIN_TRUE@	./bits/posix.mutex.cpp
-
-
+@PLATFORM_CYGWIN_TRUE@am__append_5 = 
 #	bits/posix.thread.cpp	\
 #	bits/posix.cond.cpp	\
 #	sc/posix.rs232port.cpp	\
@@ -163,8 +142,22 @@ host_triplet = @host@
 #	bits/posix.eveloop.cpp	\
 #	bits/posix.spinlock.cpp	\
 #	bits/posix.ipchannel.cpp
-@PLATFORM_CYGWIN_TRUE@am__append_8 = \
-@PLATFORM_CYGWIN_TRUE@	./bits/posix.mutex.h
+@PLATFORM_CYGWIN_TRUE@am__append_6 = 
+#	bits/posix.thread.h	\
+#	bits/posix.cond.h	\
+#	bits/posix.semaphore.h	\
+#	bits/posix.spinlock.h	\
+#	bits/posix.timer.h	\
+#	bits/posix.netpoint.h	\
+#	bits/posix.ipchannel.h
+
+#pkginclude_sc_HEADERS +=	\
+#	sc/posix.rs232port.h
+@WINDOWS_RESOURCE_TRUE@am__append_7 = \
+@WINDOWS_RESOURCE_TRUE@	cross.res.rc
+
+@WINDOWS_RESOURCE_TRUE@am__append_8 = \
+@WINDOWS_RESOURCE_TRUE@	resource.h
 
 subdir = crs
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -222,15 +215,12 @@ am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(pkgconfigdir)" \
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libcrs_la_LIBADD =
 am__libcrs_la_SOURCES_DIST = crs-version.c CRCStuff.c disjoint_set.cpp \
-	./bits/win32.mutex.cpp cross.res.rc ./bits/posix.mutex.cpp
-am__dirstamp = $(am__leading_dot)dirstamp
-@PLATFORM_MINGW_TRUE@am__objects_1 = ./bits/win32.mutex.lo
+	cross.res.rc
+am__objects_1 =
 @WINDOWS_RESOURCE_TRUE@am__objects_2 = cross.res.lo
-@PLATFORM_LINUX_TRUE@am__objects_3 = ./bits/posix.mutex.lo
-@PLATFORM_CYGWIN_TRUE@am__objects_4 = ./bits/posix.mutex.lo
 am_libcrs_la_OBJECTS = crs-version.lo CRCStuff.lo disjoint_set.lo \
-	$(am__objects_1) $(am__objects_2) $(am__objects_3) \
-	$(am__objects_4)
+	$(am__objects_1) $(am__objects_1) $(am__objects_1) \
+	$(am__objects_2)
 libcrs_la_OBJECTS = $(am_libcrs_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -299,8 +289,7 @@ am__can_run_installinfo = \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
 DATA = $(pkgconfig_DATA)
-am__pkginclude_bits_HEADERS_DIST = ./bits/win32.mutex.h resource.h \
-	./bits/posix.mutex.h
+am__pkginclude_bits_HEADERS_DIST = resource.h
 HEADERS = $(pkginclude_HEADERS) $(pkginclude_bits_HEADERS) \
 	$(pkginclude_math_HEADERS) $(pkginclude_msdc_HEADERS) \
 	$(pkginclude_oio_HEADERS) $(pkginclude_sc_HEADERS) \
@@ -498,10 +487,13 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-AM_CPPFLAGS = -I$(top_builddir) -I$(top_srcdir)
-lib_LTLIBRARIES = libcrs.la
+AM_CPPFLAGS = \
+	-I$(top_builddir) \
+	-I$(top_srcdir)
+
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = $(top_builddir)/crs.pc
+lib_LTLIBRARIES = libcrs.la
 libcrs_la_LDFLAGS = -no-undefined -version-info $(CRS_LT_VERSION)
 libcrs_la_SOURCES = crs-version.c CRCStuff.c disjoint_set.cpp \
 	$(am__append_1) $(am__append_3) $(am__append_5) \
@@ -673,24 +665,12 @@ clean-libLTLIBRARIES:
 	  echo rm -f $${locs}; \
 	  rm -f $${locs}; \
 	}
-bits/$(am__dirstamp):
-	@$(MKDIR_P) ./bits
-	@: > bits/$(am__dirstamp)
-bits/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) ./bits/$(DEPDIR)
-	@: > bits/$(DEPDIR)/$(am__dirstamp)
-./bits/win32.mutex.lo: bits/$(am__dirstamp) \
-	bits/$(DEPDIR)/$(am__dirstamp)
-./bits/posix.mutex.lo: bits/$(am__dirstamp) \
-	bits/$(DEPDIR)/$(am__dirstamp)
 
 libcrs.la: $(libcrs_la_OBJECTS) $(libcrs_la_DEPENDENCIES) $(EXTRA_libcrs_la_DEPENDENCIES) 
 	$(AM_V_CXXLD)$(libcrs_la_LINK) -rpath $(libdir) $(libcrs_la_OBJECTS) $(libcrs_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
-	-rm -f ./bits/*.$(OBJEXT)
-	-rm -f ./bits/*.lo
 
 distclean-compile:
 	-rm -f *.tab.c
@@ -698,8 +678,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/CRCStuff.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/crs-version.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/disjoint_set.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./bits/$(DEPDIR)/posix.mutex.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./bits/$(DEPDIR)/win32.mutex.Plo@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
@@ -754,7 +732,6 @@ mostlyclean-libtool:
 
 clean-libtool:
 	-rm -rf .libs _libs
-	-rm -rf ./bits/.libs ./bits/_libs
 install-pkgconfigDATA: $(pkgconfig_DATA)
 	@$(NORMAL_INSTALL)
 	@list='$(pkgconfig_DATA)'; test -n "$(pkgconfigdir)" || list=; \
@@ -1039,8 +1016,6 @@ clean-generic:
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
-	-rm -f bits/$(DEPDIR)/$(am__dirstamp)
-	-rm -f bits/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
@@ -1051,7 +1026,7 @@ clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
 	mostlyclean-am
 
 distclean: distclean-am
-	-rm -rf ./$(DEPDIR) ./bits/$(DEPDIR)
+	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -1100,7 +1075,7 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-	-rm -rf ./$(DEPDIR) ./bits/$(DEPDIR)
+	-rm -rf ./$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
@@ -1152,17 +1127,6 @@ uninstall-am: uninstall-libLTLIBRARIES uninstall-pkgconfigDATA \
 
 .PRECIOUS: Makefile
 
-
-#	bits/posix.thread.h	\
-#	bits/posix.cond.h	\
-#	bits/posix.semaphore.h	\
-#	bits/posix.spinlock.h	\
-#	bits/posix.timer.h	\
-#	bits/posix.netpoint.h	\
-#	bits/posix.ipchannel.h
-
-#pkginclude_sc_HEADERS +=	\
-#	sc/posix.rs232port.h
 
 @CODE_COVERAGE_RULES@
 

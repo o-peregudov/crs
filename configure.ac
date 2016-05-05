@@ -454,13 +454,13 @@ if (test $PLATFORM_LINUX = 1) || (test $PLATFORM_CYGWIN = 1); then
   fi
 fi
 
-if test $HAVE_WINSOCK2_API = 1; then
+if test "x$ac_cv_winsock2_works" = "xyes" ; then
   SELECT_TYPE="winsock2"
   AC_DEFINE(WINSOCK2_IO_MULTIPLEXING, 1, [Define to 1 if winsock2 should be used for I/O multiplexing])
-elif test $ac_cv_epoll_works = yes; then
+elif test "x$ac_cv_epoll_works" = "xyes" ; then
   SELECT_TYPE="epoll"
   AC_DEFINE(EPOLL_IO_MULTIPLEXING, 1, [Define to 1 if epoll should be used for I/O multiplexing])
-elif test $ac_cv_poll_works = yes; then
+elif test "x$ac_cv_poll_works" = "xyes" ; then
   SELECT_TYPE="poll"
   AC_DEFINE(POLL_IO_MULTIPLEXING, 1, [Define to 1 if poll should be used for I/O multiplexing])
 else
@@ -475,7 +475,7 @@ dnl
 USE_CXX11_ATOMIC=0
 AC_LANG_PUSH([C++])
 AC_CACHE_CHECK(whether <atomic> is usable, ac_cv_std_atomic_works,
-  AC_RUN_IFELSE([AC_LANG_SOURCE([[
+  AC_LINK_IFELSE([AC_LANG_SOURCE([[
     #include <atomic>
     int main (int argc, char ** argv)
     {
@@ -484,38 +484,33 @@ AC_CACHE_CHECK(whether <atomic> is usable, ac_cv_std_atomic_works,
     }
   ]])],[ac_cv_std_atomic_works=yes],[ac_cv_std_atomic_works=no],[:]))
 AC_LANG_POP([C++])
-if test $ac_cv_std_atomic_works = yes ; then
+if test x$ac_cv_std_atomic_works = xyes ; then
   USE_CXX11_ATOMIC=1
+else
+  AC_MSG_ERROR([ISO C++ 2011 standard <atomic> is required])
 fi
 AC_SUBST(USE_CXX11_ATOMIC)
 
 dnl
-dnl Enable STL's <chrono>
+dnl auto-detect and verify <chrono> header present and really works
 dnl
-USE_CXX11_CHRONO=0
-AC_ARG_ENABLE(chrono,
-              AS_HELP_STRING([--disable-chrono], [Disable C++11 <chrono> support]),
-	      [do_check_chrono=$enable_chrono], [do_check_chrono=yes])
-if test $do_check_chrono = yes ; then
-  dnl
-  dnl auto-detect and verify <chrono> header present and really works
-  dnl
-  AC_LANG_PUSH([C++])
-  AC_CACHE_CHECK(whether <chrono> is usable, ac_cv_std_chrono_works,
-    AC_LINK_IFELSE([AC_LANG_SOURCE([[
-      #include <chrono>
-      int main (int argc, char ** argv)
-      {
-        typedef std::chrono::high_resolution_clock clock_type;
-        std::chrono::time_point<clock_type> startTime = clock_type::now ();
-        clock_type::duration usExeTime = clock_type::now () - startTime;
-        return 0;
-      }
-    ]])],[ac_cv_std_chrono_works=yes],[ac_cv_std_chrono_works=no],[:]))
-  AC_LANG_POP([C++])
-  if test $ac_cv_std_chrono_works = yes ; then
-    USE_CXX11_CHRONO=1
-  fi
+AC_LANG_PUSH([C++])
+AC_CACHE_CHECK(whether <chrono> is usable, ac_cv_std_chrono_works,
+  AC_LINK_IFELSE([AC_LANG_SOURCE([[
+    #include <chrono>
+    int main (int argc, char ** argv)
+    {
+       typedef std::chrono::high_resolution_clock clock_type;
+       std::chrono::time_point<clock_type> startTime = clock_type::now ();
+       clock_type::duration usExeTime = clock_type::now () - startTime;
+       return 0;
+    }
+  ]])],[ac_cv_std_chrono_works=yes],[ac_cv_std_chrono_works=no],[:]))
+AC_LANG_POP([C++])
+if test $ac_cv_std_chrono_works = yes ; then
+  USE_CXX11_CHRONO=1
+else
+  AC_MSG_ERROR([ISO C++ 2011 standard <chrono> is required])
 fi
 AC_SUBST(USE_CXX11_CHRONO)
 
@@ -526,7 +521,7 @@ USE_CXX11_MUTEX=0
 USE_CXX11_CONDITION_VARIABLE=0
 AC_LANG_PUSH([C++])
 AC_CACHE_CHECK(whether <mutex> is usable, ac_cv_std_mutex_works,
-  AC_RUN_IFELSE([AC_LANG_SOURCE([[
+  AC_LINK_IFELSE([AC_LANG_SOURCE([[
     #include <mutex>
     int main (int argc, char ** argv)
     {
@@ -536,7 +531,7 @@ AC_CACHE_CHECK(whether <mutex> is usable, ac_cv_std_mutex_works,
     }
   ]])],[ac_cv_std_mutex_works=yes],[ac_cv_std_mutex_works=no],[:]))
 AC_LANG_POP([C++])
-if test $ac_cv_std_mutex_works = yes ; then
+if test x$ac_cv_std_mutex_works = xyes ; then
   USE_CXX11_MUTEX=1
 
   dnl
@@ -544,7 +539,7 @@ if test $ac_cv_std_mutex_works = yes ; then
   dnl
   AC_LANG_PUSH([C++])
   AC_CACHE_CHECK(whether <condition_variable> is usable, ac_cv_std_condition_variable_works,
-    AC_RUN_IFELSE([AC_LANG_SOURCE([[
+    AC_LINK_IFELSE([AC_LANG_SOURCE([[
       #include <mutex>
       #include <condition_variable>
       int main (int argc, char ** argv)
@@ -557,9 +552,13 @@ if test $ac_cv_std_mutex_works = yes ; then
       }
     ]])],[ac_cv_std_condition_variable_works=yes],[ac_cv_std_condition_variable_works=no],[:]))
   AC_LANG_POP([C++])
-  if test $ac_cv_std_condition_variable_works = yes ; then
+  if test x$ac_cv_std_condition_variable_works = xyes ; then
     USE_CXX11_CONDITION_VARIABLE=1
+  else
+    AC_MSG_ERROR([ISO C++ 2011 standard <condition_variable> is required])
   fi
+else
+  AC_MSG_ERROR([ISO C++ 2011 standard <mutex> is required])
 fi
 AC_SUBST(USE_CXX11_MUTEX)
 AC_SUBST(USE_CXX11_CONDITION_VARIABLE)

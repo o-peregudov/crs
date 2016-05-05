@@ -19,76 +19,11 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-/*
- *	2008/01/22	wrapper for mutex object
- *	2010/08/26	separate versions for each API
- *	2010/08/28	compartibility with std::mutex from C++0x standard
- *	2012/08/18	new host class selection
- *	2013/09/21	ver. 2.0.0 refactoring
- *	2016/04/10	ver. 2.0.0 refactoring
- */
-
 #include <crs/libexport.h>
 
 #if USE_CXX11_MUTEX
 #  include <mutex>
-#  define LIBCRS_DEFINE_LOCKS 0
-
-#elif PLATFORM_MINGW
-#  include <crs/bits/win32.mutex.h>
-#  define LIBCRS_DEFINE_LOCKS 1
-namespace std
-{
-  typedef CrossClass::win32_mutex mutex;
-}
-
 #else
-#  include <crs/bits/posix.mutex.h>
-#  define LIBCRS_DEFINE_LOCKS 1
-namespace std
-{
-  typedef CrossClass::posix_mutex mutex;
-}
-#endif /* USE_CXX11_MUTEX */
-
-#if LIBCRS_DEFINE_LOCKS
-namespace std
-{
-  struct defer_lock_t { };
-  struct adopt_lock_t { };
-  struct try_to_lock_t { };
-
-  template <class Mutex>
-  class lock_guard
-  {
-    lock_guard (const lock_guard &);
-    lock_guard & operator = (const lock_guard &);
-
-  public:
-    typedef Mutex mutex_type;
-
-    lock_guard (mutex_type & m)
-      : pm (m)
-    {
-      pm.lock ();
-    }
-
-    lock_guard (mutex_type & m, adopt_lock_t)
-      : pm (m)
-    {
-    }
-
-    ~lock_guard ()
-    {
-      pm.unlock ();
-    }
-
-  private:
-    mutex_type & pm;
-  };
-} /* namespace std */
-
-#endif /* LIBCRS_DEFINE_LOCKS */
-#undef LIBCRS_DEFINE_LOCKS
-
+#  error This file requires ISO C++ 2011 standard <mutex> header, yet it was not detected on your system.
+#endif
 #endif /* CROSS_MUTEX_H_INCLUDED */

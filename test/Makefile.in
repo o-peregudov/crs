@@ -87,10 +87,8 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-TESTS = test_mutex$(EXEEXT) test_heap$(EXEEXT) \
-	test_interval_map$(EXEEXT)
-check_PROGRAMS = test_mutex$(EXEEXT) test_heap$(EXEEXT) \
-	test_interval_map$(EXEEXT)
+TESTS = test_heap$(EXEEXT) test_interval_map$(EXEEXT)
+check_PROGRAMS = test_heap$(EXEEXT) test_interval_map$(EXEEXT)
 subdir = test
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_code_coverage.m4 \
@@ -118,10 +116,6 @@ test_interval_map_SOURCES = test_interval_map.cpp
 test_interval_map_OBJECTS = test_interval_map.$(OBJEXT)
 test_interval_map_LDADD = $(LDADD)
 test_interval_map_DEPENDENCIES = $(top_builddir)/crs/libcrs.la
-test_mutex_SOURCES = test_mutex.cpp
-test_mutex_OBJECTS = test_mutex.$(OBJEXT)
-test_mutex_LDADD = $(LDADD)
-test_mutex_DEPENDENCIES = $(top_builddir)/crs/libcrs.la
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -156,8 +150,8 @@ AM_V_CXXLD = $(am__v_CXXLD_@AM_V@)
 am__v_CXXLD_ = $(am__v_CXXLD_@AM_DEFAULT_V@)
 am__v_CXXLD_0 = @echo "  CXXLD   " $@;
 am__v_CXXLD_1 = 
-SOURCES = test_heap.cpp test_interval_map.cpp test_mutex.cpp
-DIST_SOURCES = test_heap.cpp test_interval_map.cpp test_mutex.cpp
+SOURCES = test_heap.cpp test_interval_map.cpp
+DIST_SOURCES = test_heap.cpp test_interval_map.cpp
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -615,10 +609,6 @@ test_interval_map$(EXEEXT): $(test_interval_map_OBJECTS) $(test_interval_map_DEP
 	@rm -f test_interval_map$(EXEEXT)
 	$(AM_V_CXXLD)$(CXXLINK) $(test_interval_map_OBJECTS) $(test_interval_map_LDADD) $(LIBS)
 
-test_mutex$(EXEEXT): $(test_mutex_OBJECTS) $(test_mutex_DEPENDENCIES) $(EXTRA_test_mutex_DEPENDENCIES) 
-	@rm -f test_mutex$(EXEEXT)
-	$(AM_V_CXXLD)$(CXXLINK) $(test_mutex_OBJECTS) $(test_mutex_LDADD) $(LIBS)
-
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 
@@ -627,7 +617,6 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_heap.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_interval_map.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_mutex.Po@am__quote@
 
 .cpp.o:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
@@ -852,13 +841,6 @@ recheck: all $(check_PROGRAMS)
 	        am__force_recheck=am--force-recheck \
 	        TEST_LOGS="$$log_list"; \
 	exit $$?
-test_mutex.log: test_mutex$(EXEEXT)
-	@p='test_mutex$(EXEEXT)'; \
-	b='test_mutex'; \
-	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
-	--log-file $$b.log --trs-file $$b.trs \
-	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
-	"$$tst" $(AM_TESTS_FD_REDIRECT)
 test_heap.log: test_heap$(EXEEXT)
 	@p='test_heap$(EXEEXT)'; \
 	b='test_heap'; \

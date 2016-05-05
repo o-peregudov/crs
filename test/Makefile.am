@@ -5,12 +5,10 @@ LDADD = $(top_builddir)/crs/libcrs.la
 AM_TESTS_ENVIRONMENT = LD_LIBRARY_PATH=$(top_builddir)/test/.libs:$(top_builddir)/test:$$LD_LIBRARY_PATH
 AM_DEFAULT_SOURCE_EXT = .cpp
 
-TESTS =	test_mutex		\
-	test_heap		\
+TESTS =	test_heap		\
 	test_interval_map
 
 check_PROGRAMS =		\
-	test_mutex		\
 	test_heap		\
 	test_interval_map
 

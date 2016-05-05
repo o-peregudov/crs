@@ -1,12 +1,13 @@
-AM_CPPFLAGS = -I$(top_builddir) -I$(top_srcdir)
-
-lib_LTLIBRARIES = libcrs.la
+AM_CPPFLAGS = \
+	-I$(top_builddir) \
+	-I$(top_srcdir)
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA= $(top_builddir)/crs.pc
 
-libcrs_la_LDFLAGS = -no-undefined -version-info $(CRS_LT_VERSION)
+lib_LTLIBRARIES = libcrs.la
 
+libcrs_la_LDFLAGS = -no-undefined -version-info $(CRS_LT_VERSION)
 libcrs_la_SOURCES =		\
 	crs-version.c		\
 	CRCStuff.c		\
@@ -117,9 +118,7 @@ pkginclude_msdc_HEADERS =
 	msdc/composite_core.h
 
 if PLATFORM_MINGW
-libcrs_la_SOURCES +=		\
-	./bits/win32.mutex.cpp
-
+libcrs_la_SOURCES +=
 #	bits/win32.thread.cpp	\
 	bits/win32.cond.cpp	\
 	bits/win32.semaphore.cpp \
@@ -127,9 +126,7 @@ libcrs_la_SOURCES +=		\
 	bits/win32.netpoint.cpp	\
 	sc/win32.rs232port.cpp
 
-pkginclude_bits_HEADERS +=	\
-	./bits/win32.mutex.h
-
+pkginclude_bits_HEADERS +=
 #	bits/win32.thread.h	\
 	bits/win32.cond.h	\
 	bits/win32.semaphore.h	\
@@ -141,18 +138,8 @@ pkginclude_bits_HEADERS +=	\
 	sc/win32.rs232port.h
 endif
 
-if WINDOWS_RESOURCE
-libcrs_la_SOURCES +=		\
-	cross.res.rc
-
-pkginclude_bits_HEADERS +=	\
-	resource.h
-endif
-
 if PLATFORM_LINUX
-libcrs_la_SOURCES +=		\
-	./bits/posix.mutex.cpp
-
+libcrs_la_SOURCES +=
 #	bits/posix.thread.cpp	\
 	bits/posix.cond.cpp	\
 	sc/posix.rs232port.cpp	\
@@ -163,9 +150,7 @@ libcrs_la_SOURCES +=		\
 	bits/posix.spinlock.cpp	\
 	bits/posix.ipchannel.cpp
 
-pkginclude_bits_HEADERS +=	\
-	./bits/posix.mutex.h
-
+pkginclude_bits_HEADERS +=
 #	bits/posix.thread.h	\
 	bits/posix.cond.h	\
 	bits/posix.semaphore.h	\
@@ -179,9 +164,7 @@ pkginclude_bits_HEADERS +=	\
 endif
 
 if PLATFORM_CYGWIN
-libcrs_la_SOURCES +=		\
-	./bits/posix.mutex.cpp
-
+libcrs_la_SOURCES +=
 #	bits/posix.thread.cpp	\
 	bits/posix.cond.cpp	\
 	sc/posix.rs232port.cpp	\
@@ -192,9 +175,7 @@ libcrs_la_SOURCES +=		\
 	bits/posix.spinlock.cpp	\
 	bits/posix.ipchannel.cpp
 
-pkginclude_bits_HEADERS +=	\
-	./bits/posix.mutex.h
-
+pkginclude_bits_HEADERS +=
 #	bits/posix.thread.h	\
 	bits/posix.cond.h	\
 	bits/posix.semaphore.h	\
@@ -205,6 +186,14 @@ pkginclude_bits_HEADERS +=	\
 
 #pkginclude_sc_HEADERS +=	\
 	sc/posix.rs232port.h
+endif
+
+if WINDOWS_RESOURCE
+libcrs_la_SOURCES +=		\
+	cross.res.rc
+
+pkginclude_bits_HEADERS +=	\
+	resource.h
 endif
 
 @CODE_COVERAGE_RULES@
