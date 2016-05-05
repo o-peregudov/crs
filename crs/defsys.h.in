@@ -49,10 +49,6 @@
 
 #define HAVE_LIBGSL @HAVE_LIBGSL@
 
-#define HAVE_POSIX_DLOPEN_API @HAVE_POSIX_DLOPEN_API@
-#define HAVE_POSIX_SYSLOG_API @HAVE_POSIX_SYSLOG_API@
-#define HAVE_POSIX_TIMER_API @HAVE_POSIX_TIMER_API@
-
 #define WINDOWS_RESOURCE @WINDOWS_RESOURCE@
 #define HAVE_WINSOCK2_API @HAVE_WINSOCK2_API@
 #define HAVE_WINDOWS_H @HAVE_WINDOWS_H@
@@ -60,18 +56,14 @@
 #define DEFINE_CROSS_EXPORT @DEFINE_CROSS_EXPORT@
 #if (DEFINE_CROSS_EXPORT)
 #  define CROSS_EXPORT
-#endif
-
-#if !defined (CROSS_EXPORT)
-#  if (PLATFORM_MINGW) && (WINDOWS_RESOURCE)
-#    if defined (DLL_EXPORT)
-#      	define CROSS_EXPORT __declspec(dllexport)
-#    else
-#       define CROSS_EXPORT __declspec(dllimport)
-#    endif
+#elif (PLATFORM_MINGW) && (WINDOWS_RESOURCE)
+#  if defined (DLL_EXPORT)
+#    define CROSS_EXPORT __declspec(dllexport)
 #  else
-#    define CROSS_EXPORT extern
+#    define CROSS_EXPORT __declspec(dllimport)
 #  endif
+#else
+#  define CROSS_EXPORT
 #endif
 
 #if (PLATFORM_MINGW) || (PLATFORM_CYGWIN)

@@ -1,5 +1,8 @@
 AC_INIT([crs], [2.0.0], [o.peregudov@gmail.com])
 
+AC_CONFIG_HEADERS([config.h])
+AC_CONFIG_MACRO_DIR([m4])
+
 AM_INIT_AUTOMAKE([-Wall -Werror foreign subdir-objects])
 AM_SILENT_RULES([yes])
 
@@ -21,9 +24,6 @@ CRS_AGE=0
 
 CRS_LT_VERSION="${CRS_CURRENT}:${CRS_REVISION}:${CRS_AGE}"
 AC_SUBST(CRS_LT_VERSION)
-
-AC_CONFIG_HEADERS([config.h])
-AC_CONFIG_MACRO_DIR([m4])
 
 dnl
 dnl Split VERSION into CRS_VERSION_MAJOR and CRS_VERSION_MINOR
@@ -160,7 +160,7 @@ HAVE_CXX14=0
 HAVE_CXX11=0
 AX_CXX_COMPILE_STDCXX([14], [noext], [optional])
 if test $HAVE_CXX14 -ne 1; then
-  AX_CXX_COMPILE_STDCXX([11], [noext], [optional])
+  AX_CXX_COMPILE_STDCXX([11], [noext], [mandatory])
 else
   HAVE_CXX11=1
 fi
@@ -170,7 +170,7 @@ AC_SUBST(HAVE_CXX11)
 dnl
 dnl We need special define to build static library only
 dnl
-if test "$enable_shared" = "yes"; then
+if test $enable_shared = yes; then
   DEFINE_CROSS_EXPORT=0
 else
   DEFINE_CROSS_EXPORT=1
@@ -205,50 +205,49 @@ AC_CHECK_HEADERS([dlfcn.h	\
 dnl
 dnl Check for integer types
 dnl
-if test x$ac_cv_header_inttypes_h = xyes; then
+if test $ac_cv_header_inttypes_h = yes; then
   HAVE_INTTYPES_H=1
 else
   HAVE_INTTYPES_H=0
 fi
 AC_SUBST(HAVE_INTTYPES_H)
 
-if test x$ac_cv_header_stdint_h = xyes; then
+if test $ac_cv_header_stdint_h = yes; then
   HAVE_STDINT_H=1
 else
   HAVE_STDINT_H=0
 fi
 AC_SUBST(HAVE_STDINT_H)
 
-if test x$ac_cv_header_sys_types_h = xyes; then
+if test $ac_cv_header_sys_types_h = yes; then
   HAVE_SYS_TYPES_H=1
 else
   HAVE_SYS_TYPES_H=0
 fi
 AC_SUBST(HAVE_SYS_TYPES_H)
 
-if test x$ac_cv_header_signal_h = xyes; then
+if test $ac_cv_header_signal_h = yes; then
   HAVE_SIGNAL_H=1
 else
   HAVE_SIGNAL_H=0
 fi
 AC_SUBST(HAVE_SIGNAL_H)
 
-if test x$ac_cv_header_time_h = xyes; then
+if test $ac_cv_header_time_h = yes; then
   HAVE_TIME_H=1
 else
   HAVE_TIME_H_0
 fi
 AC_SUBST(HAVE_TIME_H)
 
-if test x$ac_cv_header_windows_h = xyes; then
+if test $ac_cv_header_windows_h = yes; then
   HAVE_WINDOWS_H=1
 else
   HAVE_WINDOWS_H=0
 fi
 AC_SUBST(HAVE_WINDOWS_H)
 
-AX_PTHREAD([ac_pthread_lib_found=yes],
-           [ac_pthread_lib_found=no])
+AX_PTHREAD([ac_pthread_lib_found=yes], [ac_pthread_lib_found=no])
 if test $ac_pthread_lib_found = yes; then
   CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
   CXXFLAGS="$CXXFLAGS $PTHREAD_CFLAGS"
@@ -256,12 +255,11 @@ if test $ac_pthread_lib_found = yes; then
 fi
 
 HAVE_PTHREAD_SPIN_LOCK=0
-if test x$ac_cv_header_pthread_h = xyes; then
+if test $ac_cv_header_pthread_h = yes; then
   HAVE_PTHREAD_H=1
   AC_SEARCH_LIBS([pthread_create], [pthread])
-  AC_CHECK_FUNCS([pthread_spin_lock	\
-		])
-  if test x$ac_cv_func_pthread_spin_lock = xyes ; then
+  AC_CHECK_FUNCS([pthread_spin_lock])
+  if test $ac_cv_func_pthread_spin_lock = yes ; then
     HAVE_PTHREAD_SPIN_LOCK=1
   fi
 else
@@ -278,7 +276,7 @@ dnl Here we do believe that C and C++ compilers are both has the same
 dnl support of the OpenMP and hence we check only C compiler
 dnl
 AC_OPENMP
-if test x$OPENMP_CFLAGS != x; then
+if test -n $OPENMP_CFLAGS; then
   CFLAGS="$CFLAGS $OPENMP_CFLAGS"
   CXXFLAGS="$CXXFLAGS $OPENMP_CFLAGS"
 fi
@@ -286,8 +284,8 @@ fi
 dnl
 dnl Check for GSL
 dnl
-AX_PATH_GSL([1.14],[have_libgsl=yes],[have_libgsl=no])
-if test x$have_libgsl = xyes; then
+AX_PATH_GSL([1.14],[ac_have_libgsl=yes],[ac_have_libgsl=no])
+if test $ac_have_libgsl = yes; then
   CFLAGS="$CFLAGS $GSL_CFLAGS"
   CPPFLAGS="$CPPFLAGS -DGSL_RANGE_CHECK_OFF -DHAVE_INLINE"
   CXXFLAGS="$CXXFLAGS $GSL_CFLAGS"
@@ -327,13 +325,13 @@ case "$host_os" in
       ]])],[ac_cv_winsock2_works=yes],[ac_cv_winsock2_works=no]))
     LIBS="$save_LIBS"
     AC_LANG_POP([C])
-    if test x$ac_cv_winsock2_works = xyes; then
+    if test $ac_cv_winsock2_works = yes; then
       LIBS="$LIBS -lws2_32"
       CRS_LIBS="$CRS_LIBS -lws2_32"
       HAVE_WINSOCK2_API=1
     else
       LIBS="$save_LIBS"
-      AC_MSG_FAILURE([failed to link with winsock2])
+      AC_MSG_WARN([failed to link with winsock2])
     fi
     ;;
   *)
@@ -343,89 +341,6 @@ AC_SUBST(HAVE_WINSOCK2_API)
 AM_CONDITIONAL([HAVE_WINSOCK2_API], [test $HAVE_WINSOCK2_API = 1] )
 
 dnl
-dnl POSIX dlopen/dlsym/dlclose API
-dnl
-if (test x$lt_cv_dlopen != xno) && (test x$ac_cv_header_dlfcn_h = xyes); then
-  HAVE_POSIX_DLOPEN_API=1
-  LIBS="$LIBS $lt_cv_dlopen_libs"
-else
-  HAVE_POSIX_DLOPEN_API=0
-fi
-AC_SUBST(HAVE_POSIX_DLOPEN_API)
-AM_CONDITIONAL([HAVE_POSIX_DLOPEN_API], [test $HAVE_POSIX_DLOPEN_API = 1])
-
-dnl
-dnl POSIX timer
-dnl
-HAVE_POSIX_TIMER_API=0
-if (test x$ac_cv_header_signal_h = xyes) && (test x$ac_cv_header_time_h = xyes); then
-  AC_SEARCH_LIBS([timer_getoverrun], [rt])
-  AC_SEARCH_LIBS([timer_settime], [rt])
-  AC_SEARCH_LIBS([timer_gettime], [rt])
-  AC_SEARCH_LIBS([timer_create], [rt])
-  AC_SEARCH_LIBS([timer_delete], [rt])
-
-  dnl
-  dnl [POSIX Timer] auto-detect and verify that POSIX timer API is supported
-  dnl
-  AC_LANG_PUSH([C])
-  AC_CACHE_CHECK(for POSIX timer API, ac_cv_posix_timer_works,
-    AC_LINK_IFELSE([AC_LANG_SOURCE([[
-      #include <signal.h>
-      #include <time.h>
-      int main (int argc, char ** argv)
-      {
-        timer_t tid;
-      	struct itimerspec its;
-      	struct sigevent sev;
-      	timer_create (CLOCK_REALTIME, &sev, &tid);
-      	timer_getoverrun (tid);
-      	timer_gettime (tid, &its);
-      	timer_delete (tid);
-      	return 0;
-      }
-    ]])],[ac_cv_posix_timer_works=yes],[ac_cv_posix_timer_works=no],[:]))
-  AC_LANG_POP([C])
-  if test x$ac_cv_posix_timer_works = xyes ; then
-    HAVE_POSIX_TIMER_API=1
-  fi
-fi
-if (test x$libsngf_disable_posix_timer = xyes) && (test x$ac_cv_posix_timer_works = xyes); then
-  AC_MSG_NOTICE([POSIX timer API usage was switched off])
-  HAVE_POSIX_TIMER_API=0
-fi
-AC_SUBST(HAVE_POSIX_TIMER_API)
-AM_CONDITIONAL([USE_POSIX_TIMER_API], [test $HAVE_POSIX_TIMER_API = 1])
-
-dnl
-dnl POSIX syslog
-dnl
-HAVE_POSIX_SYSLOG_API=0
-if test x$ac_cv_header_syslog_h = xyes; then
-  dnl
-  dnl [POSIX Timer] auto-detect and verify that POSIX timer API is supported
-  dnl
-  AC_LANG_PUSH([C])
-  AC_CACHE_CHECK(for POSIX syslog API, ac_cv_posix_syslog_works,
-    AC_LINK_IFELSE([AC_LANG_SOURCE([[
-      #include <syslog.h>
-      int main (int argc, char ** argv)
-      {
-        openlog (0, LOG_NDELAY, LOG_USER);
-	syslog (LOG_ERR, "error message");
-	syslog (LOG_DEBUG, "debug message");
-      	closelog ();
-      	return 0;
-      }
-    ]])],[ac_cv_posix_syslog_works=yes],[ac_cv_posix_syslog_works=no],[:]))
-  AC_LANG_POP([C])
-  if test x$ac_cv_posix_syslog_works = xyes ; then
-    HAVE_POSIX_SYSLOG_API=1
-  fi
-fi
-AC_SUBST(HAVE_POSIX_SYSLOG_API)
-
-dnl
 dnl Check whether we have to disable epoll () support on Linux
 dnl
 USE_EPOLL=0
@@ -433,7 +348,7 @@ do_check_epoll=no
 AC_ARG_ENABLE(epoll,
               AS_HELP_STRING([--disable-epoll], [Disable Linux epoll(2) support.]),
 	      [do_check_epoll=$enable_epoll], [do_check_epoll=yes])
-if (test $PLATFORM_LINUX = 1) && (test "$do_check_epoll" = "yes"); then
+if (test $PLATFORM_LINUX = 1) && (test $do_check_epoll = yes); then
   dnl
   dnl auto-detect and verify sys/epoll.h header and library present and working
   dnl (some parts were borrowed from the squid-cache project)
@@ -446,7 +361,7 @@ if (test $PLATFORM_LINUX = 1) && (test "$do_check_epoll" = "yes"); then
   AC_CHECK_HEADERS([sys/epoll.h])
 
   dnl Verify that epoll really works
-  if test x$ac_cv_func_epoll_create = xyes; then
+  if test $ac_cv_func_epoll_create = yes; then
     AC_CACHE_CHECK(if epoll works, ac_cv_epoll_works,
       AC_RUN_IFELSE([AC_LANG_SOURCE([[
         #include <sys/epoll.h>
@@ -462,7 +377,7 @@ if (test $PLATFORM_LINUX = 1) && (test "$do_check_epoll" = "yes"); then
       ]])],[ac_cv_epoll_works=yes],[ac_cv_epoll_works=no],[:]))
   fi
 
-  if test x$ac_cv_epoll_works = xyes; then
+  if test $ac_cv_epoll_works = yes; then
     USE_EPOLL=1
   fi
 else
@@ -485,7 +400,7 @@ if (test $PLATFORM_LINUX = 1) || (test $PLATFORM_CYGWIN = 1); then
   AC_CHECK_HEADERS([poll.h])
 
   dnl Verify that poll really works
-  if test x$ac_cv_func_poll = xyes; then
+  if test $ac_cv_func_poll = yes; then
     AC_CACHE_CHECK(if poll works, ac_cv_poll_works,
       AC_RUN_IFELSE([AC_LANG_SOURCE([[
         #include <poll.h>
@@ -496,7 +411,7 @@ if (test $PLATFORM_LINUX = 1) || (test $PLATFORM_CYGWIN = 1); then
       ]])],[ac_cv_poll_works=yes],[ac_cv_poll_works=no],[:]))
   fi
 
-  if test x$ac_cv_poll_works = xyes; then
+  if test $ac_cv_poll_works = yes; then
     USE_POLL=1
   fi
 fi
@@ -517,7 +432,7 @@ if (test $PLATFORM_LINUX = 1) || (test $PLATFORM_CYGWIN = 1); then
   AC_CHECK_HEADERS([sys/select.h sys/time.h sys/types.h unistd.h])
 
   dnl Verify that select really works
-  if test x$ac_cv_func_select = xyes; then
+  if test $ac_cv_func_select = yes; then
     AC_CACHE_CHECK(if select works, ac_cv_select_works,
       AC_RUN_IFELSE([AC_LANG_SOURCE([[
         #include <sys/select.h>
@@ -534,18 +449,18 @@ if (test $PLATFORM_LINUX = 1) || (test $PLATFORM_CYGWIN = 1); then
       ]])],[ac_cv_select_works=yes],[ac_cv_select_works=no],[:]))
   fi
 
-  if test x$ac_cv_select_works = xyes; then
+  if test $ac_cv_select_works = yes; then
     USE_SELECT=1
   fi
 fi
 
-if test x$ac_cv_winsock2_works = xyes; then
+if test $HAVE_WINSOCK2_API = 1; then
   SELECT_TYPE="winsock2"
   AC_DEFINE(WINSOCK2_IO_MULTIPLEXING, 1, [Define to 1 if winsock2 should be used for I/O multiplexing])
-elif test x$ac_cv_epoll_works = xyes; then
+elif test $ac_cv_epoll_works = yes; then
   SELECT_TYPE="epoll"
   AC_DEFINE(EPOLL_IO_MULTIPLEXING, 1, [Define to 1 if epoll should be used for I/O multiplexing])
-elif test x$ac_cv_poll_works = xyes; then
+elif test $ac_cv_poll_works = yes; then
   SELECT_TYPE="poll"
   AC_DEFINE(POLL_IO_MULTIPLEXING, 1, [Define to 1 if poll should be used for I/O multiplexing])
 else
@@ -557,6 +472,7 @@ AC_DEFINE_UNQUOTED(SELECT_TYPE, "$SELECT_TYPE", [Define to inform about availabl
 dnl
 dnl auto-detect and verify <atomic> header present and really works
 dnl
+USE_CXX11_ATOMIC=0
 AC_LANG_PUSH([C++])
 AC_CACHE_CHECK(whether <atomic> is usable, ac_cv_std_atomic_works,
   AC_RUN_IFELSE([AC_LANG_SOURCE([[
@@ -568,10 +484,8 @@ AC_CACHE_CHECK(whether <atomic> is usable, ac_cv_std_atomic_works,
     }
   ]])],[ac_cv_std_atomic_works=yes],[ac_cv_std_atomic_works=no],[:]))
 AC_LANG_POP([C++])
-if test x$ac_cv_std_atomic_works = xyes ; then
+if test $ac_cv_std_atomic_works = yes ; then
   USE_CXX11_ATOMIC=1
-else
-  USE_CXX11_ATOMIC=0
 fi
 AC_SUBST(USE_CXX11_ATOMIC)
 
@@ -582,7 +496,7 @@ USE_CXX11_CHRONO=0
 AC_ARG_ENABLE(chrono,
               AS_HELP_STRING([--disable-chrono], [Disable C++11 <chrono> support]),
 	      [do_check_chrono=$enable_chrono], [do_check_chrono=yes])
-if test "$do_check_chrono" = "yes" ; then
+if test $do_check_chrono = yes ; then
   dnl
   dnl auto-detect and verify <chrono> header present and really works
   dnl
@@ -599,7 +513,7 @@ if test "$do_check_chrono" = "yes" ; then
       }
     ]])],[ac_cv_std_chrono_works=yes],[ac_cv_std_chrono_works=no],[:]))
   AC_LANG_POP([C++])
-  if test x$ac_cv_std_chrono_works = xyes ; then
+  if test $ac_cv_std_chrono_works = yes ; then
     USE_CXX11_CHRONO=1
   fi
 fi
@@ -608,6 +522,8 @@ AC_SUBST(USE_CXX11_CHRONO)
 dnl
 dnl auto-detect and verify <mutex> header present and really works
 dnl
+USE_CXX11_MUTEX=0
+USE_CXX11_CONDITION_VARIABLE=0
 AC_LANG_PUSH([C++])
 AC_CACHE_CHECK(whether <mutex> is usable, ac_cv_std_mutex_works,
   AC_RUN_IFELSE([AC_LANG_SOURCE([[
@@ -620,7 +536,7 @@ AC_CACHE_CHECK(whether <mutex> is usable, ac_cv_std_mutex_works,
     }
   ]])],[ac_cv_std_mutex_works=yes],[ac_cv_std_mutex_works=no],[:]))
 AC_LANG_POP([C++])
-if test x$ac_cv_std_mutex_works = xyes ; then
+if test $ac_cv_std_mutex_works = yes ; then
   USE_CXX11_MUTEX=1
 
   dnl
@@ -641,14 +557,9 @@ if test x$ac_cv_std_mutex_works = xyes ; then
       }
     ]])],[ac_cv_std_condition_variable_works=yes],[ac_cv_std_condition_variable_works=no],[:]))
   AC_LANG_POP([C++])
-  if test x$ac_cv_std_condition_variable_works = xyes ; then
+  if test $ac_cv_std_condition_variable_works = yes ; then
     USE_CXX11_CONDITION_VARIABLE=1
-  else
-    USE_CXX11_CONDITION_VARIABLE=0
   fi
-else
-  USE_CXX11_MUTEX=0
-  USE_CXX11_CONDITION_VARIABLE=0
 fi
 AC_SUBST(USE_CXX11_MUTEX)
 AC_SUBST(USE_CXX11_CONDITION_VARIABLE)

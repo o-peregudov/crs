@@ -118,7 +118,7 @@ pkginclude_msdc_HEADERS =
 
 if PLATFORM_MINGW
 libcrs_la_SOURCES +=		\
-	bits/win32.mutex.cpp
+	./bits/win32.mutex.cpp
 
 #	bits/win32.thread.cpp	\
 	bits/win32.cond.cpp	\
@@ -128,7 +128,7 @@ libcrs_la_SOURCES +=		\
 	sc/win32.rs232port.cpp
 
 pkginclude_bits_HEADERS +=	\
-	bits/win32.mutex.h
+	./bits/win32.mutex.h
 
 #	bits/win32.thread.h	\
 	bits/win32.cond.h	\
@@ -151,7 +151,7 @@ endif
 
 if PLATFORM_LINUX
 libcrs_la_SOURCES +=		\
-	bits/posix.mutex.cpp
+	./bits/posix.mutex.cpp
 
 #	bits/posix.thread.cpp	\
 	bits/posix.cond.cpp	\
@@ -164,7 +164,7 @@ libcrs_la_SOURCES +=		\
 	bits/posix.ipchannel.cpp
 
 pkginclude_bits_HEADERS +=	\
-	bits/posix.mutex.h
+	./bits/posix.mutex.h
 
 #	bits/posix.thread.h	\
 	bits/posix.cond.h	\
@@ -180,7 +180,7 @@ endif
 
 if PLATFORM_CYGWIN
 libcrs_la_SOURCES +=		\
-	bits/posix.mutex.cpp
+	./bits/posix.mutex.cpp
 
 #	bits/posix.thread.cpp	\
 	bits/posix.cond.cpp	\
@@ -193,7 +193,7 @@ libcrs_la_SOURCES +=		\
 	bits/posix.ipchannel.cpp
 
 pkginclude_bits_HEADERS +=	\
-	bits/posix.mutex.h
+	./bits/posix.mutex.h
 
 #	bits/posix.thread.h	\
 	bits/posix.cond.h	\

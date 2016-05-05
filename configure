@@ -649,13 +649,6 @@ USE_CXX11_CONDITION_VARIABLE
 USE_CXX11_MUTEX
 USE_CXX11_CHRONO
 USE_CXX11_ATOMIC
-HAVE_POSIX_SYSLOG_API
-USE_POSIX_TIMER_API_FALSE
-USE_POSIX_TIMER_API_TRUE
-HAVE_POSIX_TIMER_API
-HAVE_POSIX_DLOPEN_API_FALSE
-HAVE_POSIX_DLOPEN_API_TRUE
-HAVE_POSIX_DLOPEN_API
 HAVE_WINSOCK2_API_FALSE
 HAVE_WINSOCK2_API_TRUE
 HAVE_WINSOCK2_API
@@ -2631,6 +2624,10 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
+ac_config_headers="$ac_config_headers config.h"
+
+
+
 am__api_version='1.15'
 
 ac_aux_dir=
@@ -3285,10 +3282,6 @@ CRS_REVISION=0
 CRS_AGE=0
 
 CRS_LT_VERSION="${CRS_CURRENT}:${CRS_REVISION}:${CRS_AGE}"
-
-
-ac_config_headers="$ac_config_headers config.h"
-
 
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for a sed that does not truncate output" >&5
@@ -18564,7 +18557,7 @@ $as_echo "#define HAVE_CXX14 1" >>confdefs.h
   fi
 
 if test $HAVE_CXX14 -ne 1; then
-        ax_cxx_compile_cxx11_required=false
+        ax_cxx_compile_cxx11_required=true
   ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
 ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -19228,7 +19221,7 @@ fi
 
 
 
-if test "$enable_shared" = "yes"; then
+if test $enable_shared = yes; then
   DEFINE_CROSS_EXPORT=0
 else
   DEFINE_CROSS_EXPORT=1
@@ -19553,42 +19546,42 @@ fi
 done
 
 
-if test x$ac_cv_header_inttypes_h = xyes; then
+if test $ac_cv_header_inttypes_h = yes; then
   HAVE_INTTYPES_H=1
 else
   HAVE_INTTYPES_H=0
 fi
 
 
-if test x$ac_cv_header_stdint_h = xyes; then
+if test $ac_cv_header_stdint_h = yes; then
   HAVE_STDINT_H=1
 else
   HAVE_STDINT_H=0
 fi
 
 
-if test x$ac_cv_header_sys_types_h = xyes; then
+if test $ac_cv_header_sys_types_h = yes; then
   HAVE_SYS_TYPES_H=1
 else
   HAVE_SYS_TYPES_H=0
 fi
 
 
-if test x$ac_cv_header_signal_h = xyes; then
+if test $ac_cv_header_signal_h = yes; then
   HAVE_SIGNAL_H=1
 else
   HAVE_SIGNAL_H=0
 fi
 
 
-if test x$ac_cv_header_time_h = xyes; then
+if test $ac_cv_header_time_h = yes; then
   HAVE_TIME_H=1
 else
   HAVE_TIME_H_0
 fi
 
 
-if test x$ac_cv_header_windows_h = xyes; then
+if test $ac_cv_header_windows_h = yes; then
   HAVE_WINDOWS_H=1
 else
   HAVE_WINDOWS_H=0
@@ -20042,7 +20035,7 @@ if test $ac_pthread_lib_found = yes; then
 fi
 
 HAVE_PTHREAD_SPIN_LOCK=0
-if test x$ac_cv_header_pthread_h = xyes; then
+if test $ac_cv_header_pthread_h = yes; then
   HAVE_PTHREAD_H=1
   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing pthread_create" >&5
 $as_echo_n "checking for library containing pthread_create... " >&6; }
@@ -20100,20 +20093,18 @@ if test "$ac_res" != no; then :
 
 fi
 
-  for ac_func in pthread_spin_lock	\
-
+  for ac_func in pthread_spin_lock
 do :
-  as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
-ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
-if eval test \"x\$"$as_ac_var"\" = x"yes"; then :
+  ac_fn_c_check_func "$LINENO" "pthread_spin_lock" "ac_cv_func_pthread_spin_lock"
+if test "x$ac_cv_func_pthread_spin_lock" = xyes; then :
   cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_$ac_func" | $as_tr_cpp` 1
+#define HAVE_PTHREAD_SPIN_LOCK 1
 _ACEOF
 
 fi
 done
 
-  if test x$ac_cv_func_pthread_spin_lock = xyes ; then
+  if test $ac_cv_func_pthread_spin_lock = yes ; then
     HAVE_PTHREAD_SPIN_LOCK=1
   fi
 else
@@ -20196,7 +20187,7 @@ $as_echo "$ac_cv_prog_c_openmp" >&6; }
   fi
 
 
-if test x$OPENMP_CFLAGS != x; then
+if test -n $OPENMP_CFLAGS; then
   CFLAGS="$CFLAGS $OPENMP_CFLAGS"
   CXXFLAGS="$CXXFLAGS $OPENMP_CFLAGS"
 fi
@@ -20387,7 +20378,7 @@ fi
   if test "x$no_gsl" = x ; then
      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-     have_libgsl=yes
+     ac_have_libgsl=yes
   else
      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
@@ -20440,13 +20431,13 @@ rm -f core conftest.err conftest.$ac_objext \
      fi
 #     GSL_CFLAGS=""
 #     GSL_LIBS=""
-     have_libgsl=no
+     ac_have_libgsl=no
   fi
 
 
   rm -f conf.gsltest
 
-if test x$have_libgsl = xyes; then
+if test $ac_have_libgsl = yes; then
   CFLAGS="$CFLAGS $GSL_CFLAGS"
   CPPFLAGS="$CPPFLAGS -DGSL_RANGE_CHECK_OFF -DHAVE_INLINE"
   CXXFLAGS="$CXXFLAGS $GSL_CFLAGS"
@@ -20505,16 +20496,14 @@ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
-    if test x$ac_cv_winsock2_works = xyes; then
+    if test $ac_cv_winsock2_works = yes; then
       LIBS="$LIBS -lws2_32"
       CRS_LIBS="$CRS_LIBS -lws2_32"
       HAVE_WINSOCK2_API=1
     else
       LIBS="$save_LIBS"
-      { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
-$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error $? "failed to link with winsock2
-See \`config.log' for more details" "$LINENO" 5; }
+      { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: failed to link with winsock2" >&5
+$as_echo "$as_me: WARNING: failed to link with winsock2" >&2;}
     fi
     ;;
   *)
@@ -20530,418 +20519,6 @@ else
 fi
 
 
-if (test x$lt_cv_dlopen != xno) && (test x$ac_cv_header_dlfcn_h = xyes); then
-  HAVE_POSIX_DLOPEN_API=1
-  LIBS="$LIBS $lt_cv_dlopen_libs"
-else
-  HAVE_POSIX_DLOPEN_API=0
-fi
-
- if test $HAVE_POSIX_DLOPEN_API = 1; then
-  HAVE_POSIX_DLOPEN_API_TRUE=
-  HAVE_POSIX_DLOPEN_API_FALSE='#'
-else
-  HAVE_POSIX_DLOPEN_API_TRUE='#'
-  HAVE_POSIX_DLOPEN_API_FALSE=
-fi
-
-
-HAVE_POSIX_TIMER_API=0
-if (test x$ac_cv_header_signal_h = xyes) && (test x$ac_cv_header_time_h = xyes); then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing timer_getoverrun" >&5
-$as_echo_n "checking for library containing timer_getoverrun... " >&6; }
-if ${ac_cv_search_timer_getoverrun+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_func_search_save_LIBS=$LIBS
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char timer_getoverrun ();
-int
-main ()
-{
-return timer_getoverrun ();
-  ;
-  return 0;
-}
-_ACEOF
-for ac_lib in '' rt; do
-  if test -z "$ac_lib"; then
-    ac_res="none required"
-  else
-    ac_res=-l$ac_lib
-    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
-  fi
-  if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_search_timer_getoverrun=$ac_res
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext
-  if ${ac_cv_search_timer_getoverrun+:} false; then :
-  break
-fi
-done
-if ${ac_cv_search_timer_getoverrun+:} false; then :
-
-else
-  ac_cv_search_timer_getoverrun=no
-fi
-rm conftest.$ac_ext
-LIBS=$ac_func_search_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_timer_getoverrun" >&5
-$as_echo "$ac_cv_search_timer_getoverrun" >&6; }
-ac_res=$ac_cv_search_timer_getoverrun
-if test "$ac_res" != no; then :
-  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
-
-fi
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing timer_settime" >&5
-$as_echo_n "checking for library containing timer_settime... " >&6; }
-if ${ac_cv_search_timer_settime+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_func_search_save_LIBS=$LIBS
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char timer_settime ();
-int
-main ()
-{
-return timer_settime ();
-  ;
-  return 0;
-}
-_ACEOF
-for ac_lib in '' rt; do
-  if test -z "$ac_lib"; then
-    ac_res="none required"
-  else
-    ac_res=-l$ac_lib
-    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
-  fi
-  if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_search_timer_settime=$ac_res
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext
-  if ${ac_cv_search_timer_settime+:} false; then :
-  break
-fi
-done
-if ${ac_cv_search_timer_settime+:} false; then :
-
-else
-  ac_cv_search_timer_settime=no
-fi
-rm conftest.$ac_ext
-LIBS=$ac_func_search_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_timer_settime" >&5
-$as_echo "$ac_cv_search_timer_settime" >&6; }
-ac_res=$ac_cv_search_timer_settime
-if test "$ac_res" != no; then :
-  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
-
-fi
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing timer_gettime" >&5
-$as_echo_n "checking for library containing timer_gettime... " >&6; }
-if ${ac_cv_search_timer_gettime+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_func_search_save_LIBS=$LIBS
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char timer_gettime ();
-int
-main ()
-{
-return timer_gettime ();
-  ;
-  return 0;
-}
-_ACEOF
-for ac_lib in '' rt; do
-  if test -z "$ac_lib"; then
-    ac_res="none required"
-  else
-    ac_res=-l$ac_lib
-    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
-  fi
-  if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_search_timer_gettime=$ac_res
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext
-  if ${ac_cv_search_timer_gettime+:} false; then :
-  break
-fi
-done
-if ${ac_cv_search_timer_gettime+:} false; then :
-
-else
-  ac_cv_search_timer_gettime=no
-fi
-rm conftest.$ac_ext
-LIBS=$ac_func_search_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_timer_gettime" >&5
-$as_echo "$ac_cv_search_timer_gettime" >&6; }
-ac_res=$ac_cv_search_timer_gettime
-if test "$ac_res" != no; then :
-  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
-
-fi
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing timer_create" >&5
-$as_echo_n "checking for library containing timer_create... " >&6; }
-if ${ac_cv_search_timer_create+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_func_search_save_LIBS=$LIBS
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char timer_create ();
-int
-main ()
-{
-return timer_create ();
-  ;
-  return 0;
-}
-_ACEOF
-for ac_lib in '' rt; do
-  if test -z "$ac_lib"; then
-    ac_res="none required"
-  else
-    ac_res=-l$ac_lib
-    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
-  fi
-  if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_search_timer_create=$ac_res
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext
-  if ${ac_cv_search_timer_create+:} false; then :
-  break
-fi
-done
-if ${ac_cv_search_timer_create+:} false; then :
-
-else
-  ac_cv_search_timer_create=no
-fi
-rm conftest.$ac_ext
-LIBS=$ac_func_search_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_timer_create" >&5
-$as_echo "$ac_cv_search_timer_create" >&6; }
-ac_res=$ac_cv_search_timer_create
-if test "$ac_res" != no; then :
-  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
-
-fi
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing timer_delete" >&5
-$as_echo_n "checking for library containing timer_delete... " >&6; }
-if ${ac_cv_search_timer_delete+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  ac_func_search_save_LIBS=$LIBS
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char timer_delete ();
-int
-main ()
-{
-return timer_delete ();
-  ;
-  return 0;
-}
-_ACEOF
-for ac_lib in '' rt; do
-  if test -z "$ac_lib"; then
-    ac_res="none required"
-  else
-    ac_res=-l$ac_lib
-    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
-  fi
-  if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_search_timer_delete=$ac_res
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext
-  if ${ac_cv_search_timer_delete+:} false; then :
-  break
-fi
-done
-if ${ac_cv_search_timer_delete+:} false; then :
-
-else
-  ac_cv_search_timer_delete=no
-fi
-rm conftest.$ac_ext
-LIBS=$ac_func_search_save_LIBS
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_timer_delete" >&5
-$as_echo "$ac_cv_search_timer_delete" >&6; }
-ac_res=$ac_cv_search_timer_delete
-if test "$ac_res" != no; then :
-  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
-
-fi
-
-
-        ac_ext=c
-ac_cpp='$CPP $CPPFLAGS'
-ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for POSIX timer API" >&5
-$as_echo_n "checking for POSIX timer API... " >&6; }
-if ${ac_cv_posix_timer_works+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-      #include <signal.h>
-      #include <time.h>
-      int main (int argc, char ** argv)
-      {
-        timer_t tid;
-      	struct itimerspec its;
-      	struct sigevent sev;
-      	timer_create (CLOCK_REALTIME, &sev, &tid);
-      	timer_getoverrun (tid);
-      	timer_gettime (tid, &its);
-      	timer_delete (tid);
-      	return 0;
-      }
-
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_posix_timer_works=yes
-else
-  ac_cv_posix_timer_works=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_posix_timer_works" >&5
-$as_echo "$ac_cv_posix_timer_works" >&6; }
-  ac_ext=c
-ac_cpp='$CPP $CPPFLAGS'
-ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
-  if test x$ac_cv_posix_timer_works = xyes ; then
-    HAVE_POSIX_TIMER_API=1
-  fi
-fi
-if (test x$libsngf_disable_posix_timer = xyes) && (test x$ac_cv_posix_timer_works = xyes); then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: POSIX timer API usage was switched off" >&5
-$as_echo "$as_me: POSIX timer API usage was switched off" >&6;}
-  HAVE_POSIX_TIMER_API=0
-fi
-
- if test $HAVE_POSIX_TIMER_API = 1; then
-  USE_POSIX_TIMER_API_TRUE=
-  USE_POSIX_TIMER_API_FALSE='#'
-else
-  USE_POSIX_TIMER_API_TRUE='#'
-  USE_POSIX_TIMER_API_FALSE=
-fi
-
-
-HAVE_POSIX_SYSLOG_API=0
-if test x$ac_cv_header_syslog_h = xyes; then
-        ac_ext=c
-ac_cpp='$CPP $CPPFLAGS'
-ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for POSIX syslog API" >&5
-$as_echo_n "checking for POSIX syslog API... " >&6; }
-if ${ac_cv_posix_syslog_works+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-      #include <syslog.h>
-      int main (int argc, char ** argv)
-      {
-        openlog (0, LOG_NDELAY, LOG_USER);
-	syslog (LOG_ERR, "error message");
-	syslog (LOG_DEBUG, "debug message");
-      	closelog ();
-      	return 0;
-      }
-
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-  ac_cv_posix_syslog_works=yes
-else
-  ac_cv_posix_syslog_works=no
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_posix_syslog_works" >&5
-$as_echo "$ac_cv_posix_syslog_works" >&6; }
-  ac_ext=c
-ac_cpp='$CPP $CPPFLAGS'
-ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
-ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
-ac_compiler_gnu=$ac_cv_c_compiler_gnu
-
-  if test x$ac_cv_posix_syslog_works = xyes ; then
-    HAVE_POSIX_SYSLOG_API=1
-  fi
-fi
-
-
 USE_EPOLL=0
 do_check_epoll=no
 # Check whether --enable-epoll was given.
@@ -20951,7 +20528,7 @@ else
   do_check_epoll=yes
 fi
 
-if (test $PLATFORM_LINUX = 1) && (test "$do_check_epoll" = "yes"); then
+if (test $PLATFORM_LINUX = 1) && (test $do_check_epoll = yes); then
 
     for ac_func in epoll_create
 do :
@@ -20978,7 +20555,7 @@ fi
 done
 
 
-    if test x$ac_cv_func_epoll_create = xyes; then
+    if test $ac_cv_func_epoll_create = yes; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking if epoll works" >&5
 $as_echo_n "checking if epoll works... " >&6; }
 if ${ac_cv_epoll_works+:} false; then :
@@ -21016,7 +20593,7 @@ fi
 $as_echo "$ac_cv_epoll_works" >&6; }
   fi
 
-  if test x$ac_cv_epoll_works = xyes; then
+  if test $ac_cv_epoll_works = yes; then
     USE_EPOLL=1
   fi
 else
@@ -21051,7 +20628,7 @@ fi
 done
 
 
-    if test x$ac_cv_func_poll = xyes; then
+    if test $ac_cv_func_poll = yes; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking if poll works" >&5
 $as_echo_n "checking if poll works... " >&6; }
 if ${ac_cv_poll_works+:} false; then :
@@ -21084,7 +20661,7 @@ fi
 $as_echo "$ac_cv_poll_works" >&6; }
   fi
 
-  if test x$ac_cv_poll_works = xyes; then
+  if test $ac_cv_poll_works = yes; then
     USE_POLL=1
   fi
 fi
@@ -21118,7 +20695,7 @@ fi
 done
 
 
-    if test x$ac_cv_func_select = xyes; then
+    if test $ac_cv_func_select = yes; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking if select works" >&5
 $as_echo_n "checking if select works... " >&6; }
 if ${ac_cv_select_works+:} false; then :
@@ -21157,22 +20734,22 @@ fi
 $as_echo "$ac_cv_select_works" >&6; }
   fi
 
-  if test x$ac_cv_select_works = xyes; then
+  if test $ac_cv_select_works = yes; then
     USE_SELECT=1
   fi
 fi
 
-if test x$ac_cv_winsock2_works = xyes; then
+if test $HAVE_WINSOCK2_API = 1; then
   SELECT_TYPE="winsock2"
 
 $as_echo "#define WINSOCK2_IO_MULTIPLEXING 1" >>confdefs.h
 
-elif test x$ac_cv_epoll_works = xyes; then
+elif test $ac_cv_epoll_works = yes; then
   SELECT_TYPE="epoll"
 
 $as_echo "#define EPOLL_IO_MULTIPLEXING 1" >>confdefs.h
 
-elif test x$ac_cv_poll_works = xyes; then
+elif test $ac_cv_poll_works = yes; then
   SELECT_TYPE="poll"
 
 $as_echo "#define POLL_IO_MULTIPLEXING 1" >>confdefs.h
@@ -21189,6 +20766,7 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
+USE_CXX11_ATOMIC=0
 ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
 ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -21274,10 +20852,8 @@ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
-if test x$ac_cv_std_atomic_works = xyes ; then
+if test $ac_cv_std_atomic_works = yes ; then
   USE_CXX11_ATOMIC=1
-else
-  USE_CXX11_ATOMIC=0
 fi
 
 
@@ -21289,7 +20865,7 @@ else
   do_check_chrono=yes
 fi
 
-if test "$do_check_chrono" = "yes" ; then
+if test $do_check_chrono = yes ; then
         ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
 ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -21330,12 +20906,14 @@ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
-  if test x$ac_cv_std_chrono_works = xyes ; then
+  if test $ac_cv_std_chrono_works = yes ; then
     USE_CXX11_CHRONO=1
   fi
 fi
 
 
+USE_CXX11_MUTEX=0
+USE_CXX11_CONDITION_VARIABLE=0
 ac_ext=cpp
 ac_cpp='$CXXCPP $CPPFLAGS'
 ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -21380,7 +20958,7 @@ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
-if test x$ac_cv_std_mutex_works = xyes ; then
+if test $ac_cv_std_mutex_works = yes ; then
   USE_CXX11_MUTEX=1
 
         ac_ext=cpp
@@ -21430,14 +21008,9 @@ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
-  if test x$ac_cv_std_condition_variable_works = xyes ; then
+  if test $ac_cv_std_condition_variable_works = yes ; then
     USE_CXX11_CONDITION_VARIABLE=1
-  else
-    USE_CXX11_CONDITION_VARIABLE=0
   fi
-else
-  USE_CXX11_MUTEX=0
-  USE_CXX11_CONDITION_VARIABLE=0
 fi
 
 
@@ -22274,14 +21847,6 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_WINSOCK2_API_TRUE}" && test -z "${HAVE_WINSOCK2_API_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_WINSOCK2_API\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${HAVE_POSIX_DLOPEN_API_TRUE}" && test -z "${HAVE_POSIX_DLOPEN_API_FALSE}"; then
-  as_fn_error $? "conditional \"HAVE_POSIX_DLOPEN_API\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${USE_POSIX_TIMER_API_TRUE}" && test -z "${USE_POSIX_TIMER_API_FALSE}"; then
-  as_fn_error $? "conditional \"USE_POSIX_TIMER_API\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 
