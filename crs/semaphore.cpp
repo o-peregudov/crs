@@ -1,8 +1,6 @@
-#ifndef CROSS_BARRIER_H_INCLUDED
-#define CROSS_BARRIER_H_INCLUDED 1
 /*
- *  crs/barrier.h
- *  Copyright (c) 2009-2016 Oleg N. Peregudov <o.peregudov@gmail.com>
+ *  crs/semaphore.cpp
+ *  Copyright (c) 2010-2016 Oleg N. Peregudov <o.peregudov@gmail.com>
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -19,25 +17,30 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#include <crs/libexport.h>
-#include <crs/mutex.h>
-#include <crs/condition_variable.h>
+#include "crs/semaphore.h"
+#include <limits>
 
 namespace CrossClass
 {
-  class barrier
+  semaphore::semaphore (const unsigned int cnt)
+    : _mutex ()
+    , _condition ()
+    , _counter (cnt)
+  { }
+
+  void semaphore::post (const unsigned int inc)
   {
-    mutex_type   _mutex;
-    condvar_type _condition;
-    unsigned int _counter;
+    lock_type guard (_mutex);
+    const unsigned int allowed =
+      std::numeric_limits<unsigned int>::max () - _counter;
+    _counter += (inc < allowed) ? inc : allowed;
+    _condition.notify_one ();
+  }
 
-    barrier () = delete;
-    barrier (const barrier &) = delete;
-    barrier & operator = (const barrier &) = delete;
-
-  public:
-    explicit barrier (const unsigned int);
-    void wait ();
-  };
+  void semaphore::wait ()
+  {
+    lock_type guard (_mutex);
+    _condition.wait (guard, [this]{ return (0 < _counter); });
+    --_counter;
+  }
 } /* namespace CrossClass */
-#endif /* CROSS_BARRIER_H_INCLUDED */

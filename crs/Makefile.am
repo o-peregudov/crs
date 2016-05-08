@@ -10,7 +10,9 @@ lib_LTLIBRARIES = libcrs.la
 libcrs_la_LDFLAGS = -no-undefined -version-info $(CRS_LT_VERSION)
 libcrs_la_SOURCES =		\
 	crs-version.c		\
-	disjoint_set.cpp
+	disjoint_set.cpp	\
+	semaphore.cpp		\
+	barrier.cpp
 
 #	cmdLine.cpp		\
 	parsing.cpp		\
@@ -45,6 +47,7 @@ pkginclude_HEADERS =		\
 	mutex.h			\
 	condition_variable.h	\
 	semaphore.h		\
+	barrier.h		\
 	callback.h		\
 	crs-version.h		\
 	heap.h			\

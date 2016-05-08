@@ -1,4 +1,4 @@
-#undef _NDEBUG
+#undef NDEBUG
 #include <crs/semaphore.h>
 
 #include <cassert>
@@ -31,4 +31,6 @@ int main (int argc, const char ** argv)
     sem.wait ();
     aux_thread.join ();
   }
+
+  return 0;
 }

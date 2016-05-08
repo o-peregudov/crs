@@ -1,60 +1,47 @@
-//
-// barrier.cpp - implementation of the class cBarrier
-// (c) Feb 20, 2009 Oleg N. Peregudov
-//
+/*
+ *  crs/barrier.cpp
+ *  Copyright (c) 2009-2016 Oleg N. Peregudov <o.peregudov@gmail.com>
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2 of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 
-#include "cross/barrier.h"
-#include <sstream>
+#include "crs/barrier.h"
 
 namespace CrossClass
 {
+  barrier::barrier (const unsigned int cnt)
+    : _mutex ()
+    , _condition ()
+    , _counter (cnt)
+  { }
 
-#if defined( __GNUG__ )
-cBarrier::cBarrier( const unsigned count )
-	: _barrier( )
-{
-	int errCode ( 0 )
-	if( ( errCode = pthread_barrier_init( &_barrier, NULL, count ) ) )
-	{
-		std::basic_ostringstream<char> errMsg;
-		errMsg << "pthread_barrier_init returns " << errCode;
-		throw std::runtime_error( errMsg.str() );
-	}
-}
+  void barrier::wait ()
+  {
+    lock_type guard (_mutex);
 
-cBarrier::~cBarrier ()
-{
-	int errCode ( 0 )
-	if( ( errCode = pthread_barrier_destroy( &_barrier ) ) )
-	{
-		std::basic_ostringstream<char> errMsg;
-		errMsg << "pthread_barrier_destroy returns " << errCode;
-		throw std::runtime_error( errMsg.str() );
-	}
-}
+    if (_counter == 0)
+      {
+        return;
+      }
 
-bool cBarrier::operator () ()
-{
-	int errCode = pthread_barrier_wait( &_barrier );
-	switch( errCode )
-	{
-	case	0:
-		break;
-	
-	case	PTHREAD_BARRIER_SERIAL_THREAD:
-		return true;
-	
-	case	EINVAL:
-		throw std::runtime_error( "barrier was not initialized" );
-	
-	default:
-		throw std::runtime_error( "unexpected code from pthread_barrier_wait" );
-	}
-	return false;
-}
+    if (--_counter == 0)
+      {
+        _condition.notify_all ();
+        return;
+      }
 
-#elif defined( _MSC_VER )
-	
-#endif
-	
-} // namespace CrossClass
+    _condition.wait (guard, [this]{ return (0 == _counter); });
+  }
+} /* namespace CrossClass */

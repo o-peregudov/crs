@@ -7,15 +7,15 @@ AM_DEFAULT_SOURCE_EXT = .cpp
 
 TESTS =	test_heap		\
 	test_interval_map	\
-	test_semaphore
+	test_semaphore		\
+	test_barrier
 
 check_PROGRAMS =		\
 	test_heap		\
 	test_interval_map	\
-	test_semaphore
+	test_semaphore		\
+	test_barrier
 
-#handle_SOURCES = handle.cpp
-#condition_SOURCES = condition.cpp
 #server_SOURCES = server.cpp
 #client_SOURCES = client.cpp
 #ring_pool_SOURCES = ring-pool.cpp

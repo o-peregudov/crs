@@ -35,31 +35,16 @@ namespace CrossClass
     semaphore & operator = (const semaphore &) = delete;
 
   public:
-    explicit semaphore (const unsigned int cnt = 0)
-      : _mutex ()
-      , _condition ()
-      , _counter (cnt)
-    { }
+    explicit semaphore (const unsigned int cnt = 0);
 
-    void post ()
-    {
-      lock_type guard (_mutex);
-      ++_counter;
-      _condition.notify_one ();
-    }
-
-    void wait ()
-    {
-      lock_type guard (_mutex);
-      _condition.wait (guard, [this](){ return (0 < _counter); });
-      --_counter;
-    }
+    void post (const unsigned int inc = 1);
+    void wait ();
 
     template< class Rep, class Period>
     bool wait_for (const std::chrono::duration<Rep, Period> & rel_time)
     {
       lock_type guard (_mutex);
-      if (_condition.wait_for (guard, rel_time, [this](){ return (0 < _counter); }))
+      if (_condition.wait_for (guard, rel_time, [this]{ return (0 < _counter); }))
 	{
 	  --_counter;
 	  return true;
@@ -71,7 +56,7 @@ namespace CrossClass
     bool wait_until (const std::chrono::time_point<Clock, Duration> & abs_time)
     {
       lock_type guard (_mutex);
-      if (_condition.wait_until (guard, abs_time, [this](){ return (0 < _counter); }))
+      if (_condition.wait_until (guard, abs_time, [this]{ return (0 < _counter); }))
 	{
 	  --_counter;
 	  return true;
