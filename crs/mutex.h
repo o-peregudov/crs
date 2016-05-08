@@ -23,6 +23,11 @@
 
 #if USE_CXX11_MUTEX
 #  include <mutex>
+namespace CrossClass
+{
+    typedef std::mutex                   mutex_type;
+    typedef std::unique_lock<mutex_type> lock_type;
+}
 #else
 #  error This file requires ISO C++ 2011 standard <mutex> header, yet it was not detected on your system.
 #endif

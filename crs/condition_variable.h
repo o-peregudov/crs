@@ -1,8 +1,8 @@
-#ifndef CROSS_SEMAPHORE_HPP_INCLUDED
-#define CROSS_SEMAPHORE_HPP_INCLUDED 1
+#ifndef CROSS_CONDITION_VARIABLE_H_INCLUDED
+#define CROSS_CONDITION_VARIABLE_H_INCLUDED 1
 /*
- *  crs/semaphore.hpp
- *  Copyright (c) 2010-2012 Oleg N. Peregudov <o.peregudov@gmail.com>
+ *  CONDITION_VARIABLE.H
+ *  Copyright (c) 2010-2016 Oleg N. Peregudov <o.peregudov@gmail.com>
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -19,24 +19,16 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-/*
- *	2010/09/18	interface of the CrossClass::cSemaphore
- *	2012/08/15	new platform specific defines
- */
-
 #include <crs/libexport.h>
-#if USE_WIN32_API
-#	include <crs/bits/win32.semaphore.h>
-namespace CrossClass
-{
-	typedef cWin32Semaphore	cSemaphore;
-}
-#elif USE_POSIX_API
-#	include <crs/bits/posix.semaphore.h>
-namespace CrossClass
-{
-	typedef cPosixSemaphore	cSemaphore;
-}
-#endif
+#include <crs/mutex.h>
 
-#endif /* CROSS_SEMAPHORE_HPP_INCLUDED */
+#if USE_CXX11_CONDITION_VARIABLE
+#  include <condition_variable>
+namespace CrossClass
+{
+    typedef std::condition_variable condvar_type;
+}
+#else
+#  error This file requires ISO C++ 2011 standard <condition_variable> header, yet it was not detected on your system.
+#endif
+#endif /* CROSS_CONDITION_VARIABLE_H_INCLUDED	*/

@@ -6,11 +6,13 @@ AM_TESTS_ENVIRONMENT = LD_LIBRARY_PATH=$(top_builddir)/test/.libs:$(top_builddir
 AM_DEFAULT_SOURCE_EXT = .cpp
 
 TESTS =	test_heap		\
-	test_interval_map
+	test_interval_map	\
+	test_semaphore
 
 check_PROGRAMS =		\
 	test_heap		\
-	test_interval_map
+	test_interval_map	\
+	test_semaphore
 
 #handle_SOURCES = handle.cpp
 #condition_SOURCES = condition.cpp

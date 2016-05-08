@@ -44,6 +44,8 @@ pkginclude_HEADERS =		\
 	defsys.h		\
 	libexport.h		\
 	mutex.h			\
+	condition_variable.h	\
+	semaphore.h		\
 	callback.h		\
 	crs-version.h		\
 	CRCStuff.h		\
@@ -65,8 +67,6 @@ pkginclude_HEADERS =		\
 	myexcept.h		\
 	regions.h		\
 	charprintbuf.h		\
-	condition_variable.hpp	\
-	semaphore.hpp		\
 	eveloop.h		\
 	atomic_flag.h		\
 	spinlock.h		\
@@ -120,16 +120,12 @@ pkginclude_msdc_HEADERS =
 if PLATFORM_MINGW
 libcrs_la_SOURCES +=
 #	bits/win32.thread.cpp	\
-	bits/win32.cond.cpp	\
-	bits/win32.semaphore.cpp \
 	bits/win32.timer.cpp	\
 	bits/win32.netpoint.cpp	\
 	sc/win32.rs232port.cpp
 
 pkginclude_bits_HEADERS +=
 #	bits/win32.thread.h	\
-	bits/win32.cond.h	\
-	bits/win32.semaphore.h	\
 	bits/win32.spinlock.h	\
 	bits/win32.timer.h	\
 	bits/win32.netpoint.h
@@ -141,9 +137,7 @@ endif
 if PLATFORM_LINUX
 libcrs_la_SOURCES +=
 #	bits/posix.thread.cpp	\
-	bits/posix.cond.cpp	\
 	sc/posix.rs232port.cpp	\
-	bits/posix.semaphore.cpp \
 	bits/posix.timer.cpp	\
 	bits/posix.netpoint.cpp	\
 	bits/posix.eveloop.cpp	\
@@ -152,8 +146,6 @@ libcrs_la_SOURCES +=
 
 pkginclude_bits_HEADERS +=
 #	bits/posix.thread.h	\
-	bits/posix.cond.h	\
-	bits/posix.semaphore.h	\
 	bits/posix.spinlock.h	\
 	bits/posix.timer.h	\
 	bits/posix.netpoint.h	\
@@ -166,9 +158,7 @@ endif
 if PLATFORM_CYGWIN
 libcrs_la_SOURCES +=
 #	bits/posix.thread.cpp	\
-	bits/posix.cond.cpp	\
 	sc/posix.rs232port.cpp	\
-	bits/posix.semaphore.cpp \
 	bits/posix.timer.cpp	\
 	bits/posix.netpoint.cpp	\
 	bits/posix.eveloop.cpp	\
@@ -177,8 +167,6 @@ libcrs_la_SOURCES +=
 
 pkginclude_bits_HEADERS +=
 #	bits/posix.thread.h	\
-	bits/posix.cond.h	\
-	bits/posix.semaphore.h	\
 	bits/posix.spinlock.h	\
 	bits/posix.timer.h	\
 	bits/posix.netpoint.h	\
