@@ -64,11 +64,9 @@ pkginclude_HEADERS =		\
 	netpoint.h		\
 	simplenetpoint.h	\
 	main			\
-	myexcept.h		\
 	regions.h		\
 	charprintbuf.h		\
 	eveloop.h		\
-	atomic_flag.h		\
 	spinlock.h		\
 	ipchannel.h
 

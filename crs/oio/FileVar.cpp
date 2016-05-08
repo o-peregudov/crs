@@ -2,7 +2,7 @@
  *  This file is a part of Object I/O library
  *
  *  crs/oio/FileVar.h - base OIO classes and templates
- *  Copyright (C) 2004-2012 Oleg N. Peregudov <o.peregudov@gmail.com>
+ *  Copyright (C) 2004-2016 Oleg N. Peregudov <o.peregudov@gmail.com>
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -20,60 +20,60 @@
  */
 
 #if defined( HAVE_CONFIG_H )
-#	include "config.h"
+#  include "config.h"
 #endif
 
-#include <crs/oio/FileVar.h>
+#include "crs/oio/FileVar.h"
 
-namespace ObjectIO {
-
-bool	BaseVar::modified () const
+namespace ObjectIO
 {
-	CrossClass::_LockIt lock ( _mutex );
-	return _modified;
-}
+  bool var::modified () const
+  {
+    lock_type guard (_mutex);
+    return _modified;
+  }
 
-const	std::string & BaseVar::name ( const std::string & nn )
-{
-	CrossClass::_LockIt lock ( _mutex );
-	return _name = nn;
-}
+  const	std::string & var::name (const std::string & n)
+  {
+    lock_type guard (_mutex);
+    return _name = n;
+  }
 
-const	std::string & BaseVar::description ( const std::string & nd )
-{
-	CrossClass::_LockIt lock ( _mutex );
-	return _description = nd;
-}
+  const	std::string & var::description (const std::string & d)
+  {
+    lock_type guard (_mutex);
+    return _description = d;
+  }
+  
+  const	std::string & var::name () const
+  {
+    lock_type guard (_mutex);
+    return _name;
+  }
 
-const	std::string & BaseVar::name () const
-{
-	CrossClass::_LockIt lock ( _mutex );
-	return _name;
-}
+  const	std::string & var::description () const
+  {
+    lock_type guard (_mutex);
+    return _description;
+  }
 
-const	std::string & BaseVar::description () const
-{
-	CrossClass::_LockIt lock ( _mutex );
-	return _description;
-}
+  void hub::clear ()
+  {
+    lock_type guard (_mutex);
+    hubcore::clear ();
+    olist.clear();
+  }
 
-void	BaseHub::clear ()
-{
-	CrossClass::_LockIt lock ( _mutex );
-	hubcore::clear();
-	olist.clear();
-}
-
-bool	BaseHub::modified ()
-{
-	get_modified f;
-	CrossClass::_LockIt lock ( _mutex );
-	_modified = false;
-	for( hubiter first = begin(); first != end(); first++ )
-		if( ( _modified |= f( *first ) ) )
-			break;
-	return _modified;
-}
+  bool hub::modified ()
+  {
+    get_modified f;
+    lock_type guard (_mutex);
+    _modified = false;
+    for( hubiter first = begin(); first != end(); first++ )
+      if( ( _modified |= f( *first ) ) )
+	break;
+    return _modified;
+  }
 
 void	BaseHub::loadAll ()
 {
