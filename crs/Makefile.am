@@ -48,7 +48,6 @@ pkginclude_HEADERS =		\
 	condition_variable.h	\
 	semaphore.h		\
 	barrier.h		\
-	callback.h		\
 	crs-version.h		\
 	heap.h			\
 	interval_map.h		\
