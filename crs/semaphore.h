@@ -25,61 +25,59 @@
 
 namespace CrossClass
 {
-    class semaphore
+  class semaphore
+  {
+    mutex_type   _mutex;
+    condvar_type _condition;
+    unsigned int _counter;
+
+    semaphore (const semaphore &) = delete;
+    semaphore & operator = (const semaphore &) = delete;
+
+  public:
+    explicit semaphore (const unsigned int cnt = 0)
+      : _mutex ()
+      , _condition ()
+      , _counter (cnt)
+    { }
+
+    void post ()
     {
-        mutex_type   _mutex;
-        condvar_type _condition;
-        unsigned int _counter;
+      lock_type guard (_mutex);
+      ++_counter;
+      _condition.notify_one ();
+    }
 
-        semaphore (const semaphore &) = delete;
-        semaphore & operator = (const semaphore &) = delete;
+    void wait ()
+    {
+      lock_type guard (_mutex);
+      _condition.wait (guard, [this](){ return (0 < _counter); });
+      --_counter;
+    }
 
-    public:
-        explicit semaphore (const unsigned int cnt = 0)
-            : _mutex ()
-            , _condition ()
-            , _counter (cnt)
-        { }
+    template< class Rep, class Period>
+    bool wait_for (const std::chrono::duration<Rep, Period> & rel_time)
+    {
+      lock_type guard (_mutex);
+      if (_condition.wait_for (guard, rel_time, [this](){ return (0 < _counter); }))
+	{
+	  --_counter;
+	  return true;
+	}
+      return false;
+    }
 
-        void post ()
-        {
-            lock_type guard (_mutex);
-            ++_counter;
-            _condition.notify_one ();
-        }
-
-        void wait ()
-        {
-            lock_type guard (_mutex);
-            _condition.wait (guard, [this](){ return (0 < _counter); });
-            --_counter;
-        }
-
-        template< class Rep, class Period>
-        bool wait_for (const std::chrono::duration<Rep, Period> & rel_time)
-        {
-            lock_type guard (_mutex);
-            if (_condition.wait_for (
-                    guard, rel_time, [this](){ return (0 < _counter); }))
-            {
-                --_counter;
-                return true;
-            }
-            return false;
-        }
-
-        template< class Clock, class Duration, class Predicate >
-        bool wait_until (const std::chrono::time_point<Clock, Duration> & abs_time)
-        {
-            lock_type guard (_mutex);
-            if (_condition.wait_until (
-                    guard, abs_time, [this](){ return (0 < _counter); }))
-            {
-                --_counter;
-                return true;
-            }
-            return false;
-        }
-    };
+    template< class Clock, class Duration, class Predicate >
+    bool wait_until (const std::chrono::time_point<Clock, Duration> & abs_time)
+    {
+      lock_type guard (_mutex);
+      if (_condition.wait_until (guard, abs_time, [this](){ return (0 < _counter); }))
+	{
+	  --_counter;
+	  return true;
+	}
+      return false;
+    }
+  };
 } /* namespace CrossClass */
 #endif /* CROSS_SEMAPHORE_H_INCLUDED */

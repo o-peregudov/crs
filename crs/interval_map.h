@@ -1,8 +1,8 @@
-#ifndef CROSS_INTERVAL_MAP_H
-#define CROSS_INTERVAL_MAP_H 1
+#ifndef CROSS_INTERVAL_MAP_H_INCLUDED
+#define CROSS_INTERVAL_MAP_H_INCLUDED 1
 /*
  *  crs/interval_map.h
- *  Copyright (c) 2013 Oleg N. Peregudov <o.peregudov@gmail.com>
+ *  Copyright (c) 2013-2016 Oleg N. Peregudov <o.peregudov@gmail.com>
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -17,10 +17,6 @@
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
-
-/*
- *	2013/09/22	added to library
  */
 
 /*
@@ -71,7 +67,6 @@ namespace CrossClass
   template<class K, class V>
   class interval_map
   {
-  private:
     typedef std::map<K, V>                    container_type;
     typedef typename container_type::iterator iterator;
 
@@ -85,8 +80,8 @@ namespace CrossClass
     interval_map ( const V & val)
     {
       _map.insert (_map.begin (),
-		   std::make_pair (std::numeric_limits<K>::min (),
-				   val));
+                   std::make_pair (std::numeric_limits<K>::min (),
+                                   val));
     }
 
     /*
@@ -102,46 +97,46 @@ namespace CrossClass
     bool assign (const K & keyBegin, const K & keyEnd, const V & val)
     {
       if (!(keyBegin < keyEnd))
-	{
-	  return false;
-	}
+        {
+          return false;
+        }
 
       iterator it;
       std::pair<iterator, bool> right = _map.insert (std::make_pair (keyEnd, val));
       if (right.second == true)
-	{
-	  --(it = right.first);
-	  if (!(it->second == right.first->second))
-	    {
-	      right.first->second = it->second;
-	    }
-	}
+        {
+          --(it = right.first);
+          if (!(it->second == right.first->second))
+            {
+              right.first->second = it->second;
+            }
+        }
 
       std::pair<iterator, bool> left = _map.insert (std::make_pair (keyBegin, val));
       if (left.second == false)
-	{
-	  left.first->second = val;
-	}
+        {
+          left.first->second = val;
+        }
 
       it = left.first;
       if (it != _map.begin ())
-	{
-	  if (!((--it)->second == left.first->second))
-	    {
-	      it = left.first;
-	      ++left.first;
-	    }
-	}
+        {
+          if (!((--it)->second == left.first->second))
+            {
+              it = left.first;
+              ++left.first;
+            }
+        }
       else
-	{
-	  ++left.first;
-	}
+        {
+          ++left.first;
+        }
 
       if ((right.first != _map.end ()) &&
-	  (it->second == right.first->second))
-	{
-	  ++right.first;
-	}
+          (it->second == right.first->second))
+        {
+          ++right.first;
+        }
 
       _map.erase (left.first, right.first);
       return true;
@@ -160,6 +155,5 @@ namespace CrossClass
       return _map.size ();
     }
   };
-
-}	/* namespace CrossClass	*/
-#endif	/* CROSS_INTERVAL_MAP_H	*/
+} /* namespace CrossClass */
+#endif /* CROSS_INTERVAL_MAP_H_INCLUDED */

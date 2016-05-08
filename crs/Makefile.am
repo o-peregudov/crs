@@ -10,7 +10,6 @@ lib_LTLIBRARIES = libcrs.la
 libcrs_la_LDFLAGS = -no-undefined -version-info $(CRS_LT_VERSION)
 libcrs_la_SOURCES =		\
 	crs-version.c		\
-	CRCStuff.c		\
 	disjoint_set.cpp
 
 #	cmdLine.cpp		\
@@ -48,7 +47,6 @@ pkginclude_HEADERS =		\
 	semaphore.h		\
 	callback.h		\
 	crs-version.h		\
-	CRCStuff.h		\
 	heap.h			\
 	interval_map.h		\
 	disjoint_set.h

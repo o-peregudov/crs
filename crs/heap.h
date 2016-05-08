@@ -1,8 +1,8 @@
-#ifndef CROSS_HEAP_H
-#define CROSS_HEAP_H 1
+#ifndef CROSS_HEAP_H_INCLUDED
+#define CROSS_HEAP_H_INCLUDED 1
 /*
  *  crs/heap.h - heap container (vector based)
- *  Copyright (c) 2012 Oleg N. Peregudov <o.peregudov@gmail.com>
+ *  Copyright (c) 2012-2016 Oleg N. Peregudov <o.peregudov@gmail.com>
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -19,13 +19,9 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-/*
- *	2012-12-22	added to library
- *	2013/09/22	ver. 2.0.0 refactoring
- */
-
-#include <vector>
+#include <crs/libexport.h>
 #include <algorithm>
+#include <vector>
 
 namespace CrossClass
 {
@@ -34,33 +30,33 @@ namespace CrossClass
   {
   protected:
     Comp _comp;
-    
+
     size_t _ancestor_index (const size_t node_index) const;
     size_t _descendant_index (const size_t node_index) const;
-    
+
     size_t _bubleup_heap (size_t node_index);
     void _bubledown_heap (size_t node_index, const size_t sz);
-    
+
   public:
     using std::vector<Type>::size;
     using std::vector<Type>::empty;
     using std::vector<Type>::clear;
     using std::vector<Type>::reserve;
     using std::vector<Type>::capacity;
-    
+
     heap (const size_t sz = 0);
     heap (const size_t sz, const Comp & cmp);
-    
+
     size_t insert (const Type & val);
     void remove (const size_t node_index);
-    
+
     const Type & at (const size_t node_index) const;
     const Type & peek () const;
     Type get ();
-    
+
     void swap (heap & h);
   };
-  
+
   /*
    *
    * members of class heap <>
@@ -73,7 +69,7 @@ namespace CrossClass
   {
     reserve (sz);
   }
-  
+
   template <class Type, class Comp>
   heap<Type, Comp>::heap (const size_t sz, const Comp & cmp)
     : std::vector<Type> ()
@@ -81,7 +77,7 @@ namespace CrossClass
   {
     reserve (sz);
   }
-  
+
   template <class Type, class Comp>
   size_t
   heap<Type, Comp>::_ancestor_index (const size_t node_index) const
@@ -90,22 +86,22 @@ namespace CrossClass
       {
 	return 0;
       }
-    
+
     if (node_index & static_cast<const size_t> (1))
       {
 	return (node_index >> 1);
       }
-    
+
     return ((node_index - 1) >> 1);
   }
-  
+
   template <class Type, class Comp>
   size_t
   heap<Type, Comp>::_descendant_index (const size_t node_index) const
   {
     return ((node_index << 1) + 1);
   }
-  
+
   template <class Type, class Comp>
   size_t
   heap<Type, Comp>::_bubleup_heap (size_t node_index)
@@ -133,7 +129,7 @@ namespace CrossClass
 	  {
 	    ++desc_index;
 	  }
-	
+
 	if (_comp ((*this)[desc_index], (*this)[node_index]))
 	  {
 	    std::swap ((*this)[node_index], (*this)[desc_index]);
@@ -146,7 +142,7 @@ namespace CrossClass
 	  }
       }
   }
-  
+
   template <class Type, class Comp>
   size_t
   heap<Type, Comp>::insert (const Type & val)
@@ -154,7 +150,7 @@ namespace CrossClass
     std::vector<Type>::push_back (val);
     return _bubleup_heap (size () - 1);
   }
-  
+
   template <class Type, class Comp>
   void
   heap<Type, Comp>::remove (const size_t node_index)
@@ -167,14 +163,14 @@ namespace CrossClass
       }
     std::vector<Type>::pop_back ();
   }
-  
+
   template <class Type, class Comp>
   const Type &
   heap<Type, Comp>::peek () const
   {
     return std::vector<Type>::front ();
   }
-  
+
   template <class Type, class Comp>
   Type
   heap<Type, Comp>::get ()
@@ -188,19 +184,19 @@ namespace CrossClass
     std::vector<Type>::pop_back ();
     return r;
   }
-  
+
   template <class Type, class Comp>
   const Type &
   heap<Type, Comp>::at (const size_t node_index) const
   {
     return std::vector<Type>::operator [] (node_index);
   }
-  
+
   template <class Type, class Comp>
   void
   heap<Type, Comp>::swap (heap<Type, Comp> & h)
   {
     std::vector<Type>::swap (h);
   }
-}	/* namespace CrossClass	*/
-#endif	/* CROSS_HEAP_H		*/
+} /* namespace CrossClass */
+#endif /* CROSS_HEAP_H_INCLUDED */

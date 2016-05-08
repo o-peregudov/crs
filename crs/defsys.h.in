@@ -19,22 +19,6 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-/*
- *	2010/12/17	default integer types
- *	2010/12/26	WINVER define for Win32API
- *	2011/01/18	use of autoconf's substitutions
- *	2011/03/06	additional check for building static library only
- *	2011/03/05	GSL define
- *	2012/02/03	CROSS_VAR define for export objects from WIN DLL
- *	2012/06/03	timer api selection
- *	2012/08/14	C++11 <mutex>, <atomic>, <chrono>, <condition_variable>
- *	2012/08/19	winsock2 conditional define
- *	2012/09/17	GLIB 2.0 conditional define
- *	2013/09/21	ver. 2.0.0 - refactoring
- *	2016/03/29	C++ 11/14 defines
- *	2016/04/10	missing define WINDOWS_RESOURCE
- */
-
 #define PLATFORM_LINUX @PLATFORM_LINUX@
 #define PLATFORM_MINGW @PLATFORM_MINGW@
 #define PLATFORM_CYGWIN @PLATFORM_CYGWIN@
