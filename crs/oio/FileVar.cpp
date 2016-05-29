@@ -75,7 +75,7 @@ namespace ObjectIO
     return _modified;
   }
 
-void	BaseHub::loadAll ()
+  void	BaseHub::loadAll ()
 {
 	CrossClass::_LockIt lock ( _mutex );
 	std::for_each( olist.begin(), olist.end(), get_all() );

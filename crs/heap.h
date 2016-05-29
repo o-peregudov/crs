@@ -1,5 +1,5 @@
-#ifndef CROSS_HEAP_H_INCLUDED
-#define CROSS_HEAP_H_INCLUDED 1
+#ifndef CRS_HEAP_H_INCLUDED
+#define CRS_HEAP_H_INCLUDED 1
 /*
  *  crs/heap.h - heap container (vector based)
  *  Copyright (c) 2012-2016 Oleg N. Peregudov <o.peregudov@gmail.com>
@@ -23,7 +23,7 @@
 #include <algorithm>
 #include <vector>
 
-namespace CrossClass
+namespace crs
 {
   template <class Type, class Comp>
   class heap : protected std::vector<Type>
@@ -198,5 +198,5 @@ namespace CrossClass
   {
     std::vector<Type>::swap (h);
   }
-} /* namespace CrossClass */
-#endif /* CROSS_HEAP_H_INCLUDED */
+} /* namespace crs */
+#endif /* CRS_HEAP_H_INCLUDED */

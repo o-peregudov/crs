@@ -24,7 +24,7 @@
 #include "crs/semaphore.h"
 #include <limits>
 
-namespace CrossClass
+namespace crs
 {
   semaphore::semaphore (const unsigned int cnt)
     : _mutex ()
@@ -47,4 +47,4 @@ namespace CrossClass
     _condition.wait (guard, [this]{ return (0 < _counter); });
     --_counter;
   }
-} /* namespace CrossClass */
+} /* namespace crs */

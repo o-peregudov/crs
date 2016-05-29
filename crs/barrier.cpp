@@ -23,7 +23,7 @@
 
 #include "crs/barrier.h"
 
-namespace CrossClass
+namespace crs
 {
   barrier::barrier (const unsigned int cnt)
     : _mutex ()
@@ -48,4 +48,4 @@ namespace CrossClass
 
     _condition.wait (guard, [this]{ return (0 == _counter); });
   }
-} /* namespace CrossClass */
+} /* namespace crs */

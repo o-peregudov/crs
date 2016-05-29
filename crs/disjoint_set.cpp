@@ -23,7 +23,7 @@
 
 #include <crs/disjoint_set.h>
 
-namespace CrossClass
+namespace crs
 {
   disjoint_set::disjoint_set (const size_t sz)
     : _cont (sz, point_data_t ())
@@ -86,4 +86,4 @@ namespace CrossClass
     _ngroups = _cont.size ();
     _cont.assign (_cont.size (), point_data_t ());
   }
-} /* namespace CrossClass */
+} /* namespace crs */

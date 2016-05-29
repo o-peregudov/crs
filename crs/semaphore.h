@@ -1,5 +1,5 @@
-#ifndef CROSS_SEMAPHORE_H_INCLUDED
-#define CROSS_SEMAPHORE_H_INCLUDED 1
+#ifndef CRS_SEMAPHORE_H_INCLUDED
+#define CRS_SEMAPHORE_H_INCLUDED 1
 /*
  *  crs/semaphore.h
  *  Copyright (c) 2010-2016 Oleg N. Peregudov <o.peregudov@gmail.com>
@@ -23,7 +23,7 @@
 #include <crs/mutex.h>
 #include <crs/condition_variable.h>
 
-namespace CrossClass
+namespace crs
 {
   class semaphore
   {
@@ -64,5 +64,5 @@ namespace CrossClass
       return false;
     }
   };
-} /* namespace CrossClass */
-#endif /* CROSS_SEMAPHORE_H_INCLUDED */
+} /* namespace crs */
+#endif /* CRS_SEMAPHORE_H_INCLUDED */

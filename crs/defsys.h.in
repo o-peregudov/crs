@@ -1,5 +1,5 @@
-#ifndef CROSS_DEFSYS_H_INCLUDED
-#define CROSS_DEFSYS_H_INCLUDED 1
+#ifndef CRS_DEFSYS_H_INCLUDED
+#define CRS_DEFSYS_H_INCLUDED 1
 /*
  *  crs/defsys.h
  *  Copyright (c) 2010-2016 Oleg N. Peregudov <o.peregudov@gmail.com>
@@ -37,17 +37,17 @@
 #define HAVE_WINSOCK2_API @HAVE_WINSOCK2_API@
 #define HAVE_WINDOWS_H @HAVE_WINDOWS_H@
 
-#define DEFINE_CROSS_EXPORT @DEFINE_CROSS_EXPORT@
-#if (DEFINE_CROSS_EXPORT)
-#  define CROSS_EXPORT
+#define DEFINE_CRS_EXPORT @DEFINE_CRS_EXPORT@
+#if (DEFINE_CRS_EXPORT)
+#  define CRS_EXPORT
 #elif (PLATFORM_MINGW) && (WINDOWS_RESOURCE)
 #  if defined (DLL_EXPORT)
-#    define CROSS_EXPORT __declspec(dllexport)
+#    define CRS_EXPORT __declspec(dllexport)
 #  else
-#    define CROSS_EXPORT __declspec(dllimport)
+#    define CRS_EXPORT __declspec(dllimport)
 #  endif
 #else
-#  define CROSS_EXPORT
+#  define CRS_EXPORT
 #endif
 
 #if (PLATFORM_MINGW) || (PLATFORM_CYGWIN)
@@ -143,4 +143,4 @@ typedef int crs_fd_t;
 #define USE_CXX11_CONDITION_VARIABLE @USE_CXX11_CONDITION_VARIABLE@
 #endif
 
-#endif /* CROSS_DEFSYS_H_INCLUDED */
+#endif /* CRS_DEFSYS_H_INCLUDED */

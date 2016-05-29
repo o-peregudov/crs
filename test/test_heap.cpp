@@ -17,7 +17,7 @@ struct int_compare
 int main (int argc, char * argv [])
 {
   const size_t nPoints = 10000;
-  CrossClass::heap<int, int_compare> heap (nPoints);
+  crs::heap<int, int_compare> heap (nPoints);
   
   /*
    * heap sort

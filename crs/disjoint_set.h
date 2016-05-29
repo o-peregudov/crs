@@ -1,5 +1,5 @@
-#ifndef CROSS_DISJOINT_SET_H_INCLUDED
-#define CROSS_DISJOINT_SET_H_INCLUDED 1
+#ifndef CRS_DISJOINT_SET_H_INCLUDED
+#define CRS_DISJOINT_SET_H_INCLUDED 1
 /*
  *  crs/disjoint_set.h - disjoint set data structure (vector based)
  *  Copyright (c) 2013-2016 Oleg N. Peregudov <o.peregudov@gmail.com>
@@ -23,7 +23,7 @@
 #include <vector>
 #include <algorithm>
 
-namespace CrossClass
+namespace crs
 {
   class disjoint_set
   {
@@ -61,5 +61,5 @@ namespace CrossClass
       return _ngroups;
     }
   };
-} /* namespace CrossClass */
-#endif /* CROSS_DISJOINT_SET_H_INCLUDED */
+} /* namespace crs */
+#endif /* CRS_DISJOINT_SET_H_INCLUDED */

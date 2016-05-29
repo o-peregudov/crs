@@ -1,5 +1,5 @@
-#ifndef CROSS_LIBEXPORT_H
-#define CROSS_LIBEXPORT_H 1
+#ifndef CRS_LIBEXPORT_H
+#define CRS_LIBEXPORT_H 1
 // (c) Dec 26, 2010 Oleg N. Peregudov
 
 #include <crs/defsys.h>
@@ -15,12 +15,12 @@
 #	define LIBCRS_DECL_DLLIMPORT
 #endif
 
-#if !defined( CROSS_EXPORT )
-#	if defined( COMPILING_CROSS_DLL ) || defined( DLL_EXPORT )
-#		define CROSS_EXPORT	LIBCRS_DECL_DLLEXPORT
+#if !defined( CRS_EXPORT )
+#	if defined( COMPILING_CRS_DLL ) || defined( DLL_EXPORT )
+#		define CRS_EXPORT	LIBCRS_DECL_DLLEXPORT
 #	else
-#		define CROSS_EXPORT	LIBCRS_DECL_DLLIMPORT
+#		define CRS_EXPORT	LIBCRS_DECL_DLLIMPORT
 #	endif
 #endif
 
-#endif // CROSS_LIBEXPORT_H
+#endif /* CRS_LIBEXPORT_H */

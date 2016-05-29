@@ -1,5 +1,5 @@
-#ifndef CROSS_BARRIER_H_INCLUDED
-#define CROSS_BARRIER_H_INCLUDED 1
+#ifndef CRS_BARRIER_H_INCLUDED
+#define CRS_BARRIER_H_INCLUDED 1
 /*
  *  crs/barrier.h
  *  Copyright (c) 2009-2016 Oleg N. Peregudov <o.peregudov@gmail.com>
@@ -23,7 +23,7 @@
 #include <crs/mutex.h>
 #include <crs/condition_variable.h>
 
-namespace CrossClass
+namespace crs
 {
   class barrier
   {
@@ -39,5 +39,5 @@ namespace CrossClass
     explicit barrier (const unsigned int);
     void wait ();
   };
-} /* namespace CrossClass */
-#endif /* CROSS_BARRIER_H_INCLUDED */
+} /* namespace crs */
+#endif /* CRS_BARRIER_H_INCLUDED */

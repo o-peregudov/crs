@@ -172,11 +172,11 @@ dnl
 dnl We need special define to build static library only
 dnl
 if test $enable_shared = yes; then
-  DEFINE_CROSS_EXPORT=0
+  DEFINE_CRS_EXPORT=0
 else
-  DEFINE_CROSS_EXPORT=1
+  DEFINE_CRS_EXPORT=1
 fi
-AC_SUBST(DEFINE_CROSS_EXPORT)
+AC_SUBST(DEFINE_CRS_EXPORT)
 
 dnl
 dnl Check whether we have to compile Windows' resource file

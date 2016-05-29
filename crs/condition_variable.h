@@ -1,5 +1,5 @@
-#ifndef CROSS_CONDITION_VARIABLE_H_INCLUDED
-#define CROSS_CONDITION_VARIABLE_H_INCLUDED 1
+#ifndef CRS_CONDITION_VARIABLE_H_INCLUDED
+#define CRS_CONDITION_VARIABLE_H_INCLUDED 1
 /*
  *  crs/condition_variable.h
  *  Copyright (c) 2010-2016 Oleg N. Peregudov <o.peregudov@gmail.com>
@@ -24,11 +24,11 @@
 
 #if USE_CXX11_CONDITION_VARIABLE
 #  include <condition_variable>
-namespace CrossClass
+namespace crs
 {
   typedef std::condition_variable condvar_type;
 }
 #else
 #  error This file requires ISO C++ 2011 standard <condition_variable> header, yet it was not detected on your system.
 #endif
-#endif /* CROSS_CONDITION_VARIABLE_H_INCLUDED	*/
+#endif /* CRS_CONDITION_VARIABLE_H_INCLUDED	*/

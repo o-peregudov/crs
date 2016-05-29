@@ -1,5 +1,5 @@
-#ifndef CROSS_MUTEX_H_INCLUDED
-#define CROSS_MUTEX_H_INCLUDED 1
+#ifndef CRS_MUTEX_H_INCLUDED
+#define CRS_MUTEX_H_INCLUDED 1
 /*
  *  crs/mutex.h
  *  Copyright (c) 2008-2016 Oleg N. Peregudov <o.peregudov@gmail.com>
@@ -23,7 +23,7 @@
 
 #if USE_CXX11_MUTEX
 #  include <mutex>
-namespace CrossClass
+namespace crs
 {
   typedef std::mutex                   mutex_type;
   typedef std::unique_lock<mutex_type> lock_type;
@@ -31,4 +31,4 @@ namespace CrossClass
 #else
 #  error This file requires ISO C++ 2011 standard <mutex> header, yet it was not detected on your system.
 #endif
-#endif /* CROSS_MUTEX_H_INCLUDED */
+#endif /* CRS_MUTEX_H_INCLUDED */

@@ -6,12 +6,12 @@
 int main (int argc, const char ** argv)
 {
   {
-    CrossClass::barrier barrier (0);
+    crs::barrier barrier (0);
     barrier.wait ();
   }
 
   {
-    CrossClass::barrier barrier (3);
+    crs::barrier barrier (3);
 
     bool flaga = false;
     std::thread threada ([&]{

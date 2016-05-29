@@ -1,5 +1,5 @@
-#ifndef CROSS_INTERVAL_MAP_H_INCLUDED
-#define CROSS_INTERVAL_MAP_H_INCLUDED 1
+#ifndef CRS_INTERVAL_MAP_H_INCLUDED
+#define CRS_INTERVAL_MAP_H_INCLUDED 1
 /*
  *  crs/interval_map.h
  *  Copyright (c) 2013-2016 Oleg N. Peregudov <o.peregudov@gmail.com>
@@ -62,7 +62,7 @@
 #include <map>
 #include <limits>
 
-namespace CrossClass
+namespace crs
 {
   template<class K, class V>
   class interval_map
@@ -155,5 +155,5 @@ namespace CrossClass
       return _map.size ();
     }
   };
-} /* namespace CrossClass */
-#endif /* CROSS_INTERVAL_MAP_H_INCLUDED */
+} /* namespace crs */
+#endif /* CRS_INTERVAL_MAP_H_INCLUDED */

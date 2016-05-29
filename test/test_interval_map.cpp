@@ -7,7 +7,7 @@
 
 int main (int argc, char * argv [])
 {
-  CrossClass::interval_map<unsigned int, char> m ('A');
+  crs::interval_map<unsigned int, char> m ('A');
   unsigned int ix = 0;
 
   /*
