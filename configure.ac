@@ -271,18 +271,6 @@ AC_SUBST(HAVE_PTHREAD_SPIN_LOCK)
 AM_CONDITIONAL([HAVE_PTHREAD_SPIN_LOCK], [test $HAVE_PTHREAD_SPIN_LOCK = 1])
 
 dnl
-dnl Check for OpenMP functionality
-dnl
-dnl Here we do believe that C and C++ compilers are both has the same
-dnl support of the OpenMP and hence we check only C compiler
-dnl
-AC_OPENMP
-if test -n $OPENMP_CFLAGS; then
-  CFLAGS="$CFLAGS $OPENMP_CFLAGS"
-  CXXFLAGS="$CXXFLAGS $OPENMP_CFLAGS"
-fi
-
-dnl
 dnl Check for GSL
 dnl
 AX_PATH_GSL([1.14],[ac_have_libgsl=yes],[ac_have_libgsl=no])
