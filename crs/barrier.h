@@ -38,6 +38,44 @@ namespace crs
   public:
     explicit barrier (const unsigned int);
     void wait ();
+
+    template <class Rep, class Period>
+    bool wait_for (const std::chrono::duration<Rep, Period> & rel_time)
+    {
+      lock_type guard (_mutex);
+
+      if (_counter == 0)
+        {
+          return true;
+        }
+
+      if (--_counter == 0)
+        {
+          _condition.notify_all ();
+          return true;
+        }
+
+      return _condition.wait_for (guard, rel_time, [this]{ return (0 == _counter); });
+    }
+
+    template <class Clock, class Duration>
+    bool wait_until (const std::chrono::time_point<Clock, Duration> & abs_time)
+    {
+      lock_type guard (_mutex);
+
+      if (_counter == 0)
+        {
+          return true;
+        }
+
+      if (--_counter == 0)
+        {
+          _condition.notify_all ();
+          return true;
+        }
+
+      return _condition.wait_until (guard, abs_time, [this]{ return (0 == _counter); });
+    }
   };
 } /* namespace crs */
 #endif /* CRS_BARRIER_H_INCLUDED */
