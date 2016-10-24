@@ -40,7 +40,7 @@ namespace crs
     void post (const unsigned int inc = 1);
     void wait ();
 
-    template< class Rep, class Period>
+    template <class Rep, class Period>
     bool wait_for (const std::chrono::duration<Rep, Period> & rel_time)
     {
       lock_type guard (_mutex);
@@ -52,7 +52,7 @@ namespace crs
       return false;
     }
 
-    template< class Clock, class Duration, class Predicate >
+    template <class Clock, class Duration>
     bool wait_until (const std::chrono::time_point<Clock, Duration> & abs_time)
     {
       lock_type guard (_mutex);
