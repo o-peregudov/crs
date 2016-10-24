@@ -11,28 +11,25 @@ int main (int argc, const char ** argv)
   }
 
   {
-    crs::barrier barrier (3);
-
-    bool flaga = false;
-    std::thread threada ([&]{
-	std::this_thread::yield ();
-	flaga = true;
-	barrier.wait ();
-      });
-
-    bool flagb = false;
-    std::thread threadb ([&]{
-	std::this_thread::yield ();
-	flagb = true;
-	barrier.wait ();
-      });
-
+    crs::barrier barrier (1);
     barrier.wait ();
-    assert (flaga == flagb);
-    assert (flaga && flagb);
+  }
 
-    threada.join ();
-    threadb.join ();
+  {
+    crs::barrier barrier (2);
+
+    std::thread aux_thread ([&]{
+        const bool wait_complete =
+          barrier.wait_for (std::chrono::milliseconds (250));
+        assert (wait_complete);
+      });
+
+    const bool wait_complete =
+      barrier.wait_until (std::chrono::steady_clock::now () +
+                          std::chrono::milliseconds (250));
+    assert (wait_complete);
+
+    aux_thread.join ();
   }
 
   return 0;
