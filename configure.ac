@@ -334,48 +334,10 @@ AC_SUBST(HAVE_WINSOCK2_API)
 AM_CONDITIONAL([HAVE_WINSOCK2_API], [test $HAVE_WINSOCK2_API = 1] )
 
 dnl
-dnl Check whether we have to disable epoll () support on Linux
+dnl Check whether we have epoll () support on Linux
 dnl
-USE_EPOLL=0
-do_check_epoll=no
-AC_ARG_ENABLE(epoll,
-              AS_HELP_STRING([--disable-epoll], [Disable Linux epoll(2) support.]),
-	      [do_check_epoll=$enable_epoll], [do_check_epoll=yes])
-if (test $PLATFORM_LINUX = 1) && (test $do_check_epoll = yes); then
-  dnl
-  dnl auto-detect and verify sys/epoll.h header and library present and working
-  dnl (some parts were borrowed from the squid-cache project)
-  dnl
-
-  dnl Check for epoll_create
-  AC_CHECK_FUNCS([epoll_create])
-
-  dnl epoll requires sys/epoll.h
-  AC_CHECK_HEADERS([sys/epoll.h])
-
-  dnl Verify that epoll really works
-  if test $ac_cv_func_epoll_create = yes; then
-    AC_CACHE_CHECK(if epoll works, ac_cv_epoll_works,
-      AC_RUN_IFELSE([AC_LANG_SOURCE([[
-        #include <sys/epoll.h>
-	#include <unistd.h>
-	int main(int argc, char ** argv)
-	{
-	  int fd = epoll_create (256);
-	  if (fd < 0)
-	    return 1;
-	  close (fd);
-	  return 0;
-	}
-      ]])],[ac_cv_epoll_works=yes],[ac_cv_epoll_works=no],[:]))
-  fi
-
-  if test $ac_cv_epoll_works = yes; then
-    USE_EPOLL=1
-  fi
-else
-  ac_cv_epoll_works=no
-fi
+AX_HAVE_EPOLL([HAVE_EPOLL=1], [HAVE_EPOLL=0])
+AC_SUBST(HAVE_EPOLL)
 
 dnl
 dnl Check for poll () on POSIX systems
@@ -450,7 +412,7 @@ fi
 if test "x$ac_cv_winsock2_works" = "xyes" ; then
   SELECT_TYPE="winsock2"
   AC_DEFINE(WINSOCK2_IO_MULTIPLEXING, 1, [Define to 1 if winsock2 should be used for I/O multiplexing])
-elif test "x$ac_cv_epoll_works" = "xyes" ; then
+elif test $HAVE_EPOLL = 1 ; then
   SELECT_TYPE="epoll"
   AC_DEFINE(EPOLL_IO_MULTIPLEXING, 1, [Define to 1 if epoll should be used for I/O multiplexing])
 elif test "x$ac_cv_poll_works" = "xyes" ; then
