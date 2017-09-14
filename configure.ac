@@ -342,34 +342,8 @@ AC_SUBST(HAVE_EPOLL)
 dnl
 dnl Check for poll () on POSIX systems
 dnl
-USE_POLL=0
-if (test $PLATFORM_LINUX = 1) || (test $PLATFORM_CYGWIN = 1); then
-  dnl
-  dnl auto-detect and verify poll.h header and library present and working
-  dnl
-
-  dnl Check for poll
-  AC_CHECK_FUNCS([poll])
-
-  dnl epoll requires poll.h
-  AC_CHECK_HEADERS([poll.h])
-
-  dnl Verify that poll really works
-  if test $ac_cv_func_poll = yes; then
-    AC_CACHE_CHECK(if poll works, ac_cv_poll_works,
-      AC_RUN_IFELSE([AC_LANG_SOURCE([[
-        #include <poll.h>
-	int main(int argc, char ** argv)
-	{
-	  return poll (0, 0, 1);
-	}
-      ]])],[ac_cv_poll_works=yes],[ac_cv_poll_works=no],[:]))
-  fi
-
-  if test $ac_cv_poll_works = yes; then
-    USE_POLL=1
-  fi
-fi
+AX_HAVE_POLL([HAVE_POLL=1], [HAVE_POLL=0])
+AC_SUBST(HAVE_POLL)
 
 dnl
 dnl Check for select () on POSIX systems
@@ -415,7 +389,7 @@ if test "x$ac_cv_winsock2_works" = "xyes" ; then
 elif test $HAVE_EPOLL = 1 ; then
   SELECT_TYPE="epoll"
   AC_DEFINE(EPOLL_IO_MULTIPLEXING, 1, [Define to 1 if epoll should be used for I/O multiplexing])
-elif test "x$ac_cv_poll_works" = "xyes" ; then
+elif test $HAVE_POLL = 1 ; then
   SELECT_TYPE="poll"
   AC_DEFINE(POLL_IO_MULTIPLEXING, 1, [Define to 1 if poll should be used for I/O multiplexing])
 else
