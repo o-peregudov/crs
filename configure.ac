@@ -348,40 +348,8 @@ AC_SUBST(HAVE_POLL)
 dnl
 dnl Check for select () on POSIX systems
 dnl
-USE_SELECT=0
-if (test $PLATFORM_LINUX = 1) || (test $PLATFORM_CYGWIN = 1); then
-  dnl
-  dnl auto-detect and verify sys/select.h header and library present and working
-  dnl
-
-  dnl Check for select
-  AC_CHECK_FUNCS([select])
-
-  dnl select requires sys/select.h
-  AC_CHECK_HEADERS([sys/select.h sys/time.h sys/types.h unistd.h])
-
-  dnl Verify that select really works
-  if test $ac_cv_func_select = yes; then
-    AC_CACHE_CHECK(if select works, ac_cv_select_works,
-      AC_RUN_IFELSE([AC_LANG_SOURCE([[
-        #include <sys/select.h>
-	#include <sys/time.h>
-	#include <sys/types.h>
-	#include <unistd.h>
-	int main(int argc, char ** argv)
-	{
-	  struct timeval tv;
-	  tv.tv_sec = 0;
-	  tv.tv_usec = 10;
-	  return select (0, 0, 0, 0, &tv);
-	}
-      ]])],[ac_cv_select_works=yes],[ac_cv_select_works=no],[:]))
-  fi
-
-  if test $ac_cv_select_works = yes; then
-    USE_SELECT=1
-  fi
-fi
+AX_HAVE_SELECT([HAVE_SELECT=1], [HAVE_SELECT=0])
+AC_SUBST(HAVE_SELECT)
 
 if test "x$ac_cv_winsock2_works" = "xyes" ; then
   SELECT_TYPE="winsock2"
@@ -392,9 +360,11 @@ elif test $HAVE_EPOLL = 1 ; then
 elif test $HAVE_POLL = 1 ; then
   SELECT_TYPE="poll"
   AC_DEFINE(POLL_IO_MULTIPLEXING, 1, [Define to 1 if poll should be used for I/O multiplexing])
-else
+elif test $HAVE_SELECT = 1 ; then
   SELECT_TYPE="select"
   AC_DEFINE(SELECT_IO_MULTIPLEXING_POSIX, 1, [Define to 1 if POSIX select should be used for I/O multiplexing])
+else
+  AC_MSG_ERROR([I/O multiplexing method can't be detected])
 fi
 AC_DEFINE_UNQUOTED(SELECT_TYPE, "$SELECT_TYPE", [Define to inform about available I/O multiplexing method])
 
