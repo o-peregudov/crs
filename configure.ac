@@ -270,18 +270,22 @@ AC_SUBST(HAVE_PTHREAD_H)
 AC_SUBST(HAVE_PTHREAD_SPIN_LOCK)
 AM_CONDITIONAL([HAVE_PTHREAD_SPIN_LOCK], [test $HAVE_PTHREAD_SPIN_LOCK = 1])
 
-dnl
-dnl Check for GSL
-dnl
-AX_PATH_GSL([1.14],[ac_have_libgsl=yes],[ac_have_libgsl=no])
-if test $ac_have_libgsl = yes; then
-  CFLAGS="$CFLAGS $GSL_CFLAGS"
-  CPPFLAGS="$CPPFLAGS -DGSL_RANGE_CHECK_OFF -DHAVE_INLINE"
-  CXXFLAGS="$CXXFLAGS $GSL_CFLAGS"
-  LIBS="$LIBS $GSL_LIBS"
-  HAVE_LIBGSL=1
-else
-  HAVE_LIBGSL=0
+HAVE_LIBGSL=0
+AC_ARG_ENABLE(gsl,
+    AS_HELP_STRING([--disable-gsl], [Disable use of GNU Scientific Library]),
+    [do_check_gsl=$enable_gsl], [do_check_gsl=yes])
+if test $do_check_gsl = yes; then
+  dnl
+  dnl Check for GSL
+  dnl
+  AX_PATH_GSL([1.14],[ac_have_libgsl=yes],[ac_have_libgsl=no])
+  if test $ac_have_libgsl = yes; then
+    CFLAGS="$CFLAGS $GSL_CFLAGS"
+    CPPFLAGS="$CPPFLAGS -DGSL_RANGE_CHECK_OFF -DHAVE_INLINE"
+    CXXFLAGS="$CXXFLAGS $GSL_CFLAGS"
+    LIBS="$LIBS $GSL_LIBS"
+    HAVE_LIBGSL=1
+  fi
 fi
 AC_SUBST(HAVE_LIBGSL)
 
