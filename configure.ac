@@ -1,4 +1,4 @@
-AC_INIT([crs], [2.0.0], [o.peregudov@gmail.com])
+AC_INIT([crs],[2.0.0],[o.peregudov@gmail.com])
 
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_AUX_DIR([build-aux])
